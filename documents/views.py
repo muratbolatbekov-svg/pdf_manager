@@ -25,8 +25,19 @@ def dashboard(request):
 def document_list(request):
     documents = Document.objects.select_related('category')
     query = request.GET.get('q', '').strip()
-    category_id = request.GET.get('category', '').strip()
+    category_id_str = request.GET.get('category', '').strip()
     status = request.GET.get('status', '').strip()
+
+    selected_category = None
+    if category_id_str:
+        try:
+            selected_category = int(category_id_str)
+            documents = documents.filter(category_id=selected_category)
+        except ValueError:
+            pass
+
+    if status:
+        documents = documents.filter(status=status)
 
     if query:
         documents = documents.filter(
@@ -36,21 +47,12 @@ def document_list(request):
             Q(tags__icontains=query)
         ).distinct()
 
-    if category_id:
-        try:
-            documents = documents.filter(category_id=int(category_id))
-        except ValueError:
-            pass
-
-    if status:
-        documents = documents.filter(status=status)
-
     categories = Category.objects.all()
     context = {
         'documents': documents,
         'categories': categories,
         'query': query,
-        'selected_category': category_id,
+        'selected_category': selected_category,
         'selected_status': status,
     }
     return render(request, 'documents/document_list.html', context)
