@@ -31,3 +31,12 @@ USE_I18N = True
 USE_TZ = True
 STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Production settings
+import os
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+if os.environ.get('RAILWAY_ENVIRONMENT'):
+    DEBUG = False
+    SECRET_KEY = os.environ.get('SECRET_KEY', SECRET_KEY)
