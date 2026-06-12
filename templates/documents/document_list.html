@@ -1,40 +1,64 @@
 {% extends 'base.html' %}
-{% block title %}Документы{% endblock %}
+{% block title %}Документы — PDF Data Base{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-  <h4 class="fw-bold mb-0"><i class="bi bi-files me-2 text-primary"></i>Документы</h4>
+  <div>
+    <h4 class="fw-bold mb-0">Документы</h4>
+    <p class="text-muted mb-0" style="font-size:14px;">Управление договорами и файлами</p>
+  </div>
   <a href="/documents/create/" class="btn btn-primary"><i class="bi bi-plus me-1"></i>Добавить</a>
 </div>
+
 <div class="card p-3 mb-3">
-  <form method="get" class="row g-2">
-    <div class="col-md-5"><input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Поиск по названию, инициатору, тегам..."></div>
-    <div class="col-md-3"><select name="category" class="form-select"><option value="">Все категории</option>{% for cat in categories %}<option value="{{ cat.pk }}" {% if selected_category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>{% endfor %}</select></div>
-    <div class="col-md-2"><select name="status" class="form-select"><option value="">Все статусы</option><option value="active" {% if selected_status == 'active' %}selected{% endif %}>Активный</option><option value="archived" {% if selected_status == 'archived' %}selected{% endif %}>В архиве</option><option value="draft" {% if selected_status == 'draft' %}selected{% endif %}>Черновик</option></select></div>
-    <div class="col-md-2"><button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search me-1"></i>Найти</button></div>
+  <form method="get" class="row g-2 align-items-end">
+    <div class="col-md-5"><input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Поиск по названию, автору, тегам..."></div>
+    <div class="col-md-3">
+      <select name="category" class="form-select">
+        <option value="">Все категории</option>
+        {% for cat in categories %}<option value="{{ cat.pk }}" {% if selected_category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="status" class="form-select">
+        <option value="">Все статусы</option>
+        <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Активный</option>
+        <option value="archived" {% if selected_status == 'archived' %}selected{% endif %}>В архиве</option>
+        <option value="draft" {% if selected_status == 'draft' %}selected{% endif %}>Черновик</option>
+      </select>
+    </div>
+    <div class="col-md-2"><button type="submit" class="btn btn-outline-secondary w-100"><i class="bi bi-search me-1"></i>Найти</button></div>
   </form>
 </div>
+
 <div class="card">
   {% if documents %}
-  <table class="table table-hover mb-0">
-    <thead class="table-light">
-      <tr><th>Документ</th><th>Категория</th><th>Инициатор</th><th>Сумма договора</th><th>Статус</th><th>Файл</th><th>Действия</th></tr>
-    </thead>
+  <table class="table mb-0">
+    <thead><tr><th>Документ</th><th>Категория</th><th>Инициатор</th><th>Сумма</th><th>Статус</th><th>Файл</th><th></th></tr></thead>
     <tbody>
     {% for doc in documents %}
     <tr>
-      <td><a href="/documents/{{ doc.pk }}/" class="text-decoration-none fw-medium"><i class="bi bi-file-pdf-fill text-danger me-2"></i>{{ doc.title }}</a>{% if doc.tags %}<div>{% for tag in doc.tags.split %}<span class="badge bg-light text-secondary me-1 small">{{ tag }}</span>{% endfor %}</div>{% endif %}</td>
+      <td>
+        <a href="/documents/{{ doc.pk }}/" class="text-decoration-none fw-medium" style="color: var(--apple-text);"><i class="bi bi-file-pdf-fill text-danger me-2" style="font-size:18px;"></i>{{ doc.title }}</a>
+        {% if doc.tags %}<div class="mt-1">{% for tag in doc.tags.split %}<span class="badge" style="background: var(--apple-bg); color: var(--apple-muted); border-radius: 100px; font-weight: 400; font-size: 11px; padding: 3px 8px;">{{ tag }}</span>{% endfor %}</div>{% endif %}
+      </td>
       <td class="text-muted">{{ doc.category|default:"—" }}</td>
       <td>{{ doc.initiator|default:"—" }}</td>
       <td class="fw-medium">{% if doc.amount %}{{ doc.amount_formatted }}{% else %}—{% endif %}</td>
-      <td><span class="badge badge-status-{{ doc.status }} rounded-pill">{{ doc.get_status_display }}</span></td>
+      <td><span class="badge badge-status-{{ doc.status }}">{{ doc.get_status_display }}</span></td>
       <td>{% if doc.pdf_file %}<a href="{{ doc.pdf_file.url }}" target="_blank" class="btn btn-sm btn-outline-success"><i class="bi bi-eye"></i></a>{% else %}<span class="text-muted small">нет</span>{% endif %}</td>
-      <td><a href="/documents/{{ doc.pk }}/edit/" class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil"></i></a><a href="/documents/{{ doc.pk }}/delete/" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a></td>
+      <td>
+        <a href="/documents/{{ doc.pk }}/edit/" class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil"></i></a>
+        <a href="/documents/{{ doc.pk }}/delete/" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+      </td>
     </tr>
     {% endfor %}
     </tbody>
   </table>
   {% else %}
-  <div class="text-center py-5 text-muted"><i class="bi bi-search fs-1 d-block mb-2"></i>Документы не найдены. <a href="/documents/create/">Добавить первый</a></div>
+  <div class="text-center py-5 text-muted">
+    <i class="bi bi-search fs-1 d-block mb-3 opacity-25"></i>
+    <p>Документы не найдены. <a href="/documents/create/" style="color: var(--apple-blue);">Добавить первый</a></p>
+  </div>
   {% endif %}
 </div>
 {% endblock %}

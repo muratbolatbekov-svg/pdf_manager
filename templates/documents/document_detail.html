@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}{{ document.title }}{% endblock %}
+{% block title %}{{ document.title }} — PDF Data Base{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
   <a href="/documents/" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Назад</a>
@@ -8,36 +8,37 @@
     <a href="/documents/{{ document.pk }}/delete/" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash me-1"></i>Удалить</a>
   </div>
 </div>
+
 <div class="card p-4">
   <div class="d-flex align-items-start mb-4">
-    <i class="bi bi-file-pdf-fill text-danger me-3" style="font-size:3rem"></i>
+    <i class="bi bi-file-pdf-fill text-danger me-3" style="font-size:3.5rem"></i>
     <div>
       <h4 class="fw-bold mb-1">{{ document.title }}</h4>
-      <span class="badge badge-status-{{ document.status }} rounded-pill">{{ document.get_status_display }}</span>
+      <span class="badge badge-status-{{ document.status }}">{{ document.get_status_display }}</span>
     </div>
   </div>
 
   {% if document.pdf_file %}
-  <div class="mb-4 p-3 bg-light rounded">
+  <div class="mb-4 p-3 rounded" style="background: var(--apple-bg);">
     <div class="fw-medium mb-2"><i class="bi bi-file-pdf text-danger me-1"></i>PDF файл загружен</div>
-    <a href="{{ document.pdf_file.url }}" target="_blank" class="btn btn-success me-2"><i class="bi bi-eye me-1"></i>Открыть PDF</a>
-    <a href="{{ document.pdf_file.url }}" download class="btn btn-outline-primary"><i class="bi bi-download me-1"></i>Скачать</a>
+    <a href="{{ document.pdf_file.url }}" target="_blank" class="btn btn-primary btn-sm me-2"><i class="bi bi-eye me-1"></i>Открыть PDF</a>
+    <a href="{{ document.pdf_file.url }}" download class="btn btn-outline-secondary btn-sm"><i class="bi bi-download me-1"></i>Скачать</a>
   </div>
   {% else %}
-  <div class="mb-4 p-3 bg-light rounded text-muted">
-    <i class="bi bi-file-earmark me-1"></i>PDF файл не загружен — <a href="/documents/{{ document.pk }}/edit/">загрузить</a>
+  <div class="mb-4 p-3 rounded text-muted" style="background: var(--apple-bg);">
+    <i class="bi bi-file-earmark me-1"></i>PDF файл не загружен — <a href="/documents/{{ document.pk }}/edit/" style="color: var(--apple-blue);">загрузить</a>
   </div>
   {% endif %}
 
   <div class="row g-3 mb-3">
-    <div class="col-md-4"><div class="text-muted small">Сумма договора</div><div class="fw-bold fs-5">{% if document.amount %}{{ document.amount_formatted }}{% else %}—{% endif %}</div></div>
-    <div class="col-md-4"><div class="text-muted small">Инициатор</div><div>{{ document.initiator|default:"—" }}</div></div>
-    <div class="col-md-4"><div class="text-muted small">Автор</div><div>{{ document.author|default:"—" }}</div></div>
-    <div class="col-md-4"><div class="text-muted small">Категория</div><div>{{ document.category|default:"—" }}</div></div>
-    <div class="col-md-4"><div class="text-muted small">Добавлен</div><div>{{ document.created_at|date:"d.m.Y H:i" }}</div></div>
-    <div class="col-md-4"><div class="text-muted small">Обновлён</div><div>{{ document.updated_at|date:"d.m.Y H:i" }}</div></div>
+    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Сумма договора</div><div class="fw-bold" style="font-size:22px;">{% if document.amount %}{{ document.amount_formatted }}{% else %}—{% endif %}</div></div>
+    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Инициатор</div><div class="fw-medium">{{ document.initiator|default:"—" }}</div></div>
+    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Автор</div><div class="fw-medium">{{ document.author|default:"—" }}</div></div>
+    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Категория</div><div class="fw-medium">{{ document.category|default:"—" }}</div></div>
+    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Добавлен</div><div class="fw-medium">{{ document.created_at|date:"d.m.Y H:i" }}</div></div>
+    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Обновлён</div><div class="fw-medium">{{ document.updated_at|date:"d.m.Y H:i" }}</div></div>
   </div>
-  {% if document.description %}<div class="mb-3"><div class="text-muted small mb-1">Описание</div><p>{{ document.description }}</p></div>{% endif %}
-  {% if document.tags %}<div><div class="text-muted small mb-1">Теги</div>{% for tag in document.tags.split %}<span class="badge bg-light text-dark border me-1">{{ tag }}</span>{% endfor %}</div>{% endif %}
+  {% if document.description %}<div class="mb-3"><div class="text-muted small mb-1" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Описание</div><p style="color: var(--apple-muted);">{{ document.description }}</p></div>{% endif %}
+  {% if document.tags %}<div><div class="text-muted small mb-1" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Теги</div>{% for tag in document.tags.split %}<span class="badge" style="background: var(--apple-bg); color: var(--apple-text); border-radius: 100px; font-weight: 400; padding:4px 10px;">{{ tag }}</span>{% endfor %}</div>{% endif %}
 </div>
 {% endblock %}

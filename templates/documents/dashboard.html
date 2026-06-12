@@ -1,21 +1,67 @@
 {% extends 'base.html' %}
-{% block title %}Дашборд — PDF Менеджер{% endblock %}
+{% block title %}Дашборд — PDF Data Base{% endblock %}
 {% block content %}
-<h4 class="fw-bold mb-4"><i class="bi bi-speedometer2 me-2 text-primary"></i>Дашборд</h4>
+<h4 class="fw-bold mb-1">Дашборд</h4>
+<p class="text-muted mb-4" style="font-size:15px;">Обзор системы управления документами</p>
+
 <div class="row g-3 mb-4">
-  <div class="col-md-4"><div class="card stat-card border-primary p-3"><div class="d-flex justify-content-between align-items-center"><div><div class="text-muted small">Всего документов</div><div class="fs-2 fw-bold">{{ total_docs }}</div></div><i class="bi bi-files fs-1 text-primary opacity-25"></i></div></div></div>
-  <div class="col-md-4"><div class="card stat-card border-success p-3"><div class="d-flex justify-content-between align-items-center"><div><div class="text-muted small">Активных</div><div class="fs-2 fw-bold text-success">{{ active_docs }}</div></div><i class="bi bi-check-circle fs-1 text-success opacity-25"></i></div></div></div>
-  <div class="col-md-4"><div class="card stat-card border-secondary p-3"><div class="d-flex justify-content-between align-items-center"><div><div class="text-muted small">В архиве</div><div class="fs-2 fw-bold text-secondary">{{ archived_docs }}</div></div><i class="bi bi-archive fs-1 text-secondary opacity-25"></i></div></div></div>
+  <div class="col-md-4">
+    <div class="card stat-card">
+      <div class="stat-label">Всего документов</div>
+      <div class="stat-value">{{ total_docs }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card">
+      <div class="stat-label">Активных</div>
+      <div class="stat-value" style="color: #34c759;">{{ active_docs }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card">
+      <div class="stat-label">В архиве</div>
+      <div class="stat-value" style="color: var(--apple-muted);">{{ archived_docs }}</div>
+    </div>
+  </div>
 </div>
+
 <div class="row g-3">
-  <div class="col-md-7"><div class="card p-3"><h6 class="fw-bold mb-3"><i class="bi bi-clock-history me-2"></i>Последние документы</h6>
-  {% if recent_docs %}<table class="table table-hover mb-0"><thead><tr><th>Название</th><th>Категория</th><th>Статус</th><th>Дата</th></tr></thead><tbody>
-  {% for doc in recent_docs %}<tr><td><a href="/documents/{{ doc.pk }}/" class="text-decoration-none fw-medium"><i class="bi bi-file-pdf text-danger me-1"></i>{{ doc.title }}</a></td><td><span class="text-muted small">{{ doc.category|default:"—" }}</span></td><td><span class="badge badge-status-{{ doc.status }} rounded-pill">{{ doc.get_status_display }}</span></td><td class="text-muted small">{{ doc.created_at|date:"d.m.Y" }}</td></tr>{% endfor %}
-  </tbody></table>{% else %}<p class="text-muted text-center py-3">Нет документов. <a href="/documents/create/">Добавить первый</a></p>{% endif %}
-  </div></div>
-  <div class="col-md-5"><div class="card p-3"><h6 class="fw-bold mb-3"><i class="bi bi-folder2 me-2"></i>Категории</h6>
-  {% if categories %}{% for cat in categories %}<div class="d-flex justify-content-between align-items-center py-2 border-bottom"><span>{{ cat.name }}</span><span class="badge bg-primary rounded-pill">{{ cat.doc_count }}</span></div>{% endfor %}
-  {% else %}<p class="text-muted text-center py-3">Нет категорий. <a href="/categories/create/">Создать</a></p>{% endif %}
-  </div></div>
+  <div class="col-md-7">
+    <div class="card p-4">
+      <h6 class="fw-bold mb-3" style="font-size:17px;">Последние документы</h6>
+      {% if recent_docs %}
+      <table class="table mb-0">
+        <thead><tr><th>Название</th><th>Категория</th><th>Статус</th><th>Дата</th></tr></thead>
+        <tbody>
+        {% for doc in recent_docs %}
+        <tr>
+          <td><a href="/documents/{{ doc.pk }}/" class="text-decoration-none fw-medium" style="color: var(--apple-text);"><i class="bi bi-file-pdf text-danger me-1"></i>{{ doc.title }}</a></td>
+          <td><span class="text-muted small">{{ doc.category|default:"—" }}</span></td>
+          <td><span class="badge badge-status-{{ doc.status }}">{{ doc.get_status_display }}</span></td>
+          <td class="text-muted small">{{ doc.created_at|date:"d.m.Y" }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="text-muted text-center py-4">Нет документов. <a href="/documents/create/" style="color: var(--apple-blue);">Добавить первый</a></p>
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-md-5">
+    <div class="card p-4">
+      <h6 class="fw-bold mb-3" style="font-size:17px;">Категории</h6>
+      {% if categories %}
+        {% for cat in categories %}
+        <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}" style="border-color: var(--apple-border) !important;">
+          <span class="fw-medium">{{ cat.name }}</span>
+          <span class="badge" style="background: var(--apple-bg); color: var(--apple-muted); border-radius: 100px; font-weight: 500; padding: 4px 10px; font-size: 12px;">{{ cat.doc_count }}</span>
+        </div>
+        {% endfor %}
+      {% else %}
+      <p class="text-muted text-center py-4">Нет категорий. <a href="/categories/create/" style="color: var(--apple-blue);">Создать</a></p>
+      {% endif %}
+    </div>
+  </div>
 </div>
 {% endblock %}

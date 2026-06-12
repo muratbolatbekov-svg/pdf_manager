@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}{{ title }}{% endblock %}
+{% block title %}{{ title }} — PDF Data Base{% endblock %}
 {% block content %}
 <div class="d-flex align-items-center mb-4">
   <a href="/documents/" class="btn btn-outline-secondary btn-sm me-3"><i class="bi bi-arrow-left"></i></a>
@@ -12,7 +12,7 @@
       <div class="col-12">
         <label class="form-label fw-medium"><i class="bi bi-file-pdf text-danger me-1"></i>PDF файл</label>
         {{ form.pdf_file }}
-        <div class="form-text">Загрузите PDF файл — он сохранится в облаке</div>
+        <div class="form-text text-muted" style="font-size:12px;">Загрузите PDF файл — он сохранится в облаке</div>
       </div>
       <div class="col-md-6"><label class="form-label fw-medium">Сумма договора (₸)</label>{{ form.amount }}</div>
       <div class="col-md-6"><label class="form-label fw-medium">Инициатор</label>{{ form.initiator }}</div>
