@@ -24,17 +24,35 @@ def dashboard(request):
 @login_required
 def document_list(request):
     documents = Document.objects.select_related('category')
-    query = request.GET.get('q', '')
-    category_id = request.GET.get('category', '')
-    status = request.GET.get('status', '')
+    query = request.GET.get('q', '').strip()
+    category_id = request.GET.get('category', '').strip()
+    status = request.GET.get('status', '').strip()
+
     if query:
-        documents = documents.filter(Q(title__icontains=query) | Q(author__icontains=query) | Q(tags__icontains=query))
+        documents = documents.filter(
+            Q(title__icontains=query) |
+            Q(initiator__icontains=query) |
+            Q(author__icontains=query) |
+            Q(tags__icontains=query)
+        ).distinct()
+
     if category_id:
-        documents = documents.filter(category_id=category_id)
+        try:
+            documents = documents.filter(category_id=int(category_id))
+        except ValueError:
+            pass
+
     if status:
         documents = documents.filter(status=status)
+
     categories = Category.objects.all()
-    context = {'documents': documents, 'categories': categories, 'query': query, 'selected_category': category_id, 'selected_status': status}
+    context = {
+        'documents': documents,
+        'categories': categories,
+        'query': query,
+        'selected_category': category_id,
+        'selected_status': status,
+    }
     return render(request, 'documents/document_list.html', context)
 
 @login_required
