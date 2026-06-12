@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center mb-4">
+  <a href="/documents/" class="btn btn-outline-secondary btn-sm me-3"><i class="bi bi-arrow-left"></i></a>
+  <h4 class="fw-bold mb-0">{{ title }}</h4>
+</div>
+<div class="card p-4" style="max-width:700px">
+  <form method="post">{% csrf_token %}
+    <div class="row g-3">
+      <div class="col-12"><label class="form-label fw-medium">Название *</label>{{ form.title }}</div>
+      <div class="col-md-6"><label class="form-label fw-medium">Имя файла *</label>{{ form.file_name }}</div>
+      <div class="col-md-3"><label class="form-label fw-medium">Размер (байт)</label>{{ form.file_size }}</div>
+      <div class="col-md-3"><label class="form-label fw-medium">Страниц</label>{{ form.pages }}</div>
+      <div class="col-md-6"><label class="form-label fw-medium">Категория</label>{{ form.category }}</div>
+      <div class="col-md-6"><label class="form-label fw-medium">Статус</label>{{ form.status }}</div>
+      <div class="col-12"><label class="form-label fw-medium">Автор</label>{{ form.author }}</div>
+      <div class="col-12"><label class="form-label fw-medium">Описание</label>{{ form.description }}</div>
+      <div class="col-12"><label class="form-label fw-medium">Теги <span class="text-muted small">(через пробел)</span></label>{{ form.tags }}</div>
+      <div class="col-12 pt-2"><button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-lg me-2"></i>Сохранить</button><a href="/documents/" class="btn btn-outline-secondary ms-2">Отмена</a></div>
+    </div>
+  </form>
+</div>
+{% endblock %}

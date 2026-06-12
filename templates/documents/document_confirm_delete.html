@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}Удалить документ{% endblock %}
+{% block content %}
+<div class="card p-4" style="max-width:500px;margin:auto">
+  <h5 class="fw-bold mb-3"><i class="bi bi-exclamation-triangle text-danger me-2"></i>Удалить документ?</h5>
+  <p>Вы уверены, что хотите удалить <strong>{{ document.title }}</strong>? Это действие нельзя отменить.</p>
+  <form method="post">{% csrf_token %}<button type="submit" class="btn btn-danger me-2"><i class="bi bi-trash me-1"></i>Удалить</button><a href="/documents/{{ document.pk }}/" class="btn btn-outline-secondary">Отмена</a></form>
+</div>
+{% endblock %}

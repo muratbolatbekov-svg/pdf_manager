@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Создать категорию{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center mb-4">
+  <a href="/categories/" class="btn btn-outline-secondary btn-sm me-3"><i class="bi bi-arrow-left"></i></a>
+  <h4 class="fw-bold mb-0">Новая категория</h4>
+</div>
+<div class="card p-4" style="max-width:500px">
+  <form method="post">{% csrf_token %}
+    <div class="mb-3"><label class="form-label fw-medium">Название *</label>{{ form.name }}</div>
+    <div class="mb-3"><label class="form-label fw-medium">Описание</label>{{ form.description }}</div>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-2"></i>Создать</button>
+    <a href="/categories/" class="btn btn-outline-secondary ms-2">Отмена</a>
+  </form>
+</div>
+{% endblock %}
