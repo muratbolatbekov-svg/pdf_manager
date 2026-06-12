@@ -10,9 +10,17 @@
     <i class="bi bi-file-pdf-fill text-danger me-3" style="font-size:3rem"></i>
     <div><h4 class="fw-bold mb-1">{{ document.title }}</h4><span class="badge badge-status-{{ document.status }} rounded-pill">{{ document.get_status_display }}</span></div>
   </div>
+
+  {% if document.pdf_file %}
+  <div class="mb-4">
+    <a href="{{ document.pdf_file.url }}" target="_blank" class="btn btn-success me-2"><i class="bi bi-eye me-1"></i>Открыть PDF</a>
+    <a href="{{ document.pdf_file.url }}" download class="btn btn-outline-primary"><i class="bi bi-download me-1"></i>Скачать</a>
+  </div>
+  {% endif %}
+
   <div class="row g-3 mb-3">
-    <div class="col-md-3"><div class="text-muted small">Файл</div><div>{{ document.file_name }}</div></div>
-    <div class="col-md-3"><div class="text-muted small">Размер</div><div>{{ document.file_size_kb }} KB</div></div>
+    <div class="col-md-3"><div class="text-muted small">Файл</div><div>{{ document.file_name|default:"—" }}</div></div>
+    <div class="col-md-3"><div class="text-muted small">Размер</div><div>{% if document.file_size %}{{ document.file_size_kb }} KB{% else %}—{% endif %}</div></div>
     <div class="col-md-3"><div class="text-muted small">Страниц</div><div>{{ document.pages }}</div></div>
     <div class="col-md-3"><div class="text-muted small">Автор</div><div>{{ document.author|default:"—" }}</div></div>
     <div class="col-md-3"><div class="text-muted small">Категория</div><div>{{ document.category|default:"—" }}</div></div>

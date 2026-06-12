@@ -40,9 +40,13 @@ def document_detail(request, pk):
 
 def document_create(request):
     if request.method == 'POST':
-        form = DocumentForm(request.POST)
+        form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            doc = form.save(commit=False)
+            if doc.pdf_file:
+                doc.file_name = doc.pdf_file.name
+                doc.file_size = doc.pdf_file.size
+            doc.save()
             messages.success(request, 'Документ успешно добавлен!')
             return redirect('document_list')
     else:
@@ -52,9 +56,13 @@ def document_create(request):
 def document_edit(request, pk):
     document = get_object_or_404(Document, pk=pk)
     if request.method == 'POST':
-        form = DocumentForm(request.POST, instance=document)
+        form = DocumentForm(request.POST, request.FILES, instance=document)
         if form.is_valid():
-            form.save()
+            doc = form.save(commit=False)
+            if doc.pdf_file and hasattr(doc.pdf_file, 'size'):
+                doc.file_name = doc.pdf_file.name
+                doc.file_size = doc.pdf_file.size
+            doc.save()
             messages.success(request, 'Документ обновлён!')
             return redirect('document_detail', pk=pk)
     else:

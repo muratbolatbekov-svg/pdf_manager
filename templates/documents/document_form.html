@@ -6,14 +6,17 @@
   <h4 class="fw-bold mb-0">{{ title }}</h4>
 </div>
 <div class="card p-4" style="max-width:700px">
-  <form method="post">{% csrf_token %}
+  <form method="post" enctype="multipart/form-data">{% csrf_token %}
     <div class="row g-3">
       <div class="col-12"><label class="form-label fw-medium">Название *</label>{{ form.title }}</div>
-      <div class="col-md-6"><label class="form-label fw-medium">Имя файла *</label>{{ form.file_name }}</div>
-      <div class="col-md-3"><label class="form-label fw-medium">Размер (байт)</label>{{ form.file_size }}</div>
-      <div class="col-md-3"><label class="form-label fw-medium">Страниц</label>{{ form.pages }}</div>
+      <div class="col-12">
+        <label class="form-label fw-medium">PDF файл</label>
+        {{ form.pdf_file }}
+        <div class="form-text">Загрузите PDF файл (он будет доступен для просмотра и скачивания)</div>
+      </div>
       <div class="col-md-6"><label class="form-label fw-medium">Категория</label>{{ form.category }}</div>
-      <div class="col-md-6"><label class="form-label fw-medium">Статус</label>{{ form.status }}</div>
+      <div class="col-md-3"><label class="form-label fw-medium">Страниц</label>{{ form.pages }}</div>
+      <div class="col-md-3"><label class="form-label fw-medium">Статус</label>{{ form.status }}</div>
       <div class="col-12"><label class="form-label fw-medium">Автор</label>{{ form.author }}</div>
       <div class="col-12"><label class="form-label fw-medium">Описание</label>{{ form.description }}</div>
       <div class="col-12"><label class="form-label fw-medium">Теги <span class="text-muted small">(через пробел)</span></label>{{ form.tags }}</div>
