@@ -47,11 +47,7 @@ def document_create(request):
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
-            doc = form.save(commit=False)
-            if doc.pdf_file:
-                doc.file_name = doc.pdf_file.name
-                doc.file_size = doc.pdf_file.size
-            doc.save()
+            form.save()
             messages.success(request, 'Документ успешно добавлен!')
             return redirect('document_list')
     else:
@@ -64,11 +60,7 @@ def document_edit(request, pk):
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES, instance=document)
         if form.is_valid():
-            doc = form.save(commit=False)
-            if doc.pdf_file and hasattr(doc.pdf_file, 'size'):
-                doc.file_name = doc.pdf_file.name
-                doc.file_size = doc.pdf_file.size
-            doc.save()
+            form.save()
             messages.success(request, 'Документ обновлён!')
             return redirect('document_detail', pk=pk)
     else:
