@@ -10,17 +10,21 @@
     <div class="row g-3">
       <div class="col-12"><label class="form-label fw-medium">Название *</label>{{ form.title }}</div>
       <div class="col-12">
-        <label class="form-label fw-medium">PDF файл</label>
+        <label class="form-label fw-medium"><i class="bi bi-file-pdf text-danger me-1"></i>PDF файл</label>
         {{ form.pdf_file }}
-        <div class="form-text">Загрузите PDF файл (он будет доступен для просмотра и скачивания)</div>
+        <div class="form-text">Загрузите PDF файл — он сохранится в облаке</div>
       </div>
+      <div class="col-md-6"><label class="form-label fw-medium">Сумма договора (₸)</label>{{ form.amount }}</div>
+      <div class="col-md-6"><label class="form-label fw-medium">Инициатор</label>{{ form.initiator }}</div>
       <div class="col-md-6"><label class="form-label fw-medium">Категория</label>{{ form.category }}</div>
-      <div class="col-md-3"><label class="form-label fw-medium">Страниц</label>{{ form.pages }}</div>
-      <div class="col-md-3"><label class="form-label fw-medium">Статус</label>{{ form.status }}</div>
+      <div class="col-md-6"><label class="form-label fw-medium">Статус</label>{{ form.status }}</div>
       <div class="col-12"><label class="form-label fw-medium">Автор</label>{{ form.author }}</div>
       <div class="col-12"><label class="form-label fw-medium">Описание</label>{{ form.description }}</div>
       <div class="col-12"><label class="form-label fw-medium">Теги <span class="text-muted small">(через пробел)</span></label>{{ form.tags }}</div>
-      <div class="col-12 pt-2"><button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-lg me-2"></i>Сохранить</button><a href="/documents/" class="btn btn-outline-secondary ms-2">Отмена</a></div>
+      <div class="col-12 pt-2">
+        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-lg me-2"></i>Сохранить</button>
+        <a href="/documents/" class="btn btn-outline-secondary ms-2">Отмена</a>
+      </div>
     </div>
   </form>
 </div>

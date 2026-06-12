@@ -24,9 +24,8 @@ class Document(models.Model):
     description = models.TextField(blank=True, verbose_name="Описание")
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Категория")
     pdf_file = models.FileField(upload_to='pdfs/', blank=True, null=True, verbose_name="PDF файл")
-    file_name = models.CharField(max_length=255, blank=True, verbose_name="Имя файла")
-    file_size = models.PositiveIntegerField(default=0, verbose_name="Размер (байт)")
-    pages = models.PositiveIntegerField(default=0, verbose_name="Страниц")
+    amount = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Сумма договора")
+    initiator = models.CharField(max_length=255, blank=True, verbose_name="Инициатор")
     author = models.CharField(max_length=150, blank=True, verbose_name="Автор")
     tags = models.CharField(max_length=500, blank=True, verbose_name="Теги")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name="Статус")
@@ -41,5 +40,5 @@ class Document(models.Model):
     def __str__(self):
         return self.title
 
-    def file_size_kb(self):
-        return round(self.file_size / 1024, 1)
+    def amount_formatted(self):
+        return f"{self.amount:,.0f} ₸"

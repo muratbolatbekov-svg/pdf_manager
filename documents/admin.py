@@ -8,7 +8,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ['title', 'category', 'author', 'status', 'pages', 'created_at']
+    list_display = ['title', 'category', 'initiator', 'amount', 'status', 'created_at']
     list_filter = ['status', 'category']
-    search_fields = ['title', 'author', 'tags']
+    search_fields = ['title', 'initiator', 'tags']
     list_editable = ['status']
