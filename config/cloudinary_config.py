@@ -2,6 +2,12 @@ import os
 from urllib.parse import unquote, urlparse
 
 
+def _clean(value):
+    if not value:
+        return ''
+    return value.strip().strip('"').strip("'")
+
+
 def _is_valid(credentials):
     return bool(
         credentials
@@ -12,9 +18,9 @@ def _is_valid(credentials):
 
 
 def _from_env_vars():
-    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME', '').strip()
-    api_key = os.environ.get('CLOUDINARY_API_KEY', '').strip()
-    api_secret = os.environ.get('CLOUDINARY_API_SECRET', '').strip()
+    cloud_name = _clean(os.environ.get('CLOUDINARY_CLOUD_NAME'))
+    api_key = _clean(os.environ.get('CLOUDINARY_API_KEY'))
+    api_secret = _clean(os.environ.get('CLOUDINARY_API_SECRET'))
     if cloud_name and api_key and api_secret:
         return {
             'CLOUD_NAME': cloud_name,
@@ -25,7 +31,7 @@ def _from_env_vars():
 
 
 def _from_url():
-    url = os.environ.get('CLOUDINARY_URL', '').strip()
+    url = _clean(os.environ.get('CLOUDINARY_URL'))
     if not url:
         return None
     parsed = urlparse(url)
@@ -37,6 +43,27 @@ def _from_url():
         'API_SECRET': unquote(parsed.password or ''),
     }
     return credentials if _is_valid(credentials) else None
+
+
+def has_partial_cloudinary_env():
+    values = [
+        _clean(os.environ.get('CLOUDINARY_CLOUD_NAME')),
+        _clean(os.environ.get('CLOUDINARY_API_KEY')),
+        _clean(os.environ.get('CLOUDINARY_API_SECRET')),
+        _clean(os.environ.get('CLOUDINARY_URL')),
+    ]
+    return any(values) and not load_cloudinary_credentials()
+
+
+def missing_cloudinary_env_keys():
+    missing = []
+    if not _clean(os.environ.get('CLOUDINARY_CLOUD_NAME')):
+        missing.append('CLOUDINARY_CLOUD_NAME')
+    if not _clean(os.environ.get('CLOUDINARY_API_KEY')):
+        missing.append('CLOUDINARY_API_KEY')
+    if not _clean(os.environ.get('CLOUDINARY_API_SECRET')):
+        missing.append('CLOUDINARY_API_SECRET')
+    return missing
 
 
 def load_cloudinary_credentials():

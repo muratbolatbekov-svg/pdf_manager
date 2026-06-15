@@ -4,7 +4,12 @@ import os
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 
-from config.cloudinary_config import dev_cloudinary_credentials, load_cloudinary_credentials
+from config.cloudinary_config import (
+    dev_cloudinary_credentials,
+    has_partial_cloudinary_env,
+    load_cloudinary_credentials,
+    missing_cloudinary_env_keys,
+)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -79,12 +84,18 @@ else:
 
 CLOUDINARY_CREDENTIALS = load_cloudinary_credentials()
 if not CLOUDINARY_CREDENTIALS:
-    if DEBUG or ON_RAILWAY:
+    if has_partial_cloudinary_env():
+        missing = ', '.join(missing_cloudinary_env_keys())
+        raise ImproperlyConfigured(
+            f'Cloudinary credentials incomplete. Missing or empty: {missing}. '
+            'Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET in Railway.'
+        )
+    if DEBUG and not ON_RAILWAY:
         CLOUDINARY_CREDENTIALS = dev_cloudinary_credentials()
     else:
         raise ImproperlyConfigured(
-            'Cloudinary credentials are required. Set CLOUDINARY_URL or '
-            'CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET.'
+            'Cloudinary credentials are required. Set CLOUDINARY_CLOUD_NAME, '
+            'CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET in Railway Variables.'
         )
 
 import cloudinary
