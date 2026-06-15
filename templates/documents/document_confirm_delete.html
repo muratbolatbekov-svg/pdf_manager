@@ -9,7 +9,7 @@
   <p class="text-center text-muted">Вы уверены, что хотите удалить <strong>{{ document.title }}</strong>? Это действие нельзя отменить.</p>
   <form method="post" class="text-center">{% csrf_token %}
     <button type="submit" class="btn btn-danger px-4 me-2"><i class="bi bi-trash me-1"></i>Удалить</button>
-    <a href="/documents/{{ document.pk }}/" class="btn btn-outline-secondary">Отмена</a>
+    <a href="{% url 'document_detail' document.slug %}" class="btn btn-outline-secondary">Отмена</a>
   </form>
 </div>
 {% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Журнал аудита — PDF Data Base{% endblock %}
+{% block content %}
+<h4 class="fw-bold mb-4">Журнал аудита</h4>
+<div class="card">
+  <table class="table mb-0">
+    <thead><tr><th>Время</th><th>Пользователь</th><th>Действие</th><th>Объект</th></tr></thead>
+    <tbody>
+    {% for log in logs %}
+    <tr>
+      <td class="text-muted small">{{ log.timestamp|date:"d.m.Y H:i" }}</td>
+      <td>{{ log.user.username|default:"—" }}</td>
+      <td>{{ log.get_action_display }}</td>
+      <td>{{ log.object_repr }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4" class="text-center text-muted py-4">Записей пока нет</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

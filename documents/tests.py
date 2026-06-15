@@ -1,3 +1,160 @@
-from django.test import TestCase
+from decimal import Decimal
 
-# Create your tests here.
+from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import Client, RequestFactory, TestCase
+from django.urls import reverse
+
+from documents.models import AuditLog, Category, Document, UserProfile
+from documents.utils import generate_unique_slug, parse_tags
+from documents.views import document_create, document_detail, document_list
+
+
+class SlugUtilsTests(TestCase):
+    def test_cyrillic_slug(self):
+        slug = generate_unique_slug('Договор поставки')
+        self.assertTrue(slug)
+
+    def test_unique_slug_collision(self):
+        Document.objects.create(title='Test Doc', slug='test-doc')
+        slug = generate_unique_slug('Test Doc')
+        self.assertEqual(slug, 'test-doc-2')
+
+
+class TagUtilsTests(TestCase):
+    def test_parse_tags(self):
+        self.assertEqual(parse_tags('a, b; c'), ['a', 'b', 'c'])
+
+
+class DocumentViewTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.factory = RequestFactory()
+        self.user = User.objects.create_user(username='editor', password='pass12345')
+        UserProfile.objects.filter(user=self.user).update(role=UserProfile.ROLE_EDITOR)
+        self.admin = User.objects.create_user(username='admin', password='pass12345')
+        UserProfile.objects.filter(user=self.admin).update(role=UserProfile.ROLE_ADMIN)
+        self.category = Category.objects.create(name='Договоры')
+        self.document = Document.objects.create(
+            title='Тестовый договор',
+            category=self.category,
+            amount=Decimal('100000'),
+            status='active',
+        )
+
+    def test_login_required(self):
+        response = self.client.get(reverse('document_list'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_document_list(self):
+        request = self.factory.get('/documents/')
+        request.user = self.user
+        response = document_list(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('Тестовый договор', response.content.decode())
+
+    def test_document_detail_by_slug(self):
+        request = self.factory.get(f'/documents/{self.document.slug}/')
+        request.user = self.user
+        response = document_detail(request, slug=self.document.slug)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('Тестовый договор', response.content.decode())
+
+    def test_viewer_cannot_create(self):
+        viewer = User.objects.create_user(username='viewer', password='pass12345')
+        UserProfile.objects.filter(user=viewer).update(role=UserProfile.ROLE_VIEWER)
+        self.client.login(username='viewer', password='pass12345')
+        response = self.client.get(reverse('document_create'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_editor_can_create(self):
+        request = self.factory.get('/documents/create/')
+        request.user = self.user
+        response = document_create(request)
+        self.assertEqual(response.status_code, 200)
+
+    def test_search_by_title(self):
+        request = self.factory.get('/documents/', {'q': 'Тестовый'})
+        request.user = self.user
+        response = document_list(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('Тестовый договор', response.content.decode())
+
+    def test_admin_can_delete(self):
+        self.client.login(username='admin', password='pass12345')
+        slug = self.document.slug
+        response = self.client.post(reverse('document_delete', kwargs={'slug': slug}))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Document.objects.filter(slug=slug).exists())
+        self.assertTrue(AuditLog.objects.filter(action='delete', object_repr__contains='Тестовый').exists())
+
+
+class DocumentFormTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='editor', password='pass12345')
+
+    def test_pdf_validation_rejects_non_pdf(self):
+        from documents.forms import DocumentForm
+
+        bad_file = SimpleUploadedFile('test.txt', b'not a pdf', content_type='text/plain')
+        form = DocumentForm(
+            data={'title': 'Doc', 'amount': '0', 'status': 'active'},
+            files={'pdf_file': bad_file},
+            user=self.user,
+        )
+        self.assertFalse(form.is_valid())
+
+    def test_end_date_before_start_date(self):
+        from documents.forms import DocumentForm
+
+        form = DocumentForm(
+            data={
+                'title': 'Doc',
+                'amount': '0',
+                'status': 'active',
+                'start_date': '2026-06-15',
+                'end_date': '2026-01-01',
+            },
+            user=self.user,
+        )
+        self.assertFalse(form.is_valid())
+
+
+class CategoryViewTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.admin = User.objects.create_user(username='admin', password='pass12345')
+        UserProfile.objects.filter(user=self.admin).update(role=UserProfile.ROLE_ADMIN)
+        self.category = Category.objects.create(name='Old')
+
+    def test_category_edit(self):
+        self.client.login(username='admin', password='pass12345')
+        response = self.client.post(
+            reverse('category_edit', kwargs={'pk': self.category.pk}),
+            {'name': 'New Name', 'description': 'Updated'},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.category.refresh_from_db()
+        self.assertEqual(self.category.name, 'New Name')
+
+    def test_category_delete(self):
+        self.client.login(username='admin', password='pass12345')
+        response = self.client.post(reverse('category_delete', kwargs={'pk': self.category.pk}))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Category.objects.filter(pk=self.category.pk).exists())
+
+
+class ApiTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username='apiuser', password='pass12345')
+        Document.objects.create(title='API Doc')
+
+    def test_api_requires_auth(self):
+        response = self.client.get('/api/documents/')
+        self.assertEqual(response.status_code, 403)
+
+    def test_api_list_authenticated(self):
+        self.client.login(username='apiuser', password='pass12345')
+        response = self.client.get('/api/documents/')
+        self.assertEqual(response.status_code, 200)

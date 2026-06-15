@@ -1,15 +1,25 @@
 {% extends 'base.html' %}
 {% block title %}{{ document.title }} — PDF Data Base{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <a href="/documents/" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Назад</a>
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <a href="{% url 'document_list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Назад</a>
   <div>
-    <a href="/documents/{{ document.pk }}/edit/" class="btn btn-primary btn-sm me-2"><i class="bi bi-pencil me-1"></i>Редактировать</a>
-    <a href="/documents/{{ document.pk }}/delete/" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash me-1"></i>Удалить</a>
+    {% if user_role != 'viewer' %}
+    <a href="{% url 'document_edit' document.slug %}" class="btn btn-primary btn-sm me-2"><i class="bi bi-pencil me-1"></i>Редактировать</a>
+    {% endif %}
+    {% if user_role == 'admin' %}
+    <a href="{% url 'document_delete' document.slug %}" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash me-1"></i>Удалить</a>
+    {% endif %}
   </div>
 </div>
 
-<div class="card p-4">
+{% if document.is_expired %}
+<div class="alert alert-danger mb-3"><i class="bi bi-exclamation-circle me-2"></i>Договор просрочен (окончание: {{ document.end_date|date:"d.m.Y" }})</div>
+{% elif document.is_expiring_soon %}
+<div class="alert alert-warning mb-3"><i class="bi bi-exclamation-triangle me-2"></i>Договор истекает {{ document.end_date|date:"d.m.Y" }}</div>
+{% endif %}
+
+<div class="card p-4 mb-3">
   <div class="d-flex align-items-start mb-4">
     <i class="bi bi-file-pdf-fill text-danger me-3" style="font-size:3.5rem"></i>
     <div>
@@ -20,13 +30,17 @@
 
   {% if document.pdf_file %}
   <div class="mb-4 p-3 rounded" style="background: var(--apple-bg);">
-    <div class="fw-medium mb-2"><i class="bi bi-file-pdf text-danger me-1"></i>PDF файл загружен</div>
+    <div class="fw-medium mb-2"><i class="bi bi-file-pdf text-danger me-1"></i>PDF файл</div>
     <a href="{{ document.pdf_file.url }}" target="_blank" class="btn btn-primary btn-sm me-2"><i class="bi bi-eye me-1"></i>Открыть PDF</a>
     <a href="{{ document.pdf_file.url }}" download class="btn btn-outline-secondary btn-sm"><i class="bi bi-download me-1"></i>Скачать</a>
   </div>
+  <div class="mb-4 rounded overflow-hidden border" style="border-color: var(--apple-border) !important;">
+    <iframe src="{{ document.pdf_file.url }}" title="PDF preview" style="width:100%; height:600px; border:none;"></iframe>
+  </div>
   {% else %}
   <div class="mb-4 p-3 rounded text-muted" style="background: var(--apple-bg);">
-    <i class="bi bi-file-earmark me-1"></i>PDF файл не загружен — <a href="/documents/{{ document.pk }}/edit/" style="color: var(--apple-blue);">загрузить</a>
+    <i class="bi bi-file-earmark me-1"></i>PDF файл не загружен
+    {% if user_role != 'viewer' %}— <a href="{% url 'document_edit' document.slug %}" style="color: var(--apple-blue);">загрузить</a>{% endif %}
   </div>
   {% endif %}
 
@@ -35,10 +49,33 @@
     <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Инициатор</div><div class="fw-medium">{{ document.initiator|default:"—" }}</div></div>
     <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Автор</div><div class="fw-medium">{{ document.author|default:"—" }}</div></div>
     <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Категория</div><div class="fw-medium">{{ document.category|default:"—" }}</div></div>
+    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Начало</div><div class="fw-medium">{{ document.start_date|date:"d.m.Y"|default:"—" }}</div></div>
+    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Окончание</div><div class="fw-medium">{{ document.end_date|date:"d.m.Y"|default:"—" }}</div></div>
     <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Добавлен</div><div class="fw-medium">{{ document.created_at|date:"d.m.Y H:i" }}</div></div>
     <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Обновлён</div><div class="fw-medium">{{ document.updated_at|date:"d.m.Y H:i" }}</div></div>
   </div>
   {% if document.description %}<div class="mb-3"><div class="text-muted small mb-1" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Описание</div><p style="color: var(--apple-muted);">{{ document.description }}</p></div>{% endif %}
-  {% if document.tags %}<div><div class="text-muted small mb-1" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Теги</div>{% for tag in document.tags.split %}<span class="badge" style="background: var(--apple-bg); color: var(--apple-text); border-radius: 100px; font-weight: 400; padding:4px 10px;">{{ tag }}</span>{% endfor %}</div>{% endif %}
+  {% if document.tags.all %}<div class="mb-3"><div class="text-muted small mb-1" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Теги</div>{% for tag in document.tags.all %}<span class="badge" style="background: var(--apple-bg); color: var(--apple-text); border-radius: 100px; font-weight: 400; padding:4px 10px;">{{ tag.name }}</span>{% endfor %}</div>{% endif %}
 </div>
+
+{% if document.versions.all %}
+<div class="card p-4 mb-3">
+  <h6 class="fw-bold mb-3">История версий PDF</h6>
+  {% for version in document.versions.all %}
+  <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}" style="border-color: var(--apple-border) !important;">
+    <span>Версия {{ version.version_number }} — {{ version.uploaded_at|date:"d.m.Y H:i" }}</span>
+    <a href="{{ version.pdf_file.url }}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download"></i></a>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if audit_logs %}
+<div class="card p-4">
+  <h6 class="fw-bold mb-3">История изменений</h6>
+  {% for log in audit_logs %}
+  <div class="text-muted small py-1">{{ log.timestamp|date:"d.m.Y H:i" }} — {{ log.get_action_display }} ({{ log.user.username|default:"система" }})</div>
+  {% endfor %}
+</div>
+{% endif %}
 {% endblock %}

@@ -5,25 +5,56 @@
 <p class="text-muted mb-4" style="font-size:15px;">Обзор системы управления документами</p>
 
 <div class="row g-3 mb-4">
-  <div class="col-md-4">
+  <div class="col-md-3">
     <div class="card stat-card">
       <div class="stat-label">Всего документов</div>
       <div class="stat-value">{{ total_docs }}</div>
     </div>
   </div>
-  <div class="col-md-4">
+  <div class="col-md-3">
     <div class="card stat-card">
       <div class="stat-label">Активных</div>
       <div class="stat-value" style="color: #34c759;">{{ active_docs }}</div>
     </div>
   </div>
-  <div class="col-md-4">
+  <div class="col-md-3">
+    <div class="card stat-card">
+      <div class="stat-label">Черновиков</div>
+      <div class="stat-value" style="color: #9a6b00;">{{ draft_docs }}</div>
+    </div>
+  </div>
+  <div class="col-md-3">
     <div class="card stat-card">
       <div class="stat-label">В архиве</div>
       <div class="stat-value" style="color: var(--apple-muted);">{{ archived_docs }}</div>
     </div>
   </div>
 </div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="card stat-card">
+      <div class="stat-label">Общая сумма договоров</div>
+      <div class="stat-value">{{ total_amount|floatformat:0 }} ₸</div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card stat-card">
+      <div class="stat-label">Просроченных договоров</div>
+      <div class="stat-value" style="color: #ff3b30;">{{ expired_count }}</div>
+    </div>
+  </div>
+</div>
+
+{% if expiring_soon %}
+<div class="alert alert-warning mb-4">
+  <i class="bi bi-exclamation-triangle me-2"></i>
+  <strong>Истекают в ближайшие 30 дней:</strong>
+  {% for doc in expiring_soon %}
+    <a href="{% url 'document_detail' doc.slug %}" class="ms-2">{{ doc.title }}</a>{% if not forloop.last %},{% endif %}
+  {% endfor %}
+</div>
+{% endif %}
 
 <div class="row g-3">
   <div class="col-md-7">
@@ -35,7 +66,7 @@
         <tbody>
         {% for doc in recent_docs %}
         <tr>
-          <td><a href="/documents/{{ doc.pk }}/" class="text-decoration-none fw-medium" style="color: var(--apple-text);"><i class="bi bi-file-pdf text-danger me-1"></i>{{ doc.title }}</a></td>
+          <td><a href="{% url 'document_detail' doc.slug %}" class="text-decoration-none fw-medium" style="color: var(--apple-text);"><i class="bi bi-file-pdf text-danger me-1"></i>{{ doc.title }}</a></td>
           <td><span class="text-muted small">{{ doc.category|default:"—" }}</span></td>
           <td><span class="badge badge-status-{{ doc.status }}">{{ doc.get_status_display }}</span></td>
           <td class="text-muted small">{{ doc.created_at|date:"d.m.Y" }}</td>
@@ -44,24 +75,35 @@
         </tbody>
       </table>
       {% else %}
-      <p class="text-muted text-center py-4">Нет документов. <a href="/documents/create/" style="color: var(--apple-blue);">Добавить первый</a></p>
+      <p class="text-muted text-center py-4">Нет документов. <a href="{% url 'document_create' %}" style="color: var(--apple-blue);">Добавить первый</a></p>
       {% endif %}
     </div>
   </div>
   <div class="col-md-5">
-    <div class="card p-4">
+    <div class="card p-4 mb-3">
       <h6 class="fw-bold mb-3" style="font-size:17px;">Категории</h6>
       {% if categories %}
         {% for cat in categories %}
         <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}" style="border-color: var(--apple-border) !important;">
-          <span class="fw-medium">{{ cat.name }}</span>
+          <a href="{% url 'document_list' %}?category={{ cat.pk }}" class="text-decoration-none fw-medium" style="color: var(--apple-text);">{{ cat.name }}</a>
           <span class="badge" style="background: var(--apple-bg); color: var(--apple-muted); border-radius: 100px; font-weight: 500; padding: 4px 10px; font-size: 12px;">{{ cat.doc_count }}</span>
         </div>
         {% endfor %}
       {% else %}
-      <p class="text-muted text-center py-4">Нет категорий. <a href="/categories/create/" style="color: var(--apple-blue);">Создать</a></p>
+      <p class="text-muted text-center py-4">Нет категорий. <a href="{% url 'category_create' %}" style="color: var(--apple-blue);">Создать</a></p>
       {% endif %}
     </div>
+    {% if amount_by_category %}
+    <div class="card p-4">
+      <h6 class="fw-bold mb-3" style="font-size:17px;">Сумма по категориям</h6>
+      {% for cat in amount_by_category %}
+      <div class="d-flex justify-content-between py-2 {% if not forloop.last %}border-bottom{% endif %}" style="border-color: var(--apple-border) !important;">
+        <span>{{ cat.name }}</span>
+        <span class="fw-medium">{{ cat.total_amount|floatformat:0 }} ₸</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
