@@ -9,10 +9,14 @@ from config.cloudinary_config import dev_cloudinary_credentials, load_cloudinary
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+ON_RAILWAY = bool(os.environ.get('RAILWAY_ENVIRONMENT'))
+
 SECRET_KEY = os.environ.get('SECRET_KEY')
 if not SECRET_KEY:
     if DEBUG:
         SECRET_KEY = 'django-insecure-dev-only-change-in-production'
+    elif ON_RAILWAY:
+        SECRET_KEY = 'django-insecure-set-secret-key-in-railway-variables'
     else:
         raise ImproperlyConfigured('SECRET_KEY environment variable is required in production.')
 
