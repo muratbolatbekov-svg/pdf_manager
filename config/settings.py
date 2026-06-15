@@ -119,9 +119,13 @@ CLOUDINARY_STORAGE = {
     'API_KEY': CLOUDINARY_CREDENTIALS['API_KEY'],
     'API_SECRET': CLOUDINARY_CREDENTIALS['API_SECRET'],
     'SECURE': True,
+    'PREFIX': '',
 }
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.RawMediaCloudinaryStorage'
+CLOUDINARY_UPLOAD_RESOURCE_TYPE = os.environ.get('CLOUDINARY_UPLOAD_RESOURCE_TYPE', 'auto').strip()
+CLOUDINARY_UPLOAD_PRESET = os.environ.get('CLOUDINARY_UPLOAD_PRESET', '').strip().strip('"').strip("'")
+
+DEFAULT_FILE_STORAGE = 'documents.storage.PdfCloudinaryStorage'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 MEDIA_URL = '/media/'
 

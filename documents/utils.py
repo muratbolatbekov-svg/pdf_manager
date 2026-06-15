@@ -57,6 +57,13 @@ def delete_cloudinary_file(field_file):
         import cloudinary.uploader
 
         public_id = getattr(field_file, 'public_id', None) or field_file.name.rsplit('.', 1)[0]
-        cloudinary.uploader.destroy(public_id, resource_type='raw', invalidate=True)
+        for resource_type in ('raw', 'image', 'video'):
+            response = cloudinary.uploader.destroy(
+                public_id,
+                resource_type=resource_type,
+                invalidate=True,
+            )
+            if response.get('result') == 'ok':
+                return
     except Exception:
         pass
