@@ -111,7 +111,7 @@ STORAGES = {
         'BACKEND': 'cloudinary_storage.storage.RawMediaCloudinaryStorage',
     },
     'staticfiles': {
-        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+        'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
     },
 }
 
