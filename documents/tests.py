@@ -104,6 +104,29 @@ class DocumentFormTests(TestCase):
         )
         self.assertFalse(form.is_valid())
 
+    def test_file_size_handles_none_size(self):
+        from documents.forms import DocumentForm
+        from io import BytesIO
+
+        class UploadedPdfStub:
+            name = 'contract.pdf'
+            content_type = 'application/pdf'
+            size = None
+
+            def __init__(self):
+                self._buffer = BytesIO(b'%PDF-1.4 test content')
+
+            def seek(self, pos, whence=0):
+                return self._buffer.seek(pos, whence)
+
+            def tell(self):
+                return self._buffer.tell()
+
+        form = DocumentForm(user=self.user)
+        stub = UploadedPdfStub()
+        self.assertEqual(form._file_size(stub), len(b'%PDF-1.4 test content'))
+        self.assertIsNone(form._file_size(type('X', (), {'size': None})()))
+
     def test_end_date_before_start_date(self):
         from documents.forms import DocumentForm
 

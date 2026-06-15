@@ -47,16 +47,39 @@ class DocumentForm(forms.ModelForm):
             display_name = self.user.get_full_name() or self.user.username
             self.fields['author'].initial = display_name
 
+    def _file_size(self, uploaded_file):
+        size = getattr(uploaded_file, 'size', None)
+        if size is not None:
+            return size
+        if hasattr(uploaded_file, 'seek') and hasattr(uploaded_file, 'tell'):
+            try:
+                uploaded_file.seek(0, 2)
+                size = uploaded_file.tell()
+                uploaded_file.seek(0)
+                return size
+            except (OSError, TypeError, ValueError):
+                return None
+        return None
+
     def clean_pdf_file(self):
         pdf = self.cleaned_data.get('pdf_file')
         if not pdf:
             return pdf
 
+        if getattr(self.instance, 'pdf_file', None) and pdf == self.instance.pdf_file:
+            return pdf
+
         max_size = getattr(settings, 'PDF_MAX_SIZE', 10 * 1024 * 1024)
-        if pdf.size > max_size:
+        file_size = self._file_size(pdf)
+        if file_size is not None and file_size > max_size:
             raise ValidationError(f'Размер файла не должен превышать {max_size // (1024 * 1024)} МБ')
 
-        if pdf.content_type != 'application/pdf':
+        content_type = getattr(pdf, 'content_type', None)
+        if content_type and content_type not in ('application/pdf', 'application/x-pdf'):
+            raise ValidationError('Файл должен быть в формате PDF')
+
+        name = getattr(pdf, 'name', '') or ''
+        if not name.lower().endswith('.pdf'):
             raise ValidationError('Файл должен быть в формате PDF')
 
         return pdf
