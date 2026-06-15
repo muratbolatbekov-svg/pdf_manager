@@ -79,7 +79,7 @@ else:
 
 CLOUDINARY_CREDENTIALS = load_cloudinary_credentials()
 if not CLOUDINARY_CREDENTIALS:
-    if DEBUG:
+    if DEBUG or ON_RAILWAY:
         CLOUDINARY_CREDENTIALS = dev_cloudinary_credentials()
     else:
         raise ImproperlyConfigured(
@@ -110,15 +110,8 @@ CLOUDINARY_STORAGE = {
     'SECURE': True,
 }
 
-STORAGES = {
-    'default': {
-        'BACKEND': 'cloudinary_storage.storage.RawMediaCloudinaryStorage',
-    },
-    'staticfiles': {
-        'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
-    },
-}
-
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.RawMediaCloudinaryStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
