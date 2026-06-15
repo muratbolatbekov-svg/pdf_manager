@@ -10,8 +10,8 @@ class Command(BaseCommand):
     help = 'Создаёт или обновляет администратора из переменных ADMIN_USERNAME и ADMIN_PASSWORD'
 
     def handle(self, *args, **options):
-        username = os.environ.get('ADMIN_USERNAME', 'admin')
-        password = os.environ.get('ADMIN_PASSWORD')
+        username = os.environ.get('ADMIN_USERNAME', 'admin').strip().strip('"').strip("'")
+        password = os.environ.get('ADMIN_PASSWORD', '').strip().strip('"').strip("'")
 
         if not password:
             self.stdout.write('ADMIN_PASSWORD не задан — пропуск.')
