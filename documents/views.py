@@ -58,8 +58,8 @@ def document_list(request):
     return render(request, 'documents/document_list.html', context)
 
 @login_required
-def document_detail(request, pk):
-    document = get_object_or_404(Document, pk=pk)
+def document_detail(request, slug):
+    document = get_object_or_404(Document.objects.select_related('category'), slug=slug)
     return render(request, 'documents/document_detail.html', {'document': document})
 
 @login_required
@@ -75,21 +75,21 @@ def document_create(request):
     return render(request, 'documents/document_form.html', {'form': form, 'title': 'Добавить документ'})
 
 @login_required
-def document_edit(request, pk):
-    document = get_object_or_404(Document, pk=pk)
+def document_edit(request, slug):
+    document = get_object_or_404(Document, slug=slug)
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES, instance=document)
         if form.is_valid():
             form.save()
             messages.success(request, 'Документ обновлён!')
-            return redirect('document_detail', pk=pk)
+            return redirect('document_detail', slug=document.slug)
     else:
         form = DocumentForm(instance=document)
     return render(request, 'documents/document_form.html', {'form': form, 'title': 'Редактировать'})
 
 @login_required
-def document_delete(request, pk):
-    document = get_object_or_404(Document, pk=pk)
+def document_delete(request, slug):
+    document = get_object_or_404(Document, slug=slug)
     if request.method == 'POST':
         document.delete()
         messages.success(request, 'Документ удалён!')
