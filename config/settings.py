@@ -4,6 +4,8 @@ import os
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 
+from config.cloudinary_config import dev_cloudinary_credentials, load_cloudinary_credentials
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
@@ -71,24 +73,49 @@ if DATABASE_URL:
 else:
     DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': BASE_DIR / 'db.sqlite3'}}
 
-CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
-CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY')
-CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET')
-
-if not all([CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET]):
+CLOUDINARY_CREDENTIALS = load_cloudinary_credentials()
+if not CLOUDINARY_CREDENTIALS:
     if DEBUG:
-        CLOUDINARY_CLOUD_NAME = CLOUDINARY_CLOUD_NAME or 'dpevynhal'
-        CLOUDINARY_API_KEY = CLOUDINARY_API_KEY or '779224643712774'
-        CLOUDINARY_API_SECRET = CLOUDINARY_API_SECRET or '3hRHtDQ7FDjY91_99PVd7fPhNMQ'
+        CLOUDINARY_CREDENTIALS = dev_cloudinary_credentials()
     else:
-        raise ImproperlyConfigured('Cloudinary credentials are required in production.')
+        raise ImproperlyConfigured(
+            'Cloudinary credentials are required. Set CLOUDINARY_URL or '
+            'CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET.'
+        )
+
+import cloudinary
+
+cloudinary.config(
+    cloud_name=CLOUDINARY_CREDENTIALS['CLOUD_NAME'],
+    api_key=CLOUDINARY_CREDENTIALS['API_KEY'],
+    api_secret=CLOUDINARY_CREDENTIALS['API_SECRET'],
+    secure=True,
+)
+
+CLOUDINARY = {
+    'cloud_name': CLOUDINARY_CREDENTIALS['CLOUD_NAME'],
+    'api_key': CLOUDINARY_CREDENTIALS['API_KEY'],
+    'api_secret': CLOUDINARY_CREDENTIALS['API_SECRET'],
+    'secure': True,
+}
 
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
-    'API_KEY': CLOUDINARY_API_KEY,
-    'API_SECRET': CLOUDINARY_API_SECRET,
+    'CLOUD_NAME': CLOUDINARY_CREDENTIALS['CLOUD_NAME'],
+    'API_KEY': CLOUDINARY_CREDENTIALS['API_KEY'],
+    'API_SECRET': CLOUDINARY_CREDENTIALS['API_SECRET'],
+    'SECURE': True,
 }
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+STORAGES = {
+    'default': {
+        'BACKEND': 'cloudinary_storage.storage.RawMediaCloudinaryStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.RawMediaCloudinaryStorage'
 MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -104,7 +131,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 PDF_MAX_SIZE = 10 * 1024 * 1024
 CONTRACT_EXPIRY_WARNING_DAYS = int(os.environ.get('CONTRACT_EXPIRY_WARNING_DAYS', '30'))
