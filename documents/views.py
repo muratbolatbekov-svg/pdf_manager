@@ -207,7 +207,7 @@ def _contract_word(count):
 
 
 def _get_notification_settings(user):
-    settings_obj, _ = UserNotificationSettings.objects.get_or_create(
+    settings_obj, created = UserNotificationSettings.objects.get_or_create(
         user=user,
         defaults={'notify_email': user.email or ''},
     )
@@ -577,7 +577,7 @@ def user_update_role(request, user_id):
         return redirect('user_list')
     form = UserRoleForm(request.POST)
     if form.is_valid():
-        profile, _ = UserProfile.objects.get_or_create(user=target)
+        profile, created = UserProfile.objects.get_or_create(user=target)
         profile.role = form.cleaned_data['role']
         profile.save()
         messages.success(request, _('Роль пользователя %(name)s обновлена.') % {'name': get_user_display_name(target)})
@@ -613,7 +613,7 @@ def user_rename(request, user_id):
     if not form.is_valid():
         messages.error(request, _('Укажите ФИО.'))
         return redirect('user_list')
-    profile, _ = UserProfile.objects.get_or_create(user=target)
+    profile, created = UserProfile.objects.get_or_create(user=target)
     profile.full_name = form.cleaned_data['full_name']
     profile.save(update_fields=['full_name'])
     messages.success(request, _('ФИО пользователя обновлено: %(name)s.') % {'name': profile.full_name})
