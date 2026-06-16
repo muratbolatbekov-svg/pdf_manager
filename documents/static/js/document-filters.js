@@ -87,4 +87,13 @@
   });
 
   updateSearchClear();
+
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('focus') === 'search' && searchInput) {
+    searchInput.focus({ preventScroll: true });
+    searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    urlParams.delete('focus');
+    const query = urlParams.toString();
+    history.replaceState({}, '', query ? '?' + query : window.location.pathname);
+  }
 })();

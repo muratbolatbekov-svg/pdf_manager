@@ -46,11 +46,25 @@
     padding: 28px 24px;
     height: 100%;
     text-align: center;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   }
-  .feature-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  a.feature-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    cursor: pointer;
+  }
+  a.feature-card-link:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 113, 227, 0.25);
+    color: inherit;
+  }
+  a.feature-card-link:hover .feature-icon {
+    transform: scale(1.08);
+  }
+  a.feature-card-link:active {
+    transform: translateY(-1px);
   }
   .feature-icon {
     width: 56px;
@@ -61,6 +75,7 @@
     align-items: center;
     justify-content: center;
     font-size: 26px;
+    transition: transform 0.2s ease;
   }
   .feature-icon-storage {
     background: rgba(0, 113, 227, 0.1);
@@ -152,31 +167,31 @@
   <h2 class="home-section-title">Возможности</h2>
   <div class="row g-3">
     <div class="col-md-4">
-      <div class="card feature-card">
+      <a href="{% url 'document_list' %}" class="card feature-card feature-card-link">
         <div class="feature-icon feature-icon-storage" aria-hidden="true">
           <i class="bi bi-folder2"></i>
         </div>
         <div class="feature-title">Хранение</div>
         <p class="feature-desc">Все договоры<br>в одном месте</p>
-      </div>
+      </a>
     </div>
     <div class="col-md-4">
-      <div class="card feature-card">
+      <a href="{% url 'document_list' %}?focus=search" class="card feature-card feature-card-link">
         <div class="feature-icon feature-icon-search" aria-hidden="true">
           <i class="bi bi-search"></i>
         </div>
         <div class="feature-title">Поиск</div>
         <p class="feature-desc">Быстрый поиск<br>по любым полям</p>
-      </div>
+      </a>
     </div>
     <div class="col-md-4">
-      <div class="card feature-card">
+      <a href="{% url 'dashboard' %}" class="card feature-card feature-card-link">
         <div class="feature-icon feature-icon-analytics" aria-hidden="true">
           <i class="bi bi-bar-chart-line"></i>
         </div>
         <div class="feature-title">Аналитика</div>
         <p class="feature-desc">Суммы, сроки<br>и статистика</p>
-      </div>
+      </a>
     </div>
   </div>
 </section>
