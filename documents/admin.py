@@ -1,6 +1,12 @@
 from django.contrib import admin
 
-from .models import AuditLog, Category, Document, DocumentComment, DocumentVersion, Tag, UserNotificationSettings, UserProfile
+from .models import AuditLog, Category, Document, DocumentComment, DocumentLink, DocumentVersion, Tag, UserNotificationSettings, UserProfile
+
+
+@admin.register(DocumentLink)
+class DocumentLinkAdmin(admin.ModelAdmin):
+    list_display = ['document', 'linked', 'link_type', 'created_at']
+    list_filter = ['link_type']
 
 
 @admin.register(DocumentComment)

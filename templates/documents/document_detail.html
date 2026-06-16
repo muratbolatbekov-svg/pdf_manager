@@ -49,6 +49,20 @@
   }
   .version-row:last-child { border-bottom: none; }
   .version-current { font-weight: 600; }
+  .document-link-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--apple-border);
+  }
+  .document-link-row:last-child { border-bottom: none; }
+  .link-badge-supplement { background: rgba(0,113,227,0.12); color: #0071e3; border-radius: 100px; font-weight: 500; }
+  .link-badge-act { background: rgba(52,199,89,0.12); color: #248a3d; border-radius: 100px; font-weight: 500; }
+  .link-badge-invoice { background: rgba(255,149,0,0.15); color: #c93400; border-radius: 100px; font-weight: 500; }
+  .link-badge-other { background: var(--apple-bg); color: var(--apple-muted); border-radius: 100px; font-weight: 500; }
+  .link-search-item { cursor: pointer; font-size: 14px; }
 </style>
 {% endblock %}
 {% block content %}
@@ -110,6 +124,83 @@
   </div>
   {% if document.description %}<div class="mb-0"><div class="text-muted small mb-1" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Описание</div><p style="color: var(--apple-muted); margin-bottom:0;">{{ document.description }}</p></div>{% endif %}
 </div>
+
+<div class="card p-4 mb-3"
+     id="documentLinksSection"
+     data-search-url="{% url 'document_link_search' document.slug %}"
+     data-create-url="{% url 'document_link_create' document.slug %}"
+     data-delete-url-template="{% url 'document_link_delete' document.slug 0 %}"
+     data-doc-detail-prefix="{% url 'document_list' %}"
+     data-can-manage="{% if can_manage_links %}true{% else %}false{% endif %}">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="fw-bold mb-0"><i class="bi bi-link-45deg me-1"></i>Связанные документы</h6>
+    {% if can_manage_links %}
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addLinkModal">
+      <i class="bi bi-plus me-1"></i>Добавить
+    </button>
+    {% endif %}
+  </div>
+  <div id="documentLinksList">
+    {% for link in document_links %}
+    <div class="document-link-row" data-link-id="{{ link.id }}">
+      <div class="d-flex align-items-center gap-2 flex-grow-1 min-w-0">
+        <i class="bi bi-file-pdf text-danger flex-shrink-0"></i>
+        <span class="text-truncate">{{ link.linked.title }}</span>
+        <span class="badge link-badge-{{ link.link_type }} flex-shrink-0">{{ link.short_label }}</span>
+      </div>
+      <div class="d-flex gap-1 flex-shrink-0">
+        <a href="{% url 'document_detail' link.linked.slug %}" class="btn btn-sm btn-outline-secondary" title="Открыть"><i class="bi bi-arrow-right"></i></a>
+        {% if can_manage_links %}
+        <button type="button" class="btn btn-sm btn-outline-danger link-delete-btn" data-link-id="{{ link.id }}" title="Удалить связь"><i class="bi bi-trash"></i></button>
+        {% endif %}
+      </div>
+    </div>
+    {% empty %}
+    <p class="text-muted text-center py-3 mb-0" id="documentLinksEmpty">Связанных документов пока нет</p>
+    {% endfor %}
+  </div>
+</div>
+
+{% if can_manage_links %}
+<div class="modal fade" id="addLinkModal" tabindex="-1" aria-labelledby="addLinkModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content" style="border-radius:16px;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold" id="addLinkModalLabel">Добавить связанный документ</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addLinkForm">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">Поиск</label>
+            <input type="search" id="linkSearchInput" class="form-control" placeholder="Название, контрагент..." autocomplete="off">
+          </div>
+          <div class="mb-3">
+            <label class="form-label d-block">Тип связи</label>
+            {% for value, label in link_type_choices %}
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="link_type" id="linkType{{ value }}" value="{{ value }}" {% if value == 'supplement' %}checked{% endif %}>
+              <label class="form-check-label" for="linkType{{ value }}">{{ label }}</label>
+            </div>
+            {% endfor %}
+          </div>
+          <div>
+            <label class="form-label">Результаты поиска</label>
+            <div id="linkSearchResults" class="border rounded p-2" style="max-height:200px; overflow-y:auto; border-color: var(--apple-border) !important;">
+              <p class="text-muted small mb-0">Введите запрос для поиска</p>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-primary" id="addLinkSubmit">Добавить связь</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
 
 <ul class="nav doc-tabs mb-0" role="tablist">
   <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabComments" type="button"><i class="bi bi-chat-dots me-1"></i>Комментарии (<span id="commentsCount">{{ comments|length }}</span>)</button></li>
@@ -182,4 +273,5 @@
 {% endblock %}
 {% block extra_js %}
 <script src="{% static 'js/document-comments.js' %}"></script>
+<script src="{% static 'js/document-links.js' %}"></script>
 {% endblock %}

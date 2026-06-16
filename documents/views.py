@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.core.paginator import Paginator
-from django.db.models import Count, Sum
+from django.db.models import Count, Q, Sum
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -20,8 +20,12 @@ from django.views.decorators.http import require_POST
 from openpyxl import Workbook
 
 from .analytics import PERIOD_CHOICES, build_dashboard_analytics
+from .document_links import create_bidirectional_link, delete_bidirectional_link, link_to_dict
 from .forms import CategoryForm, DocumentForm, NotificationSettingsForm, UserInviteForm, UserRoleForm
-from .models import AuditLog, Category, Document, DocumentComment, DocumentVersion, Tag, UserNotificationSettings, UserProfile
+from .models import (
+    AuditLog, Category, Document, DocumentComment, DocumentLink, DocumentVersion,
+    Tag, UserNotificationSettings, UserProfile,
+)
 from .notifications import expiring_documents_queryset, send_user_invite
 from .permissions import get_user_role, role_required
 from .utils import comment_to_dict, format_file_size
@@ -317,7 +321,7 @@ def document_pdf_preview(request, slug):
 def document_detail(request, slug):
     document = get_object_or_404(
         Document.objects.select_related('category').prefetch_related(
-            'tags', 'versions__uploaded_by', 'comments__user',
+            'tags', 'versions__uploaded_by', 'comments__user', 'outgoing_links__linked',
         ),
         slug=slug,
     )
@@ -347,6 +351,9 @@ def document_detail(request, slug):
         'comments': comments,
         'comments_json': comments,
         'current_version': current_version,
+        'document_links': document.outgoing_links.all(),
+        'link_type_choices': DocumentLink.TYPE_CHOICES,
+        'can_manage_links': user_role in (UserProfile.ROLE_MANAGER, UserProfile.ROLE_ADMIN),
         'user_role': user_role,
     })
 
@@ -683,6 +690,77 @@ def document_comment_delete(request, slug, comment_id):
         return JsonResponse({'error': 'Недостаточно прав.'}, status=403)
     comment.delete()
     return JsonResponse({'count': document.comments.count()})
+
+
+@login_required
+def document_link_search(request, slug):
+    document = get_object_or_404(Document, slug=slug)
+    query = request.GET.get('q', '').strip()
+    already_linked = DocumentLink.objects.filter(document=document).values_list('linked_id', flat=True)
+    results = Document.objects.exclude(pk=document.pk).exclude(pk__in=already_linked)
+    if query:
+        results = results.filter(
+            Q(title__icontains=query) | Q(signatory__icontains=query) | Q(author__icontains=query)
+        )
+    results = results.order_by('-created_at')[:20]
+    return JsonResponse({
+        'results': [
+            {'id': doc.pk, 'title': doc.title, 'slug': doc.slug}
+            for doc in results
+        ],
+    })
+
+
+@login_required
+@role_required(UserProfile.ROLE_MANAGER, UserProfile.ROLE_ADMIN)
+@require_POST
+def document_link_create(request, slug):
+    document = get_object_or_404(Document, slug=slug)
+    link_type = request.POST.get('link_type', DocumentLink.TYPE_OTHER)
+    valid_types = {choice[0] for choice in DocumentLink.TYPE_CHOICES}
+    if link_type not in valid_types:
+        return JsonResponse({'error': 'Некорректный тип связи.'}, status=400)
+
+    linked_ids = request.POST.getlist('linked_ids')
+    if not linked_ids:
+        single = request.POST.get('linked_id')
+        if single:
+            linked_ids = [single]
+
+    created_links = []
+    errors = []
+    for raw_id in linked_ids:
+        try:
+            linked_id = int(raw_id)
+        except (TypeError, ValueError):
+            continue
+        linked = Document.objects.filter(pk=linked_id).first()
+        if not linked:
+            continue
+        if DocumentLink.objects.filter(document=document, linked=linked).exists():
+            errors.append(f'«{linked.title}» уже связан.')
+            continue
+        link, was_created = create_bidirectional_link(document, linked, link_type)
+        if link and was_created:
+            created_links.append(link_to_dict(link))
+
+    if not created_links and errors:
+        return JsonResponse({'error': errors[0]}, status=400)
+    if not created_links:
+        return JsonResponse({'error': 'Выберите документ для связи.'}, status=400)
+
+    return JsonResponse({'links': created_links})
+
+
+@login_required
+@role_required(UserProfile.ROLE_MANAGER, UserProfile.ROLE_ADMIN)
+@require_POST
+def document_link_delete(request, slug, link_id):
+    document = get_object_or_404(Document, slug=slug)
+    link = get_object_or_404(DocumentLink, pk=link_id, document=document)
+    linked = link.linked
+    delete_bidirectional_link(document, linked)
+    return JsonResponse({'ok': True})
 
 
 def permission_denied(request, exception=None):

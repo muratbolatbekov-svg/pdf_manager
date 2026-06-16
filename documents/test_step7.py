@@ -12,7 +12,6 @@ from documents.views import document_comment_create, document_comment_delete, do
 
 class TagFeatureTests(TestCase):
     def setUp(self):
-        self.client = Client()
         self.user = User.objects.create_user(username='manager', password='pass12345')
         UserProfile.objects.filter(user=self.user).update(role=UserProfile.ROLE_MANAGER)
         self.tag = Tag.objects.create(name='urgent')

@@ -137,6 +137,49 @@ class DocumentComment(models.Model):
         return f'Комментарий к {self.document.title}'
 
 
+class DocumentLink(models.Model):
+    TYPE_SUPPLEMENT = 'supplement'
+    TYPE_ACT = 'act'
+    TYPE_INVOICE = 'invoice'
+    TYPE_OTHER = 'other'
+    TYPE_CHOICES = [
+        (TYPE_SUPPLEMENT, 'Дополнительное соглашение'),
+        (TYPE_ACT, 'Акт выполненных работ'),
+        (TYPE_INVOICE, 'Счёт'),
+        (TYPE_OTHER, 'Другое'),
+    ]
+    TYPE_SHORT_LABELS = {
+        TYPE_SUPPLEMENT: 'Доп. согл.',
+        TYPE_ACT: 'Акт',
+        TYPE_INVOICE: 'Счёт',
+        TYPE_OTHER: 'Другое',
+    }
+
+    document = models.ForeignKey(
+        Document, on_delete=models.CASCADE, related_name='outgoing_links', verbose_name='Документ'
+    )
+    linked = models.ForeignKey(
+        Document, on_delete=models.CASCADE, related_name='incoming_links', verbose_name='Связанный документ'
+    )
+    link_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_OTHER, verbose_name='Тип связи')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+
+    class Meta:
+        db_table = 'document_links'
+        verbose_name = 'Связь документов'
+        verbose_name_plural = 'Связи документов'
+        constraints = [
+            models.UniqueConstraint(fields=['document', 'linked'], name='unique_document_link'),
+        ]
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.document.title} → {self.linked.title}'
+
+    def short_label(self):
+        return self.TYPE_SHORT_LABELS.get(self.link_type, self.link_type)
+
+
 class AuditLog(models.Model):
     ACTION_CREATE = 'create'
     ACTION_UPDATE = 'update'
