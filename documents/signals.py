@@ -3,7 +3,7 @@ from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
 
 from .models import AuditLog, Category, Document, DocumentVersion, UserNotificationSettings, UserProfile
-from .utils import delete_cloudinary_file
+from .utils import delete_storage_file
 
 
 @receiver(post_save, sender=User)
@@ -18,12 +18,12 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 @receiver(pre_delete, sender=Document)
 def delete_document_pdf(sender, instance, **kwargs):
-    delete_cloudinary_file(instance.pdf_file)
+    delete_storage_file(instance.pdf_file)
 
 
 @receiver(pre_delete, sender=DocumentVersion)
 def delete_version_pdf(sender, instance, **kwargs):
-    delete_cloudinary_file(instance.pdf_file)
+    delete_storage_file(instance.pdf_file)
 
 
 def log_audit(user, action, instance, details=None):

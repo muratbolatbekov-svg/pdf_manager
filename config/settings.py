@@ -4,14 +4,21 @@ import os
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 
-from config.cloudinary_config import (
-    dev_cloudinary_credentials,
-    has_partial_cloudinary_env,
-    load_cloudinary_credentials,
-    missing_cloudinary_env_keys,
-)
-
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+_env_file = BASE_DIR / '.env'
+if _env_file.exists():
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(_env_file)
+    except ImportError:
+        pass
+
+from config.b2_config import (
+    has_partial_b2_env,
+    load_b2_credentials,
+    missing_b2_env_keys,
+)
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 ON_RAILWAY = bool(os.environ.get('RAILWAY_ENVIRONMENT'))
@@ -44,8 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'drf_spectacular',
-    'cloudinary_storage',
-    'cloudinary',
+    'storages',
     'documents.apps.DocumentsConfig',
 ]
 
@@ -86,52 +92,38 @@ if DATABASE_URL:
 else:
     DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': BASE_DIR / 'db.sqlite3'}}
 
-CLOUDINARY_CREDENTIALS = load_cloudinary_credentials()
-if not CLOUDINARY_CREDENTIALS:
-    if has_partial_cloudinary_env():
-        missing = ', '.join(missing_cloudinary_env_keys())
-        raise ImproperlyConfigured(
-            f'Cloudinary credentials incomplete. Missing or empty: {missing}. '
-            'Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET in Railway.'
-        )
-    if DEBUG and not ON_RAILWAY:
-        CLOUDINARY_CREDENTIALS = dev_cloudinary_credentials()
-    else:
-        raise ImproperlyConfigured(
-            'Cloudinary credentials are required. Set CLOUDINARY_CLOUD_NAME, '
-            'CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET in Railway Variables.'
-        )
-
-import cloudinary
-
-cloudinary.config(
-    cloud_name=CLOUDINARY_CREDENTIALS['CLOUD_NAME'],
-    api_key=CLOUDINARY_CREDENTIALS['API_KEY'],
-    api_secret=CLOUDINARY_CREDENTIALS['API_SECRET'],
-    secure=True,
-)
-
-CLOUDINARY = {
-    'cloud_name': CLOUDINARY_CREDENTIALS['CLOUD_NAME'],
-    'api_key': CLOUDINARY_CREDENTIALS['API_KEY'],
-    'api_secret': CLOUDINARY_CREDENTIALS['API_SECRET'],
-    'secure': True,
-}
-
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': CLOUDINARY_CREDENTIALS['CLOUD_NAME'],
-    'API_KEY': CLOUDINARY_CREDENTIALS['API_KEY'],
-    'API_SECRET': CLOUDINARY_CREDENTIALS['API_SECRET'],
-    'SECURE': True,
-    'PREFIX': '',
-}
-
-CLOUDINARY_UPLOAD_RESOURCE_TYPE = os.environ.get('CLOUDINARY_UPLOAD_RESOURCE_TYPE', 'auto').strip()
-CLOUDINARY_UPLOAD_PRESET = os.environ.get('CLOUDINARY_UPLOAD_PRESET', '').strip().strip('"').strip("'")
-
-DEFAULT_FILE_STORAGE = 'documents.storage.PdfCloudinaryStorage'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+B2_CREDENTIALS = load_b2_credentials()
 MEDIA_URL = '/media/'
+
+if B2_CREDENTIALS:
+    AWS_ACCESS_KEY_ID = B2_CREDENTIALS['KEY_ID']
+    AWS_SECRET_ACCESS_KEY = B2_CREDENTIALS['APPLICATION_KEY']
+    AWS_STORAGE_BUCKET_NAME = B2_CREDENTIALS['BUCKET_NAME']
+    AWS_S3_ENDPOINT_URL = f"https://{B2_CREDENTIALS['ENDPOINT']}"
+    AWS_S3_REGION_NAME = B2_CREDENTIALS['REGION']
+    AWS_S3_SIGNATURE_VERSION = 's3v4'
+    AWS_DEFAULT_ACL = None
+    AWS_S3_ADDRESSING_STYLE = 'virtual'
+    AWS_QUERYSTRING_AUTH = os.environ.get('B2_QUERYSTRING_AUTH', 'True') == 'True'
+    AWS_QUERYSTRING_EXPIRE = int(os.environ.get('B2_URL_EXPIRE', '604800'))
+    AWS_S3_FILE_OVERWRITE = False
+    DEFAULT_FILE_STORAGE = 'documents.storage.PdfB2Storage'
+elif has_partial_b2_env():
+    missing = ', '.join(missing_b2_env_keys())
+    raise ImproperlyConfigured(
+        f'Backblaze B2 credentials incomplete. Missing or empty: {missing}. '
+        'Set B2_KEY_ID, B2_APPLICATION_KEY, B2_BUCKET_NAME and B2_ENDPOINT.'
+    )
+elif DEBUG and not ON_RAILWAY:
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    MEDIA_ROOT = BASE_DIR / 'media'
+else:
+    raise ImproperlyConfigured(
+        'Backblaze B2 credentials are required. Set B2_KEY_ID, B2_APPLICATION_KEY, '
+        'B2_BUCKET_NAME and B2_ENDPOINT in environment variables.'
+    )
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

@@ -4,7 +4,7 @@
 
 ## Возможности
 
-- CRUD документов с загрузкой PDF в Cloudinary
+- CRUD документов с загрузкой PDF в Backblaze B2
 - Категории, теги, поиск и фильтрация
 - Полнотекстовый поиск по содержимому PDF
 - Сроки договоров с уведомлениями об истечении
@@ -31,7 +31,7 @@ python manage.py runserver
 
 ## Переменные окружения
 
-См. `.env.example`. В production обязательны `SECRET_KEY` и Cloudinary credentials.
+См. `.env.example`. В production обязательны `SECRET_KEY` и переменные Backblaze B2.
 
 ## PostgreSQL (Railway)
 
@@ -69,6 +69,12 @@ python manage.py check_expiring_contracts --days 14
 ```bash
 # Procfile выполняет migrate + gunicorn
 gunicorn config.wsgi:application
+```
+
+Проверка подключения к B2:
+
+```bash
+python manage.py test_b2
 ```
 
 Рекомендуется настроить cron для `check_expiring_contracts` на Railway.

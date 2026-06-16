@@ -7,7 +7,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
   <span class="text-muted" style="font-size:14px;">
-    {% blocktrans with count=users|length %}{{ count }} пользователей{% endblocktrans %}
+    {{ users_count_label }}
   </span>
   <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#inviteModal">
     <i class="bi bi-person-plus me-1"></i>{% trans "Пригласить пользователя" %}
@@ -20,7 +20,7 @@
       <thead>
         <tr>
           <th style="width:48px;"></th>
-          <th>{% trans "ФИО" %}</th>
+          <th>{% trans "Имя" %}</th>
           <th>Email</th>
           <th style="width:180px;">{% trans "Роль" %}</th>
           <th style="width:140px;">{% trans "Последний вход" %}</th>
@@ -111,7 +111,7 @@
         <div class="modal-body">
           <p class="text-muted small">{% trans "На указанный email будет отправлена ссылка для установки пароля." %}</p>
           <div class="mb-3">
-            <label class="form-label">{% trans "ФИО" %}</label>
+            <label class="form-label">{% trans "Имя" %}</label>
             {{ invite_form.full_name }}
           </div>
           <div class="mb-3">
@@ -143,7 +143,7 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label" for="renameFullNameInput">{% trans "ФИО" %}</label>
+            <label class="form-label" for="renameFullNameInput">{% trans "Имя" %}</label>
             <input type="text" name="full_name" id="renameFullNameInput" class="form-control" maxlength="255" required>
           </div>
         </div>

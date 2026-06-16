@@ -199,9 +199,9 @@ class NotificationSettingsForm(forms.ModelForm):
 
 class UserInviteForm(forms.Form):
     full_name = forms.CharField(
-        label=_('ФИО'),
+        label=_('Имя'),
         max_length=255,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('ФИО пользователя')}),
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Введите имя')}),
     )
     email = forms.EmailField(
         widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'email@example.com'}),
@@ -227,15 +227,15 @@ class UserRoleForm(forms.Form):
 
 class UserRenameForm(forms.Form):
     full_name = forms.CharField(
-        label=_('ФИО'),
+        label=_('Имя'),
         max_length=255,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('ФИО пользователя')}),
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Введите имя')}),
     )
 
     def clean_full_name(self):
         value = self.cleaned_data['full_name'].strip()
         if not value:
-            raise ValidationError(_('Укажите ФИО.'))
+            raise ValidationError(_('Укажите имя.'))
         return value
 
 

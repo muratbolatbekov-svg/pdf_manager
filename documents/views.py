@@ -15,7 +15,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils import timezone
 from django.utils.dateparse import parse_date
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext as _, ngettext
 from django.views.decorators.http import require_POST
 
 from openpyxl import Workbook
@@ -558,9 +558,16 @@ def user_list(request):
     for user in users:
         UserProfile.objects.get_or_create(user=user)
     users = User.objects.select_related('profile').order_by('-last_login', 'username')
+    user_count = users.count()
+    users_count_label = ngettext(
+        '%(count)d пользователь',
+        '%(count)d пользователей',
+        user_count,
+    ) % {'count': user_count}
     invite_form = UserInviteForm()
     return render(request, 'documents/user_list.html', {
         'users': users,
+        'users_count_label': users_count_label,
         'invite_form': invite_form,
         'role_choices': UserProfile.ROLE_CHOICES,
         'user_role': get_user_role(request.user),
@@ -611,12 +618,12 @@ def user_rename(request, user_id):
     target = get_object_or_404(User, pk=user_id)
     form = UserRenameForm(request.POST)
     if not form.is_valid():
-        messages.error(request, _('Укажите ФИО.'))
+        messages.error(request, _('Укажите имя.'))
         return redirect('user_list')
     profile, created = UserProfile.objects.get_or_create(user=target)
     profile.full_name = form.cleaned_data['full_name']
     profile.save(update_fields=['full_name'])
-    messages.success(request, _('ФИО пользователя обновлено: %(name)s.') % {'name': profile.full_name})
+    messages.success(request, _('Имя пользователя обновлено: %(name)s.') % {'name': profile.full_name})
     return redirect('user_list')
 
 
@@ -640,7 +647,7 @@ def user_delete(request, user_id):
 def user_invite(request):
     form = UserInviteForm(request.POST)
     if not form.is_valid():
-        messages.error(request, _('Проверьте ФИО, email и роль.'))
+        messages.error(request, _('Проверьте имя, email и роль.'))
         return redirect('user_list')
 
     email = form.cleaned_data['email']

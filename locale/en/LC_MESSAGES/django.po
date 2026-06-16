@@ -6,6 +6,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "+ Добавить документ"
 msgstr "+ Add document"
@@ -64,9 +65,6 @@ msgstr "Telegram Chat ID"
 msgid "Telegram-уведомления"
 msgstr "Telegram notifications"
 
-msgid "{{ count }} пользователей"
-msgstr "{{ count }} users"
-
 msgid "А → Я"
 msgstr "A → Z"
 
@@ -114,6 +112,9 @@ msgstr "On expiry day"
 
 msgid "Введите запрос для поиска"
 msgstr "Enter a search query"
+
+msgid "Введите имя"
+msgstr "Enter name"
 
 msgid "Введите логин"
 msgstr "Enter username"
@@ -332,8 +333,8 @@ msgstr "7 days before contract expiry"
 msgid "Заблокировать"
 msgstr "Block"
 
-msgid "Заблокировать пользователя {{ username }}?"
-msgstr "Block user {{ username }}?"
+msgid "Заблокировать пользователя {{ name }}?"
+msgstr "Заблокировать пользователя {{ name }}?"
 
 msgid "Загружено"
 msgstr "Uploaded"
@@ -367,6 +368,9 @@ msgstr "Name"
 
 msgid "Имя пользователя"
 msgstr "Username"
+
+msgid "Имя пользователя обновлено: %(name)s."
+msgstr "User name updated: %(name)s."
 
 msgid "Используйте заголовок: <code>Authorization: Bearer {{ key }}</code>"
 msgstr "Use header: <code>Authorization: Bearer {{ key }}</code>"
@@ -605,6 +609,9 @@ msgstr "Password must be at least 8 characters."
 msgid "Пароль установлен. Теперь можно войти."
 msgstr "Password set. You can sign in now."
 
+msgid "Переименовать"
+msgstr "Переименовать"
+
 msgid "Период графика"
 msgstr "Chart period"
 
@@ -638,11 +645,14 @@ msgstr "Users — PDF Data Base"
 msgid "Пользователь"
 msgstr "User"
 
-msgid "Пользователь %(username)s заблокирован."
-msgstr "User %(username)s blocked."
+msgid "Пользователь %(name)s заблокирован."
+msgstr "Пользователь %(name)s заблокирован."
 
-msgid "Пользователь %(username)s удалён."
-msgstr "User %(username)s deleted."
+msgid "Пользователь %(name)s разблокирован."
+msgstr "Пользователь %(name)s разблокирован."
+
+msgid "Пользователь %(name)s удалён."
+msgstr "Пользователь %(name)s удалён."
 
 msgid "Пользователь с таким email уже существует."
 msgstr "A user with this email already exists."
@@ -674,8 +684,8 @@ msgstr "Invitation sent to %(email)s."
 msgid "Применить"
 msgstr "Apply"
 
-msgid "Проверьте email и роль."
-msgstr "Check email and role."
+msgid "Проверьте имя, email и роль."
+msgstr "Check name, email, and role."
 
 msgid "Просмотр и поиск по базе"
 msgstr "Browse and search the database"
@@ -695,6 +705,12 @@ msgstr "Previous quarter"
 msgid "Прошлый месяц"
 msgstr "Previous month"
 
+msgid "Разблокировать"
+msgstr "Разблокировать"
+
+msgid "Разблокировать пользователя {{ name }}?"
+msgstr "Разблокировать пользователя {{ name }}?"
+
 msgid "Размер файла"
 msgstr "File size"
 
@@ -713,8 +729,8 @@ msgstr "Search results"
 msgid "Роль"
 msgstr "Role"
 
-msgid "Роль пользователя %(username)s обновлена."
-msgstr "Role for user %(username)s updated."
+msgid "Роль пользователя %(name)s обновлена."
+msgstr "Роль пользователя %(name)s обновлена."
 
 msgid "Сбросить"
 msgstr "Reset"
@@ -907,8 +923,8 @@ msgstr "Delete category — PDF Data Base"
 msgid "Удалить категорию?"
 msgstr "Delete category?"
 
-msgid "Удалить пользователя {{ username }}? Это действие необратимо."
-msgstr "Delete user {{ username }}? This action is irreversible."
+msgid "Удалить пользователя {{ name }}? Это действие необратимо."
+msgstr "Удалить пользователя {{ name }}? Это действие необратимо."
 
 msgid "Удалить связь"
 msgstr "Remove link"
@@ -924,6 +940,9 @@ msgstr "Provide email for notifications."
 
 msgid "Укажите значение от 1 до 365."
 msgstr "Enter a value from 1 to 365."
+
+msgid "Укажите имя."
+msgstr "Please enter a name."
 
 msgid "Укажите название ключа."
 msgstr "Provide key name."
@@ -1059,3 +1078,8 @@ msgstr "amount from %(amount)s ₸"
 
 msgid "текущая"
 msgstr "current"
+
+msgid "%(count)d пользователь"
+msgid_plural "%(count)d пользователей"
+msgstr[0] "%(count)d user"
+msgstr[1] "%(count)d users"

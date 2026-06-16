@@ -114,20 +114,10 @@ def extract_pdf_text(uploaded_file):
         uploaded_file.seek(0)
 
 
-def delete_cloudinary_file(field_file):
+def delete_storage_file(field_file):
     if not field_file or not field_file.name:
         return
     try:
-        import cloudinary.uploader
-
-        public_id = getattr(field_file, 'public_id', None) or field_file.name.rsplit('.', 1)[0]
-        for resource_type in ('raw', 'image', 'video'):
-            response = cloudinary.uploader.destroy(
-                public_id,
-                resource_type=resource_type,
-                invalidate=True,
-            )
-            if response.get('result') == 'ok':
-                return
+        field_file.delete(save=False)
     except Exception:
         pass

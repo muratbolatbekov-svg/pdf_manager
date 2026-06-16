@@ -177,6 +177,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         'kk': 'Таңдалған кезеңде деректер жоқ',
         'en': 'No data for the selected period',
     },
+    'Имя': {'kk': 'Аты', 'en': 'Name'},
+    'Введите имя': {'kk': 'Атын енгізіңіз', 'en': 'Enter name'},
+    'Укажите имя.': {'kk': 'Атын көрсетіңіз.', 'en': 'Please enter a name.'},
+    'Имя пользователя обновлено: %(name)s.': {
+        'kk': 'Пайдаланушы аты жаңартылды: %(name)s.',
+        'en': 'User name updated: %(name)s.',
+    },
+    'Проверьте имя, email и роль.': {
+        'kk': 'Аты, email және рөлді тексеріңіз.',
+        'en': 'Check name, email, and role.',
+    },
     'договор': {'kk': 'келісім', 'en': 'contract'},
     'договора': {'kk': 'келісім', 'en': 'contracts'},
     'договоров': {'kk': 'келісім', 'en': 'contracts'},
@@ -220,17 +231,56 @@ def translate(msgid: str, lang: str) -> str:
 
 def build_catalog(lang: str, msgids: set[str]) -> polib.POFile:
     po = polib.POFile()
+    plural_forms = {
+        'ru': 'nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);',
+        'en': 'nplurals=2; plural=(n != 1);',
+        'kk': 'nplurals=1; plural=0;',
+    }
     po.metadata = {
         'Project-Id-Version': 'PDF Data Base',
         'Language': lang,
         'MIME-Version': '1.0',
         'Content-Type': 'text/plain; charset=utf-8',
         'Content-Transfer-Encoding': '8bit',
+        'Plural-Forms': plural_forms.get(lang, plural_forms['en']),
     }
     for msgid in sorted(msgids):
         entry = polib.POEntry(msgid=msgid, msgstr=translate(msgid, lang))
         po.append(entry)
+    add_plural_entries(po, lang)
     return po
+
+
+def add_plural_entries(catalog: polib.POFile, lang: str) -> None:
+    for msgid, data in PLURAL_ENTRIES.items():
+        forms = data.get(lang, data['ru'])
+        entry = polib.POEntry(msgid=msgid, msgid_plural=data['msgid_plural'])
+        if lang == 'en':
+            entry.msgstr_plural = {0: forms[0], 1: forms[1]}
+        elif lang == 'kk':
+            entry.msgstr_plural = {0: forms[0]}
+        else:
+            entry.msgstr_plural = {0: forms[0], 1: forms[1], 2: forms[2]}
+        catalog.append(entry)
+
+
+PLURAL_ENTRIES = {
+    '%(count)d пользователь': {
+        'msgid_plural': '%(count)d пользователей',
+        'ru': [
+            '%(count)d пользователь',
+            '%(count)d пользователя',
+            '%(count)d пользователей',
+        ],
+        'en': [
+            '%(count)d user',
+            '%(count)d users',
+        ],
+        'kk': [
+            '%(count)d пайдаланушы',
+        ],
+    },
+}
 
 
 def main() -> None:

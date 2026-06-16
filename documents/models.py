@@ -219,7 +219,7 @@ class UserProfile(models.Model):
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', verbose_name=_('Пользователь'))
-    full_name = models.CharField(max_length=255, blank=True, verbose_name=_('ФИО'))
+    full_name = models.CharField(max_length=255, blank=True, verbose_name=_('Имя'))
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=ROLE_MANAGER, verbose_name=_('Роль'))
 
     class Meta:
