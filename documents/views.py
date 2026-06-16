@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Count, Q, Sum
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -117,6 +117,21 @@ def document_list(request):
         'user_role': get_user_role(request.user),
     }
     return render(request, 'documents/document_list.html', context)
+
+
+@login_required
+def document_pdf_preview(request, slug):
+    document = get_object_or_404(Document, slug=slug)
+    if not document.pdf_file:
+        raise Http404('PDF файл не найден')
+    document.pdf_file.open('rb')
+    try:
+        content = document.pdf_file.read()
+    finally:
+        document.pdf_file.close()
+    response = HttpResponse(content, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="{document.title}.pdf"'
+    return response
 
 
 @login_required

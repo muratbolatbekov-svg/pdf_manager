@@ -4,10 +4,11 @@ from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, RequestFactory, TestCase
 from django.urls import reverse
+from django.http import Http404
 
 from documents.models import AuditLog, Category, Document, UserProfile
 from documents.utils import generate_unique_slug, parse_tags
-from documents.views import document_create, document_detail, document_list
+from documents.views import document_create, document_detail, document_list, document_pdf_preview
 
 
 class SlugUtilsTests(TestCase):
@@ -62,6 +63,25 @@ class DocumentViewTests(TestCase):
         self.assertIn('Статистика', content)
         self.assertIn('Быстрые действия', content)
         self.assertIn('Открыть дашборд', content)
+
+    def test_pdf_preview_requires_auth(self):
+        response = self.client.get(reverse('document_pdf_preview', kwargs={'slug': self.document.slug}))
+        self.assertEqual(response.status_code, 302)
+
+    def test_pdf_preview_no_file(self):
+        request = self.factory.get(f'/documents/{self.document.slug}/preview/')
+        request.user = self.user
+        with self.assertRaises(Http404):
+            document_pdf_preview(request, slug=self.document.slug)
+
+    def test_document_list_has_pdf_viewer(self):
+        request = self.factory.get('/documents/')
+        request.user = self.user
+        response = document_list(request)
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertIn('pdf-preview-trigger', content)
+        self.assertIn('pdfViewerModal', content)
 
     def test_document_list(self):
         request = self.factory.get('/documents/')

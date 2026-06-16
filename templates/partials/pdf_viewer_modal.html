@@ -1,0 +1,38 @@
+<div class="modal fade" id="pdfViewerModal" tabindex="-1" aria-labelledby="pdfViewerTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered pdf-viewer-dialog">
+    <div class="modal-content pdf-viewer-content">
+      <div class="modal-header pdf-viewer-header">
+        <h5 class="modal-title fw-bold text-truncate me-3" id="pdfViewerTitle">Документ</h5>
+        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+          <a id="pdfViewerDownload" href="#" class="btn btn-sm btn-outline-secondary" download>
+            <i class="bi bi-download me-1"></i>Скачать
+          </a>
+          <button type="button" id="pdfViewerPrint" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-printer me-1"></i>Печать
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal" aria-label="Закрыть">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+      </div>
+      <div class="modal-body pdf-viewer-body p-0">
+        <div id="pdfViewerCanvasWrap" class="pdf-viewer-canvas-wrap">
+          <div id="pdfViewerLoading" class="pdf-viewer-loading">
+            <div class="spinner-border text-secondary" role="status"></div>
+            <span class="text-muted ms-2">Загрузка PDF…</span>
+          </div>
+          <canvas id="pdfViewerCanvas" class="d-none"></canvas>
+        </div>
+      </div>
+      <div class="modal-footer pdf-viewer-footer justify-content-center">
+        <button type="button" id="pdfViewerPrev" class="btn btn-sm btn-outline-secondary" disabled>
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <span id="pdfViewerPageInfo" class="text-muted mx-3"></span>
+        <button type="button" id="pdfViewerNext" class="btn btn-sm btn-outline-secondary" disabled>
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

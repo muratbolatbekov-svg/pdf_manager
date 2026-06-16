@@ -1,5 +1,75 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Документы — PDF Data Base{% endblock %}
+{% block extra_head %}
+<style>
+  .pdf-viewer-dialog {
+    width: 80vw;
+    max-width: 80vw;
+    height: 90vh;
+    max-height: 90vh;
+    margin: 5vh auto;
+  }
+  .pdf-viewer-content {
+    height: 100%;
+    border: none;
+    border-radius: var(--apple-radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .pdf-viewer-header {
+    border-bottom: 1px solid var(--apple-border);
+    padding: 16px 20px;
+    flex-shrink: 0;
+  }
+  .pdf-viewer-body {
+    flex: 1;
+    overflow: auto;
+    background: #525659;
+  }
+  .pdf-viewer-canvas-wrap {
+    min-height: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 16px;
+  }
+  .pdf-viewer-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 48px;
+    color: #fff;
+  }
+  #pdfViewerCanvas {
+    background: #fff;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    max-width: 100%;
+    height: auto;
+  }
+  .pdf-viewer-footer {
+    border-top: 1px solid var(--apple-border);
+    padding: 12px 20px;
+    flex-shrink: 0;
+  }
+  .pdf-preview-trigger {
+    cursor: pointer;
+  }
+  .pdf-preview-trigger:hover {
+    color: var(--apple-blue) !important;
+  }
+  @media (max-width: 768px) {
+    .pdf-viewer-dialog {
+      width: 96vw;
+      max-width: 96vw;
+      height: 92vh;
+      margin: 4vh auto;
+    }
+  }
+</style>
+{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
   <div>
@@ -58,7 +128,17 @@
     {% for doc in documents %}
     <tr>
       <td>
-        <a href="{% url 'document_detail' doc.slug %}" class="text-decoration-none fw-medium" style="color: var(--apple-text);"><i class="bi bi-file-pdf-fill text-danger me-2" style="font-size:18px;"></i>{{ doc.title }}</a>
+        {% if doc.pdf_file %}
+        <a href="#" class="text-decoration-none fw-medium pdf-preview-trigger" style="color: var(--apple-text);"
+           data-pdf-url="{% url 'document_pdf_preview' doc.slug %}"
+           data-pdf-title="{{ doc.title|escape }}">
+          <i class="bi bi-file-pdf-fill text-danger me-2" style="font-size:18px;"></i>{{ doc.title }}
+        </a>
+        {% else %}
+        <a href="{% url 'document_detail' doc.slug %}" class="text-decoration-none fw-medium" style="color: var(--apple-text);">
+          <i class="bi bi-file-pdf-fill text-danger me-2" style="font-size:18px;"></i>{{ doc.title }}
+        </a>
+        {% endif %}
         {% if doc.tags.all %}<div class="mt-1">{% for tag in doc.tags.all %}<span class="badge" style="background: var(--apple-bg); color: var(--apple-muted); border-radius: 100px; font-weight: 400; font-size: 11px; padding: 3px 8px;">{{ tag.name }}</span>{% endfor %}</div>{% endif %}
       </td>
       <td class="text-muted">{{ doc.category|default:"—" }}</td>
@@ -68,7 +148,9 @@
         {% if doc.end_date %}{{ doc.end_date|date:"d.m.Y" }}{% else %}—{% endif %}
       </td>
       <td><span class="badge badge-status-{{ doc.status }}">{{ doc.get_status_display }}</span></td>
-      <td>{% if doc.pdf_file %}<a href="{{ doc.pdf_file.url }}" target="_blank" class="btn btn-sm btn-outline-success"><i class="bi bi-eye"></i></a>{% else %}<span class="text-muted small">нет</span>{% endif %}</td>
+      <td>{% if doc.pdf_file %}<button type="button" class="btn btn-sm btn-outline-success pdf-preview-trigger"
+           data-pdf-url="{% url 'document_pdf_preview' doc.slug %}"
+           data-pdf-title="{{ doc.title|escape }}"><i class="bi bi-eye"></i></button>{% else %}<span class="text-muted small">нет</span>{% endif %}</td>
       <td>
         {% if user_role != 'viewer' %}
         <a href="{% url 'document_edit' doc.slug %}" class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil"></i></a>
@@ -99,4 +181,11 @@
   </div>
   {% endif %}
 </div>
+
+{% include 'partials/pdf_viewer_modal.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="{% static 'js/pdf-viewer.js' %}"></script>
 {% endblock %}
