@@ -195,6 +195,9 @@ msgstr "Log out"
 msgid "Группировка документов"
 msgstr "Document grouping"
 
+msgid "Да"
+msgstr "Yes"
+
 msgid "Дата"
 msgstr "Date"
 
@@ -525,6 +528,9 @@ msgstr "Нельзя изменить собственную роль."
 msgid "Нельзя удалить себя."
 msgstr "Нельзя удалить себя."
 
+msgid "Нет"
+msgstr "No"
+
 msgid "Нет аккаунта? Обратитесь к администратору."
 msgstr "No account? Contact your administrator."
 
@@ -633,6 +639,9 @@ msgstr "Search"
 msgid "Поиск по названию, категории, подписанту..."
 msgstr "Search by title, category, signatory..."
 
+msgid "Показать пароль"
+msgstr "Показать пароль"
+
 msgid "Показывать документы, которые истекают через"
 msgstr "Show documents expiring within"
 
@@ -732,6 +741,9 @@ msgstr "Role"
 msgid "Роль пользователя %(name)s обновлена."
 msgstr "Роль пользователя %(name)s обновлена."
 
+msgid "С НДС"
+msgstr "With VAT"
+
 msgid "Сбросить"
 msgstr "Reset"
 
@@ -761,6 +773,9 @@ msgstr "Your document management system"
 
 msgid "Скачать"
 msgstr "Download"
+
+msgid "Скрыть пароль"
+msgstr "Скрыть пароль"
 
 msgid "Сначала новые"
 msgstr "Newest first"

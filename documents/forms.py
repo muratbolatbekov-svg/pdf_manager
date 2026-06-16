@@ -34,10 +34,7 @@ class DocumentForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'category': forms.Select(attrs={'class': 'form-select'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00'}),
-            'with_vat': forms.Select(
-                choices=[(True, _('Да')), (False, _('Нет'))],
-                attrs={'class': 'form-select'},
-            ),
+            'with_vat': forms.Select(attrs={'class': 'form-select'}),
             'signatory': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('ФИО подписанта')}),
             'author': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('ФИО автора')}),
             'status': forms.Select(attrs={'class': 'form-select'}),
@@ -48,6 +45,8 @@ class DocumentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+        self.fields['with_vat'].label = _('С НДС')
+        self.fields['with_vat'].choices = [(True, _('Да')), (False, _('Нет'))]
         if self.instance.pk:
             self.fields['tags_input'].initial = ', '.join(self.instance.tags.values_list('name', flat=True))
         elif self.user:
