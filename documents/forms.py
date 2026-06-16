@@ -12,6 +12,9 @@ from .utils import extract_pdf_text, parse_tags, sync_document_tags
 
 
 class DocumentForm(forms.ModelForm):
+    WITH_VAT_YES = '1'
+    WITH_VAT_NO = '0'
+
     pdf_file = forms.FileField(
         required=False,
         validators=[FileExtensionValidator(allowed_extensions=['pdf'])],
@@ -21,6 +24,11 @@ class DocumentForm(forms.ModelForm):
         required=False,
         label=_('Теги'),
         widget=forms.HiddenInput(),
+    )
+    with_vat = forms.TypedChoiceField(
+        coerce=lambda value: str(value) == '1',
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        required=False,
     )
 
     class Meta:
@@ -34,7 +42,6 @@ class DocumentForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'category': forms.Select(attrs={'class': 'form-select'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00'}),
-            'with_vat': forms.Select(attrs={'class': 'form-select'}),
             'signatory': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('ФИО подписанта')}),
             'author': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('ФИО автора')}),
             'status': forms.Select(attrs={'class': 'form-select'}),
@@ -46,7 +53,13 @@ class DocumentForm(forms.ModelForm):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         self.fields['with_vat'].label = _('С НДС')
-        self.fields['with_vat'].choices = [(True, _('Да')), (False, _('Нет'))]
+        self.fields['with_vat'].choices = [
+            (self.WITH_VAT_YES, _('Да')),
+            (self.WITH_VAT_NO, _('Нет')),
+        ]
+        if not self.is_bound:
+            with_vat = bool(self.instance.with_vat) if self.instance.pk else False
+            self.initial['with_vat'] = self.WITH_VAT_YES if with_vat else self.WITH_VAT_NO
         if self.instance.pk:
             self.fields['tags_input'].initial = ', '.join(self.instance.tags.values_list('name', flat=True))
         elif self.user:
