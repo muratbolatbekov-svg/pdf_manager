@@ -1,6 +1,12 @@
 from django.contrib import admin
 
-from .models import AuditLog, Category, Document, DocumentComment, DocumentLink, DocumentVersion, Tag, UserNotificationSettings, UserProfile
+from .models import AuditLog, ApiKey, Category, Document, DocumentComment, DocumentLink, DocumentVersion, Tag, UserNotificationSettings, UserProfile
+
+
+@admin.register(ApiKey)
+class ApiKeyAdmin(admin.ModelAdmin):
+    list_display = ['name', 'masked_key', 'created_by', 'created_at', 'last_used_at']
+    readonly_fields = ['key_hash', 'key_suffix', 'created_at', 'last_used_at']
 
 
 @admin.register(DocumentLink)

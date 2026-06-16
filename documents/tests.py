@@ -378,13 +378,20 @@ class ApiTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username='apiuser', password='pass12345')
+        UserProfile.objects.filter(user=self.user).update(role=UserProfile.ROLE_MANAGER)
         Document.objects.create(title='API Doc')
 
     def test_api_requires_auth(self):
         response = self.client.get('/api/documents/')
-        self.assertEqual(response.status_code, 403)
+        self.assertIn(response.status_code, (401, 403))
 
-    def test_api_list_authenticated(self):
+    def test_api_list_session_auth(self):
         self.client.login(username='apiuser', password='pass12345')
         response = self.client.get('/api/documents/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_api_categories(self):
+        Category.objects.create(name='Test Cat')
+        self.client.login(username='apiuser', password='pass12345')
+        response = self.client.get('/api/categories/')
         self.assertEqual(response.status_code, 200)

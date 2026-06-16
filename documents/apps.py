@@ -11,6 +11,7 @@ class DocumentsConfig(AppConfig):
         from django.conf import settings
 
         import documents.signals  # noqa: F401
+        import documents.schema  # noqa: F401
 
         credentials = getattr(settings, 'CLOUDINARY_CREDENTIALS', None)
         if credentials:

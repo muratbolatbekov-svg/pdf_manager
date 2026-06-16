@@ -235,6 +235,7 @@
     <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'notification_settings' %}active{% endif %}" href="{% url 'notification_settings' %}"><i class="bi bi-bell"></i>Уведомления</a></li>
     {% if user_role == 'admin' %}
     <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}" href="{% url 'user_list' %}"><i class="bi bi-people"></i>Пользователи</a></li>
+    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'api_settings' %}active{% endif %}" href="{% url 'api_settings' %}"><i class="bi bi-key"></i>API</a></li>
     {% endif %}
   </ul>
   <div class="mt-auto pt-3 border-top" style="border-color: var(--apple-border) !important;">

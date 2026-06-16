@@ -254,3 +254,50 @@ class UserNotificationSettings(models.Model):
     @property
     def notifications_enabled(self):
         return self.notify_email_enabled or self.notify_telegram_enabled
+
+
+class ApiKey(models.Model):
+    name = models.CharField(max_length=100, verbose_name='Название')
+    key_hash = models.CharField(max_length=64, unique=True, verbose_name='Хеш ключа')
+    key_suffix = models.CharField(max_length=4, verbose_name='Суффикс')
+    created_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='api_keys', verbose_name='Создал'
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
+    last_used_at = models.DateTimeField(null=True, blank=True, verbose_name='Последнее использование')
+
+    class Meta:
+        verbose_name = 'API-ключ'
+        verbose_name_plural = 'API-ключи'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def masked_key(self):
+        return f'sk-...{self.key_suffix}'
+
+    @classmethod
+    def create_key(cls, name, user):
+        import hashlib
+        import secrets
+
+        raw_key = f'sk-{secrets.token_urlsafe(32)}'
+        key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
+        obj = cls.objects.create(
+            name=name,
+            key_hash=key_hash,
+            key_suffix=raw_key[-4:],
+            created_by=user,
+        )
+        return obj, raw_key
+
+    @classmethod
+    def authenticate(cls, raw_key):
+        import hashlib
+
+        if not raw_key or not raw_key.startswith('sk-'):
+            return None
+        key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
+        return cls.objects.filter(key_hash=key_hash).select_related('created_by').first()

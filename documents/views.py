@@ -23,7 +23,7 @@ from .analytics import PERIOD_CHOICES, build_dashboard_analytics
 from .document_links import create_bidirectional_link, delete_bidirectional_link, link_to_dict
 from .forms import CategoryForm, DocumentForm, NotificationSettingsForm, UserInviteForm, UserRoleForm
 from .models import (
-    AuditLog, Category, Document, DocumentComment, DocumentLink, DocumentVersion,
+    AuditLog, Category, Document, ApiKey, DocumentComment, DocumentLink, DocumentVersion,
     Tag, UserNotificationSettings, UserProfile,
 )
 from .notifications import expiring_documents_queryset, send_user_invite
@@ -761,6 +761,41 @@ def document_link_delete(request, slug, link_id):
     linked = link.linked
     delete_bidirectional_link(document, linked)
     return JsonResponse({'ok': True})
+
+
+@login_required
+@role_required(UserProfile.ROLE_ADMIN)
+def api_settings(request):
+    new_key = request.session.pop('new_api_key', None)
+    return render(request, 'documents/api_settings.html', {
+        'api_keys': ApiKey.objects.select_related('created_by').order_by('-created_at'),
+        'new_api_key': new_key,
+        'user_role': get_user_role(request.user),
+    })
+
+
+@login_required
+@role_required(UserProfile.ROLE_ADMIN)
+@require_POST
+def api_key_create(request):
+    name = request.POST.get('name', '').strip()
+    if not name:
+        messages.error(request, 'Укажите название ключа.')
+        return redirect('api_settings')
+    _, raw_key = ApiKey.create_key(name, request.user)
+    request.session['new_api_key'] = raw_key
+    messages.success(request, 'API-ключ создан. Скопируйте его сейчас — больше он не будет показан.')
+    return redirect('api_settings')
+
+
+@login_required
+@role_required(UserProfile.ROLE_ADMIN)
+@require_POST
+def api_key_delete(request, key_id):
+    api_key = get_object_or_404(ApiKey, pk=key_id)
+    api_key.delete()
+    messages.success(request, 'API-ключ удалён.')
+    return redirect('api_settings')
 
 
 def permission_denied(request, exception=None):
