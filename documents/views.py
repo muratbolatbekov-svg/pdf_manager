@@ -22,14 +22,14 @@ from openpyxl import Workbook
 
 from .analytics import PERIOD_CHOICES, build_dashboard_analytics
 from .document_links import create_bidirectional_link, delete_bidirectional_link, link_to_dict
-from .forms import CategoryForm, DocumentForm, NotificationSettingsForm, UserInviteForm, UserRoleForm
+from .forms import CategoryForm, DocumentForm, NotificationSettingsForm, UserInviteForm, UserRenameForm, UserRoleForm
 from .models import (
     AuditLog, Category, Document, ApiKey, DocumentComment, DocumentLink, DocumentVersion,
     Tag, UserNotificationSettings, UserProfile,
 )
 from .notifications import expiring_documents_queryset, send_user_invite
 from .permissions import get_user_role, role_required
-from .utils import comment_to_dict, format_file_size
+from .utils import comment_to_dict, format_file_size, get_user_display_name
 
 
 SORT_OPTIONS = {
@@ -580,7 +580,7 @@ def user_update_role(request, user_id):
         profile, _ = UserProfile.objects.get_or_create(user=target)
         profile.role = form.cleaned_data['role']
         profile.save()
-        messages.success(request, _('Роль пользователя %(username)s обновлена.') % {'username': target.username})
+        messages.success(request, _('Роль пользователя %(name)s обновлена.') % {'name': get_user_display_name(target)})
     else:
         messages.error(request, _('Некорректная роль.'))
     return redirect('user_list')
@@ -594,9 +594,29 @@ def user_block(request, user_id):
     if target == request.user:
         messages.error(request, _('Нельзя заблокировать себя.'))
         return redirect('user_list')
-    target.is_active = False
+    target.is_active = not target.is_active
     target.save(update_fields=['is_active'])
-    messages.success(request, _('Пользователь %(username)s заблокирован.') % {'username': target.username})
+    label = get_user_display_name(target)
+    if target.is_active:
+        messages.success(request, _('Пользователь %(name)s разблокирован.') % {'name': label})
+    else:
+        messages.success(request, _('Пользователь %(name)s заблокирован.') % {'name': label})
+    return redirect('user_list')
+
+
+@login_required
+@role_required(UserProfile.ROLE_ADMIN)
+@require_POST
+def user_rename(request, user_id):
+    target = get_object_or_404(User, pk=user_id)
+    form = UserRenameForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, _('Укажите ФИО.'))
+        return redirect('user_list')
+    profile, _ = UserProfile.objects.get_or_create(user=target)
+    profile.full_name = form.cleaned_data['full_name']
+    profile.save(update_fields=['full_name'])
+    messages.success(request, _('ФИО пользователя обновлено: %(name)s.') % {'name': profile.full_name})
     return redirect('user_list')
 
 
@@ -608,9 +628,9 @@ def user_delete(request, user_id):
     if target == request.user:
         messages.error(request, _('Нельзя удалить себя.'))
         return redirect('user_list')
-    username = target.username
+    label = get_user_display_name(target)
     target.delete()
-    messages.success(request, _('Пользователь %(username)s удалён.') % {'username': username})
+    messages.success(request, _('Пользователь %(name)s удалён.') % {'name': label})
     return redirect('user_list')
 
 
@@ -620,11 +640,12 @@ def user_delete(request, user_id):
 def user_invite(request):
     form = UserInviteForm(request.POST)
     if not form.is_valid():
-        messages.error(request, _('Проверьте email и роль.'))
+        messages.error(request, _('Проверьте ФИО, email и роль.'))
         return redirect('user_list')
 
     email = form.cleaned_data['email']
     role = form.cleaned_data['role']
+    full_name = form.cleaned_data['full_name']
     username = email.split('@')[0]
     base_username = username
     counter = 1
@@ -635,7 +656,7 @@ def user_invite(request):
     user = User(username=username, email=email, is_active=True)
     user.set_unusable_password()
     user.save()
-    UserProfile.objects.update_or_create(user=user, defaults={'role': role})
+    UserProfile.objects.update_or_create(user=user, defaults={'role': role, 'full_name': full_name})
     UserNotificationSettings.objects.get_or_create(user=user, defaults={'notify_email': email})
 
     invite_path = _build_invite_url(user)

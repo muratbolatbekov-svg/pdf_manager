@@ -32,6 +32,7 @@ urlpatterns = [
     path('settings/users/invite/', views.user_invite, name='user_invite'),
     path('settings/users/<int:user_id>/role/', views.user_update_role, name='user_update_role'),
     path('settings/users/<int:user_id>/block/', views.user_block, name='user_block'),
+    path('settings/users/<int:user_id>/rename/', views.user_rename, name='user_rename'),
     path('settings/users/<int:user_id>/delete/', views.user_delete, name='user_delete'),
     path('invite/<uidb64>/<token>/', views.invite_set_password, name='invite_set_password'),
     path('login/', auth_views.LoginView.as_view(template_name='documents/login.html'), name='login'),

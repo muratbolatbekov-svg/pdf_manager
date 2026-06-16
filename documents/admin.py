@@ -57,7 +57,7 @@ class AuditLogAdmin(admin.ModelAdmin):
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'role']
+    list_display = ['user', 'full_name', 'role']
     list_filter = ['role']
 
 

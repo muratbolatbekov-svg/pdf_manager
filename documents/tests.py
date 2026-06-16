@@ -280,6 +280,49 @@ class UserManagementTests(TestCase):
         self.admin.profile.refresh_from_db()
         self.assertEqual(self.admin.profile.role, UserProfile.ROLE_ADMIN)
 
+    def test_invite_saves_full_name(self):
+        self.client.login(username='admin', password='pass12345')
+        response = self.client.post(
+            reverse('user_invite'),
+            {
+                'full_name': 'Иван Петров',
+                'email': 'ivan@example.com',
+                'role': UserProfile.ROLE_VIEWER,
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.get(email='ivan@example.com')
+        self.assertEqual(user.profile.full_name, 'Иван Петров')
+
+    def test_user_rename(self):
+        self.manager.profile.full_name = 'Старое имя'
+        self.manager.profile.save()
+        self.client.login(username='admin', password='pass12345')
+        response = self.client.post(
+            reverse('user_rename', kwargs={'user_id': self.manager.pk}),
+            {'full_name': 'Новое ФИО'},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.manager.profile.refresh_from_db()
+        self.assertEqual(self.manager.profile.full_name, 'Новое ФИО')
+
+    def test_user_block_toggle(self):
+        self.assertTrue(self.manager.is_active)
+        self.client.login(username='admin', password='pass12345')
+        self.client.post(reverse('user_block', kwargs={'user_id': self.manager.pk}))
+        self.manager.refresh_from_db()
+        self.assertFalse(self.manager.is_active)
+        self.client.post(reverse('user_block', kwargs={'user_id': self.manager.pk}))
+        self.manager.refresh_from_db()
+        self.assertTrue(self.manager.is_active)
+
+    def test_user_display_name_uses_profile_full_name(self):
+        from documents.utils import get_user_display_name
+
+        self.manager.profile.full_name = 'Алия Смагулова'
+        self.manager.profile.save()
+        self.assertEqual(get_user_display_name(self.manager), 'Алия Смагулова')
+
     def test_invite_set_password(self):
         invited = User(username='invite', email='invite@example.com')
         invited.set_unusable_password()

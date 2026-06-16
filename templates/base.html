@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-{% load i18n static %}
+{% load i18n static documents_extras %}
 {% get_current_language as LANGUAGE_CODE %}
 <html lang="{{ LANGUAGE_CODE|slice:':2' }}">
 <head>
@@ -244,7 +244,7 @@
   <div class="mt-auto pt-3 border-top" style="border-color: var(--apple-border) !important;">
     <div class="mb-3">{% include 'partials/language_switcher.html' %}</div>
     <div class="d-flex align-items-center justify-content-between">
-      <span class="user-badge"><i class="bi bi-person-circle me-1"></i>{{ request.user.username }}</span>
+      <span class="user-badge"><i class="bi bi-person-circle me-1"></i>{{ request.user|user_display_name }}</span>
       <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-secondary border-0" title="{% trans 'Выйти' %}"><i class="bi bi-box-arrow-right"></i></a>
     </div>
   </div>

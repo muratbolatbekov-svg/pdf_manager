@@ -54,9 +54,19 @@ def format_file_size(size):
     return f'{round(size / (1024 * 1024), 1)} MB'
 
 
-def user_initials(user):
+def get_user_display_name(user):
+    if not user:
+        return ''
+    profile = getattr(user, 'profile', None)
+    if profile is not None and profile.full_name.strip():
+        return profile.full_name.strip()
     name = user.get_full_name().strip()
-    if name:
+    return name or user.username
+
+
+def user_initials(user):
+    name = get_user_display_name(user)
+    if name and name != user.username:
         parts = name.split()
         if len(parts) >= 2:
             return (parts[0][0] + parts[1][0]).upper()
@@ -82,7 +92,7 @@ def comment_to_dict(comment, current_user, user_role=None):
     return {
         'id': comment.id,
         'text': comment.text,
-        'author_name': comment.user.get_full_name().strip() or comment.user.username,
+        'author_name': get_user_display_name(comment.user),
         'initials': user_initials(comment.user),
         'avatar_color': avatar_color(comment.user),
         'created_at': local_dt.strftime('%d.%m.%Y %H:%M'),

@@ -219,6 +219,7 @@ class UserProfile(models.Model):
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', verbose_name=_('Пользователь'))
+    full_name = models.CharField(max_length=255, blank=True, verbose_name=_('ФИО'))
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=ROLE_MANAGER, verbose_name=_('Роль'))
 
     class Meta:
@@ -226,7 +227,8 @@ class UserProfile(models.Model):
         verbose_name_plural = _('Профили пользователей')
 
     def __str__(self):
-        return f'{self.user.username} ({self.get_role_display()})'
+        label = self.full_name.strip() if self.full_name else self.user.username
+        return f'{label} ({self.get_role_display()})'
 
 
 class UserNotificationSettings(models.Model):

@@ -37,5 +37,5 @@ def format_bytes(size):
 
 @register.filter
 def user_display_name(user):
-    name = user.get_full_name().strip()
-    return name if name else user.username
+    from documents.utils import get_user_display_name as display_name
+    return display_name(user)

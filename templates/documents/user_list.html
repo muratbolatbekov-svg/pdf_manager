@@ -20,7 +20,7 @@
       <thead>
         <tr>
           <th style="width:48px;"></th>
-          <th>{% trans "Имя" %}</th>
+          <th>{% trans "ФИО" %}</th>
           <th>Email</th>
           <th style="width:180px;">{% trans "Роль" %}</th>
           <th style="width:140px;">{% trans "Последний вход" %}</th>
@@ -59,19 +59,32 @@
                 <i class="bi bi-three-dots"></i>
               </button>
               <ul class="dropdown-menu dropdown-menu-end">
-                {% if u.is_active %}
                 <li>
-                  <form method="post" action="{% url 'user_block' u.pk %}" onsubmit='return confirm("{% filter escapejs %}{% blocktrans with username=u.username %}Заблокировать пользователя {{ username }}?{% endblocktrans %}{% endfilter %}");'>
-                    {% csrf_token %}
-                    <button type="submit" class="dropdown-item">{% trans "Заблокировать" %}</button>
-                  </form>
+                  <button type="button" class="dropdown-item rename-user-btn"
+                    data-bs-toggle="modal" data-bs-target="#renameUserModal"
+                    data-user-id="{{ u.pk }}"
+                    data-rename-url="{% url 'user_rename' u.pk %}"
+                    data-full-name="{{ u.profile.full_name|default:''|escape }}">
+                    {% trans "Переименовать" %}
+                  </button>
                 </li>
-                {% endif %}
                 <li>
-                  <form method="post" action="{% url 'user_delete' u.pk %}" onsubmit='return confirm("{% filter escapejs %}{% blocktrans with username=u.username %}Удалить пользователя {{ username }}? Это действие необратимо.{% endblocktrans %}{% endfilter %}");'>
+                  {% with display_name=u|user_display_name %}
+                  <form method="post" action="{% url 'user_block' u.pk %}" onsubmit='return confirm("{% filter escapejs %}{% if u.is_active %}{% blocktrans with name=display_name %}Заблокировать пользователя {{ name }}?{% endblocktrans %}{% else %}{% blocktrans with name=display_name %}Разблокировать пользователя {{ name }}?{% endblocktrans %}{% endif %}{% endfilter %}");'>
+                    {% csrf_token %}
+                    <button type="submit" class="dropdown-item">
+                      {% if u.is_active %}{% trans "Заблокировать" %}{% else %}{% trans "Разблокировать" %}{% endif %}
+                    </button>
+                  </form>
+                  {% endwith %}
+                </li>
+                <li>
+                  {% with display_name=u|user_display_name %}
+                  <form method="post" action="{% url 'user_delete' u.pk %}" onsubmit='return confirm("{% filter escapejs %}{% blocktrans with name=display_name %}Удалить пользователя {{ name }}? Это действие необратимо.{% endblocktrans %}{% endfilter %}");'>
                     {% csrf_token %}
                     <button type="submit" class="dropdown-item text-danger">{% trans "Удалить" %}</button>
                   </form>
+                  {% endwith %}
                 </li>
               </ul>
             </div>
@@ -98,6 +111,10 @@
         <div class="modal-body">
           <p class="text-muted small">{% trans "На указанный email будет отправлена ссылка для установки пароля." %}</p>
           <div class="mb-3">
+            <label class="form-label">{% trans "ФИО" %}</label>
+            {{ invite_form.full_name }}
+          </div>
+          <div class="mb-3">
             <label class="form-label">Email</label>
             {{ invite_form.email }}
           </div>
@@ -114,4 +131,38 @@
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="renameUserModal" tabindex="-1" aria-labelledby="renameUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content" style="border-radius:16px;">
+      <form method="post" action="" id="renameUserForm">
+        {% csrf_token %}
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" id="renameUserModalLabel">{% trans "Переименовать" %}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Закрыть' %}"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label" for="renameFullNameInput">{% trans "ФИО" %}</label>
+            <input type="text" name="full_name" id="renameFullNameInput" class="form-control" maxlength="255" required>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{% trans "Отмена" %}</button>
+          <button type="submit" class="btn btn-primary">{% trans "Сохранить" %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+  document.querySelectorAll('.rename-user-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.getElementById('renameUserForm').action = btn.dataset.renameUrl;
+      document.getElementById('renameFullNameInput').value = btn.dataset.fullName || '';
+    });
+  });
+</script>
 {% endblock %}

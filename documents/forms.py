@@ -198,6 +198,11 @@ class NotificationSettingsForm(forms.ModelForm):
 
 
 class UserInviteForm(forms.Form):
+    full_name = forms.CharField(
+        label=_('ФИО'),
+        max_length=255,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('ФИО пользователя')}),
+    )
     email = forms.EmailField(
         widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'email@example.com'}),
     )
@@ -205,6 +210,9 @@ class UserInviteForm(forms.Form):
         choices=UserProfile.ROLE_CHOICES,
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
+
+    def clean_full_name(self):
+        return self.cleaned_data['full_name'].strip()
 
     def clean_email(self):
         email = self.cleaned_data['email'].strip().lower()
@@ -215,6 +223,20 @@ class UserInviteForm(forms.Form):
 
 class UserRoleForm(forms.Form):
     role = forms.ChoiceField(choices=UserProfile.ROLE_CHOICES)
+
+
+class UserRenameForm(forms.Form):
+    full_name = forms.CharField(
+        label=_('ФИО'),
+        max_length=255,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('ФИО пользователя')}),
+    )
+
+    def clean_full_name(self):
+        value = self.cleaned_data['full_name'].strip()
+        if not value:
+            raise ValidationError(_('Укажите ФИО.'))
+        return value
 
 
 class CategoryForm(forms.ModelForm):
