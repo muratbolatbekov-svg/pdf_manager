@@ -82,6 +82,8 @@ def get_period_stats(start, end):
         'active_docs': qs.filter(status='active').count(),
         'draft_docs': qs.filter(status='draft').count(),
         'archived_docs': qs.filter(status='archived').count(),
+        'with_vat_docs': qs.filter(with_vat=True).count(),
+        'without_vat_docs': qs.filter(with_vat=False).count(),
     }
 
 

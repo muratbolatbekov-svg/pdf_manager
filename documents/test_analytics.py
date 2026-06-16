@@ -23,6 +23,7 @@ class AnalyticsTests(TestCase):
             category=self.category,
             amount=Decimal('200000'),
             status='draft',
+            with_vat=True,
             created_at=timezone.make_aware(datetime(2026, 6, 10, 12, 0)),
         )
 
@@ -33,6 +34,8 @@ class AnalyticsTests(TestCase):
         self.assertEqual(end, date(2026, 6, 30))
         self.assertEqual(data['stats']['total_docs'], 1)
         self.assertEqual(data['stats']['draft_docs'], 1)
+        self.assertEqual(data['stats']['with_vat_docs'], 1)
+        self.assertEqual(data['stats']['without_vat_docs'], 0)
 
     def test_monthly_amounts_includes_june(self):
         points = get_monthly_amounts(date(2026, 6, 30), 3)

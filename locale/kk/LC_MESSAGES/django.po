@@ -95,6 +95,9 @@ msgstr "Аналитика"
 msgid "Апр"
 msgstr "Сәу"
 
+msgid "Без НДС"
+msgstr "ҚҚС-сыз"
+
 msgid "Без категории"
 msgstr "Санатсыз"
 

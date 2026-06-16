@@ -16,6 +16,8 @@
     active_docs: document.getElementById('statActiveDocs'),
     draft_docs: document.getElementById('statDraftDocs'),
     archived_docs: document.getElementById('statArchivedDocs'),
+    with_vat_docs: document.getElementById('statWithVatDocs'),
+    without_vat_docs: document.getElementById('statWithoutVatDocs'),
   };
 
   const periodLabelEl = document.getElementById('dashboardPeriodLabel');

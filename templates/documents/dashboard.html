@@ -110,6 +110,18 @@
       <div class="stat-value" style="color: #ff3b30;">{{ expired_count }}</div>
     </div>
   </div>
+  <div class="col-md-4">
+    <div class="card stat-card">
+      <div class="stat-label">{% trans "С НДС" %}</div>
+      <div class="stat-value" id="statWithVatDocs" style="color: #5856d6;">{{ analytics_json.stats.with_vat_docs }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card">
+      <div class="stat-label">{% trans "Без НДС" %}</div>
+      <div class="stat-value" id="statWithoutVatDocs" style="color: var(--apple-muted);">{{ analytics_json.stats.without_vat_docs }}</div>
+    </div>
+  </div>
 </div>
 
 {% if expiring_soon %}

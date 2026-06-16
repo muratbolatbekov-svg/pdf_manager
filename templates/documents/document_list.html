@@ -250,7 +250,7 @@
 <div class="card">
   {% if documents %}
   <table class="table mb-0">
-    <thead><tr><th>{% trans "Документ" %}</th><th>{% trans "Категория" %}</th><th>{% trans "Подписант" %}</th><th>{% trans "Сумма" %}</th><th>{% trans "Срок" %}</th><th>{% trans "Статус" %}</th><th>{% trans "Теги" %}</th><th>{% trans "Файл" %}</th><th></th></tr></thead>
+    <thead><tr><th>{% trans "Документ" %}</th><th>{% trans "Категория" %}</th><th>{% trans "Подписант" %}</th><th>{% trans "Сумма" %}</th><th>{% trans "Срок" %}</th><th>{% trans "С НДС" %}</th><th>{% trans "Статус" %}</th><th>{% trans "Теги" %}</th><th>{% trans "Файл" %}</th><th></th></tr></thead>
     <tbody>
     {% for doc in documents %}
     {% with tag_summary=doc.tags|doc_tag_summary %}
@@ -274,6 +274,7 @@
       <td class="small {% if doc.is_expired %}text-danger{% elif doc.is_expiring_soon %}text-warning{% else %}text-muted{% endif %}">
         {% if doc.end_date %}{{ doc.end_date|date:"d.m.Y" }}{% else %}—{% endif %}
       </td>
+      <td class="small">{% if doc.with_vat %}<span class="text-success">{% trans "Да" %}</span>{% else %}<span class="text-muted">{% trans "Нет" %}</span>{% endif %}</td>
       <td><span class="badge badge-status-{{ doc.status }}">{{ doc.get_status_display }}</span></td>
       <td>
         {% if tag_summary.visible %}
@@ -298,7 +299,7 @@
     {% endwith %}
     {% endfor %}
     <tr id="docSearchNoMatch" class="d-none">
-      <td colspan="9" class="text-center text-muted py-4">{% trans "Ничего не найдено по вашему запросу" %}</td>
+      <td colspan="10" class="text-center text-muted py-4">{% trans "Ничего не найдено по вашему запросу" %}</td>
     </tr>
     </tbody>
   </table>

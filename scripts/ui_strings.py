@@ -165,6 +165,7 @@ EXTRA_TRANSLATIONS = {
     "Сумма (₸)": {"en": "Amount (₸)", "kk": "Сома (₸)"},
     "Сумма договора (₸)": {"en": "Contract amount (₸)", "kk": "Келісім сомасы (₸)"},
     "С НДС": {"en": "With VAT", "kk": "ҚҚС-пен"},
+    "Без НДС": {"en": "Without VAT", "kk": "ҚҚС-сыз"},
     "Суммы, сроки": {"en": "Amounts and deadlines", "kk": "Сомалар, мерзімдер"},
     "Суффикс": {"en": "Suffix", "kk": "Сuffix"},
     "Счёт": {"en": "Invoice", "kk": "Шот"},
