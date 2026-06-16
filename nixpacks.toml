@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["python311", "gcc"]
+nixPkgs = ["python311", "postgresql", "gcc"]
 
 [start]
 cmd = "gunicorn config.wsgi --bind 0.0.0.0:$PORT --log-file -"
