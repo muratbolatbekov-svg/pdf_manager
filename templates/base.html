@@ -69,6 +69,12 @@
     color: var(--apple-text);
     margin-bottom: 32px;
     padding: 0 8px;
+    display: block;
+    transition: opacity 0.2s ease;
+  }
+  .sidebar .brand:hover {
+    color: var(--apple-text);
+    opacity: 0.75;
   }
   .sidebar .nav-link {
     color: var(--apple-muted);
@@ -212,7 +218,8 @@
 <button class="sidebar-toggle" id="sidebarToggle" aria-label="Меню"><i class="bi bi-list fs-5"></i></button>
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <div class="sidebar" id="sidebar">
-  <div class="brand"><i class="bi bi-file-pdf-fill text-danger me-2"></i>PDF Data Base</div>
+  <a href="{% url 'home' %}" class="brand text-decoration-none {% if request.resolver_match.url_name == 'home' %}active{% endif %}"><i class="bi bi-file-pdf-fill text-danger me-2"></i>PDF Data Base</a>
+  {% if user.is_authenticated %}
   <ul class="nav flex-column flex-grow-1">
     <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"><i class="bi bi-speedometer2"></i>Дашборд</a></li>
     <li class="nav-item"><a class="nav-link {% if 'document' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'document_list' %}"><i class="bi bi-files"></i>Документы</a></li>
@@ -230,6 +237,12 @@
       <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-secondary border-0" title="Выйти"><i class="bi bi-box-arrow-right"></i></a>
     </div>
   </div>
+  {% else %}
+  <div class="flex-grow-1"></div>
+  <div class="mt-auto pt-3 border-top" style="border-color: var(--apple-border) !important;">
+    <a href="{% url 'login' %}" class="btn btn-primary w-100">Войти</a>
+  </div>
+  {% endif %}
 </div>
 <main>
   {% if messages %}{% for msg in messages %}<div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle me-2"></i>{{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>{% endfor %}{% endif %}

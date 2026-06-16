@@ -57,6 +57,23 @@ def _documents_queryset(request):
     return documents.order_by(order), query, selected_category, status, sort
 
 
+def _document_stats():
+    return {
+        'total_docs': Document.objects.count(),
+        'active_docs': Document.objects.filter(status='active').count(),
+        'archived_docs': Document.objects.filter(status='archived').count(),
+        'draft_docs': Document.objects.filter(status='draft').count(),
+    }
+
+
+def home(request):
+    context = {}
+    if request.user.is_authenticated:
+        context.update(_document_stats())
+        context['user_role'] = get_user_role(request.user)
+    return render(request, 'documents/home.html', context)
+
+
 @login_required
 def dashboard(request):
     today = timezone.localdate()
@@ -72,10 +89,7 @@ def dashboard(request):
         .order_by('-total_amount')[:5]
     )
     context = {
-        'total_docs': Document.objects.count(),
-        'active_docs': Document.objects.filter(status='active').count(),
-        'archived_docs': Document.objects.filter(status='archived').count(),
-        'draft_docs': Document.objects.filter(status='draft').count(),
+        **_document_stats(),
         'total_amount': Document.objects.aggregate(total=Sum('amount'))['total'] or Decimal('0'),
         'categories': Category.objects.annotate(doc_count=Count('document')),
         'recent_docs': Document.objects.select_related('category').prefetch_related('tags')[:5],

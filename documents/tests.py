@@ -46,6 +46,23 @@ class DocumentViewTests(TestCase):
         response = self.client.get(reverse('document_list'))
         self.assertEqual(response.status_code, 302)
 
+    def test_home_public(self):
+        response = self.client.get(reverse('home'))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertIn('PDF Data Base', content)
+        self.assertIn('Войти', content)
+        self.assertNotIn('Быстрые действия', content)
+
+    def test_home_authenticated(self):
+        self.client.login(username='editor', password='pass12345')
+        response = self.client.get(reverse('home'))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertIn('Статистика', content)
+        self.assertIn('Быстрые действия', content)
+        self.assertIn('Открыть дашборд', content)
+
     def test_document_list(self):
         request = self.factory.get('/documents/')
         request.user = self.user
