@@ -164,6 +164,7 @@ EXTRA_TRANSLATIONS = {
     "Стр. {{ page }} из {{ total }}": {"en": "Page {{ page }} of {{ total }}", "kk": "Бет {{ page }} / {{ total }}"},
     "Сумма (₸)": {"en": "Amount (₸)", "kk": "Сома (₸)"},
     "Сумма договора (₸)": {"en": "Contract amount (₸)", "kk": "Келісім сомасы (₸)"},
+    "НДС": {"en": "VAT", "kk": "ҚҚС"},
     "С НДС": {"en": "With VAT", "kk": "ҚҚС-пен"},
     "Без НДС": {"en": "Without VAT", "kk": "ҚҚС-сыз"},
     "Суммы, сроки": {"en": "Amounts and deadlines", "kk": "Сомалар, мерзімдер"},

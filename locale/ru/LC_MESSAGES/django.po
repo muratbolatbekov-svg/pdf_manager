@@ -456,6 +456,9 @@ msgstr "Меню"
 msgid "Модель"
 msgstr "Модель"
 
+msgid "НДС"
+msgstr "НДС"
+
 msgid "На главную"
 msgstr "На главную"
 

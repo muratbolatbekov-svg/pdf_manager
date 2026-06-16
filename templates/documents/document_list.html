@@ -250,7 +250,7 @@
 <div class="card">
   {% if documents %}
   <table class="table mb-0">
-    <thead><tr><th>{% trans "Документ" %}</th><th>{% trans "Категория" %}</th><th>{% trans "Подписант" %}</th><th>{% trans "Сумма" %}</th><th>{% trans "Срок" %}</th><th>{% trans "С НДС" %}</th><th>{% trans "Статус" %}</th><th>{% trans "Теги" %}</th><th>{% trans "Файл" %}</th><th></th></tr></thead>
+    <thead><tr><th>{% trans "Документ" %}</th><th>{% trans "Категория" %}</th><th>{% trans "Подписант" %}</th><th>{% trans "Сумма" %}</th><th>{% trans "Срок" %}</th><th>{% trans "НДС" %}</th><th>{% trans "Статус" %}</th><th>{% trans "Теги" %}</th><th>{% trans "Файл" %}</th><th></th></tr></thead>
     <tbody>
     {% for doc in documents %}
     {% with tag_summary=doc.tags|doc_tag_summary %}

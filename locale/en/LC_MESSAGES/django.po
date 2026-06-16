@@ -456,6 +456,9 @@ msgstr "Menu"
 msgid "Модель"
 msgstr "Model"
 
+msgid "НДС"
+msgstr "VAT"
+
 msgid "На главную"
 msgstr "Home"
 

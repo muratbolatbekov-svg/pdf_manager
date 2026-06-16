@@ -44,6 +44,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
     'Категория': {'kk': 'Санат', 'en': 'Category'},
     'PDF файл': {'kk': 'PDF файлы', 'en': 'PDF file'},
     'Сумма договора': {'kk': 'Келісім сомасы', 'en': 'Contract amount'},
+    'НДС': {'kk': 'ҚҚС', 'en': 'VAT'},
     'С НДС': {'kk': 'ҚҚС-пен', 'en': 'With VAT'},
     'Без НДС': {'kk': 'ҚҚС-сыз', 'en': 'Without VAT'},
     'Да': {'kk': 'Иә', 'en': 'Yes'},

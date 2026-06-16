@@ -456,6 +456,9 @@ msgstr "Мәзір"
 msgid "Модель"
 msgstr "Модель"
 
+msgid "НДС"
+msgstr "ҚҚС"
+
 msgid "На главную"
 msgstr "Басты бетке"
 
