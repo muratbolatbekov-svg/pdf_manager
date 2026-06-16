@@ -35,9 +35,9 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ['title', 'category', 'signatory', 'amount', 'status', 'end_date', 'created_at']
+    list_display = ['title', 'category', 'company', 'signatory', 'amount', 'status', 'end_date', 'created_at']
     list_filter = ['status', 'category']
-    search_fields = ['title', 'signatory', 'pdf_text']
+    search_fields = ['title', 'company', 'signatory', 'pdf_text']
     list_editable = ['status']
     prepopulated_fields = {'slug': ('title',)}
 

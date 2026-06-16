@@ -128,8 +128,10 @@
     table-layout: auto;
   }
   .documents-table th.col-signatory,
+  .documents-table th.col-company,
   .documents-table th.col-amount,
   .documents-table td.col-signatory,
+  .documents-table td.col-company,
   .documents-table td.col-amount {
     white-space: nowrap;
   }
@@ -166,7 +168,7 @@
   <div class="d-flex flex-wrap gap-2 align-items-center">
     <div class="doc-search-wrap flex-grow-1">
       <i class="bi bi-search doc-search-icon"></i>
-      <input type="search" id="docSearchInput" class="form-control" placeholder="{% trans 'Поиск по названию, категории, подписанту...' %}" autocomplete="off">
+      <input type="search" id="docSearchInput" class="form-control" placeholder="{% trans 'Поиск по названию, категории, компании, подписанту...' %}" autocomplete="off">
       <button type="button" id="docSearchClear" class="doc-search-clear d-none" aria-label="{% trans 'Очистить поиск' %}">×</button>
     </div>
     <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#filtersPanel" aria-expanded="{% if has_active_filters %}true{% else %}false{% endif %}">
@@ -264,11 +266,11 @@
   {% if documents %}
   <div class="table-responsive">
   <table class="table mb-0 documents-table">
-    <thead><tr><th>{% trans "Документ" %}</th><th>{% trans "Категория" %}</th><th class="col-signatory">{% trans "Подписант" %}</th><th class="col-amount">{% trans "Сумма" %}</th><th>{% trans "Срок" %}</th><th>{% trans "НДС" %}</th><th>{% trans "Статус" %}</th><th>{% trans "Теги" %}</th><th>{% trans "Файл" %}</th><th></th></tr></thead>
+    <thead><tr><th>{% trans "Документ" %}</th><th>{% trans "Категория" %}</th><th class="col-company">{% trans "Компания" %}</th><th class="col-signatory">{% trans "Подписант" %}</th><th class="col-amount">{% trans "Сумма" %}</th><th>{% trans "Срок" %}</th><th>{% trans "НДС" %}</th><th>{% trans "Статус" %}</th><th>{% trans "Теги" %}</th><th>{% trans "Файл" %}</th><th></th></tr></thead>
     <tbody>
     {% for doc in documents %}
     {% with tag_summary=doc.tags|doc_tag_summary %}
-    <tr class="doc-row" data-search="{{ doc.title|lower }} {{ doc.category.name|default:''|lower }} {{ doc.signatory|default:''|lower }} {% for t in doc.tags.all %}{{ t.name|lower }} {% endfor %}">
+    <tr class="doc-row" data-search="{{ doc.title|lower }} {{ doc.category.name|default:''|lower }} {{ doc.company|default:''|lower }} {{ doc.signatory|default:''|lower }} {% for t in doc.tags.all %}{{ t.name|lower }} {% endfor %}">
       <td>
         {% if doc.pdf_file %}
         <a href="#" class="text-decoration-none fw-medium pdf-preview-trigger" style="color: var(--apple-text);"
@@ -283,6 +285,7 @@
         {% endif %}
       </td>
       <td class="text-muted">{{ doc.category|default:"—" }}</td>
+      <td class="col-company">{{ doc.company|default:"—" }}</td>
       <td class="col-signatory">{{ doc.signatory|default:"—" }}</td>
       <td class="col-amount fw-medium">{% if doc.amount %}{{ doc.amount_formatted }}{% else %}—{% endif %}</td>
       <td class="small {% if doc.is_expired %}text-danger{% elif doc.is_expiring_soon %}text-warning{% else %}text-muted{% endif %}">
@@ -313,7 +316,7 @@
     {% endwith %}
     {% endfor %}
     <tr id="docSearchNoMatch" class="d-none">
-      <td colspan="10" class="text-center text-muted py-4">{% trans "Ничего не найдено по вашему запросу" %}</td>
+      <td colspan="11" class="text-center text-muted py-4">{% trans "Ничего не найдено по вашему запросу" %}</td>
     </tr>
     </tbody>
   </table>

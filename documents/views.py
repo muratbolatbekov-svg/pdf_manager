@@ -419,7 +419,7 @@ def document_delete(request, slug):
 def _export_headers():
     return [
         _('Название'), _('Категория'), _('Статус'), _('Дата создания'),
-        _('Дата истечения'), _('Сумма (₸)'), _('Контрагент'),
+        _('Дата истечения'), _('Сумма (₸)'), _('Компания'), _('Контрагент'),
     ]
 
 
@@ -442,6 +442,7 @@ def document_export(request):
                 doc.created_at.strftime('%d.%m.%Y'),
                 doc.end_date.strftime('%d.%m.%Y') if doc.end_date else '',
                 float(doc.amount),
+                doc.company,
                 doc.signatory,
             ])
         response = HttpResponse(
@@ -464,6 +465,7 @@ def document_export(request):
             doc.created_at.strftime('%d.%m.%Y'),
             doc.end_date.strftime('%d.%m.%Y') if doc.end_date else '',
             doc.amount,
+            doc.company,
             doc.signatory,
         ])
     return response
@@ -742,7 +744,7 @@ def document_link_search(request, slug):
     results = Document.objects.exclude(pk=document.pk).exclude(pk__in=already_linked)
     if query:
         results = results.filter(
-            Q(title__icontains=query) | Q(signatory__icontains=query) | Q(author__icontains=query)
+            Q(title__icontains=query) | Q(company__icontains=query) | Q(signatory__icontains=query) | Q(author__icontains=query)
         )
     results = results.order_by('-created_at')[:20]
     return JsonResponse({

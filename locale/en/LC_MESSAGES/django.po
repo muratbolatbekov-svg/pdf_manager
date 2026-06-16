@@ -432,6 +432,9 @@ msgstr "Comment"
 msgid "Комментарий слишком длинный."
 msgstr "Comment is too long."
 
+msgid "Компания"
+msgstr "Company"
+
 msgid "Контрагент"
 msgstr "Counterparty"
 
@@ -479,6 +482,9 @@ msgstr "Title *"
 
 msgid "Название документа"
 msgstr "Document title"
+
+msgid "Название компании"
+msgstr "Company name"
 
 msgid "Название, контрагент..."
 msgstr "Title, counterparty..."
@@ -642,8 +648,8 @@ msgstr "Signatory"
 msgid "Поиск"
 msgstr "Search"
 
-msgid "Поиск по названию, категории, подписанту..."
-msgstr "Search by title, category, signatory..."
+msgid "Поиск по названию, категории, компании, подписанту..."
+msgstr "Search by title, category, company, signatory..."
 
 msgid "Показать пароль"
 msgstr "Показать пароль"

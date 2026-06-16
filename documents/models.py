@@ -47,6 +47,7 @@ class Document(models.Model):
     amount = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name=_('Сумма договора'))
     with_vat = models.BooleanField(default=False, verbose_name=_('С НДС'))
     signatory = models.CharField(max_length=255, blank=True, verbose_name=_('Подписант'))
+    company = models.CharField(max_length=255, blank=True, verbose_name=_('Компания'))
     author = models.CharField(max_length=150, blank=True, verbose_name=_('Автор'))
     tags = models.ManyToManyField(Tag, blank=True, related_name='documents', verbose_name=_('Теги'))
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name=_('Статус'))

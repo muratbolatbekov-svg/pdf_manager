@@ -34,7 +34,7 @@ class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
         fields = [
-            'title', 'description', 'category', 'pdf_file', 'amount', 'with_vat', 'signatory',
+            'title', 'description', 'category', 'pdf_file', 'amount', 'with_vat', 'company', 'signatory',
             'author', 'status', 'start_date', 'end_date',
         ]
         widgets = {
@@ -42,6 +42,7 @@ class DocumentForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'category': forms.Select(attrs={'class': 'form-select'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00'}),
+            'company': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Название компании')}),
             'signatory': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('ФИО подписанта')}),
             'author': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('ФИО автора')}),
             'status': forms.Select(attrs={'class': 'form-select'}),

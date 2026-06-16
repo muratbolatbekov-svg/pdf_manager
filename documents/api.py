@@ -36,7 +36,7 @@ class DocumentSerializer(serializers.ModelSerializer):
         model = Document
         fields = [
             'id', 'title', 'slug', 'description', 'category', 'category_name',
-            'pdf_file', 'amount', 'amount_formatted', 'signatory', 'author',
+            'pdf_file', 'amount', 'amount_formatted', 'company', 'signatory', 'author',
             'tags', 'status', 'status_display', 'start_date', 'end_date',
             'created_at', 'updated_at',
         ]
@@ -106,6 +106,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
         if search:
             qs = qs.filter(
                 Q(title__icontains=search)
+                | Q(company__icontains=search)
                 | Q(signatory__icontains=search)
                 | Q(author__icontains=search)
                 | Q(description__icontains=search)
