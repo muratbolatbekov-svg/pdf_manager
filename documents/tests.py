@@ -392,6 +392,50 @@ class DocumentFormTests(TestCase):
         )
         self.assertFalse(form.is_valid())
 
+    def test_edit_form_renders_dates_for_html_date_input(self):
+        from datetime import date
+
+        from documents.forms import DocumentForm
+
+        document = Document.objects.create(
+            title='Contract',
+            start_date=date(2026, 3, 10),
+            end_date=date(2027, 3, 10),
+        )
+        form = DocumentForm(instance=document, user=self.user)
+        start_html = str(form['start_date'])
+        end_html = str(form['end_date'])
+        self.assertIn('value="2026-03-10"', start_html)
+        self.assertIn('value="2027-03-10"', end_html)
+
+    def test_edit_save_preserves_dates_when_unchanged(self):
+        from datetime import date
+
+        from documents.forms import DocumentForm
+
+        document = Document.objects.create(
+            title='Contract',
+            start_date=date(2026, 3, 10),
+            end_date=date(2027, 3, 10),
+        )
+        form = DocumentForm(
+            data={
+                'title': 'Contract updated',
+                'amount': '0',
+                'status': 'active',
+                'with_vat': '0',
+                'start_date': '2026-03-10',
+                'end_date': '2027-03-10',
+            },
+            instance=document,
+            user=self.user,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        saved = form.save()
+        saved.refresh_from_db()
+        self.assertEqual(saved.start_date, date(2026, 3, 10))
+        self.assertEqual(saved.end_date, date(2027, 3, 10))
+
 
 class CategoryViewTests(TestCase):
     def setUp(self):

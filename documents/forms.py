@@ -45,8 +45,14 @@ class DocumentForm(forms.ModelForm):
             'signatory': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('ФИО подписанта')}),
             'author': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('ФИО автора')}),
             'status': forms.Select(attrs={'class': 'form-select'}),
-            'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'start_date': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={'class': 'form-control', 'type': 'date'},
+            ),
+            'end_date': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={'class': 'form-control', 'type': 'date'},
+            ),
         }
 
     def __init__(self, *args, **kwargs):
@@ -60,6 +66,9 @@ class DocumentForm(forms.ModelForm):
         if not self.is_bound:
             with_vat = bool(self.instance.with_vat) if self.instance.pk else False
             self.initial['with_vat'] = self.WITH_VAT_YES if with_vat else self.WITH_VAT_NO
+        date_input_formats = ['%Y-%m-%d']
+        self.fields['start_date'].input_formats = date_input_formats
+        self.fields['end_date'].input_formats = date_input_formats
         if self.instance.pk:
             self.fields['tags_input'].initial = ', '.join(self.instance.tags.values_list('name', flat=True))
         elif self.user:
