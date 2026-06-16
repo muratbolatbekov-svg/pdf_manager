@@ -28,7 +28,14 @@
 
   function updatePageInfo() {
     const total = pdfDoc ? pdfDoc.numPages : 0;
-    pageInfoEl.textContent = total ? `Стр. ${pageNum} из ${total}` : '';
+    if (total) {
+      const pageLabel = appI18n('pageOf', 'Стр. %(page)s из %(total)s')
+        .replace('%(page)s', pageNum)
+        .replace('%(total)s', total);
+      pageInfoEl.textContent = pageLabel;
+    } else {
+      pageInfoEl.textContent = '';
+    }
     prevBtn.disabled = pageNum <= 1;
     nextBtn.disabled = !pdfDoc || pageNum >= total;
   }
@@ -61,7 +68,7 @@
     }).catch(function (err) {
       if (err && err.name === 'RenderingCancelledException') return;
       setLoading(false);
-      pageInfoEl.textContent = 'Не удалось отобразить страницу';
+      pageInfoEl.textContent = appI18n('renderError', 'Не удалось отобразить страницу');
     });
   }
 
@@ -81,7 +88,7 @@
       renderPage(pageNum);
     }).catch(function () {
       setLoading(false);
-      pageInfoEl.textContent = 'Не удалось загрузить PDF';
+      pageInfoEl.textContent = appI18n('loadError', 'Не удалось загрузить PDF');
     });
   }
 
@@ -89,7 +96,7 @@
     trigger.addEventListener('click', function (event) {
       event.preventDefault();
       const url = trigger.dataset.pdfUrl;
-      const title = trigger.dataset.pdfTitle || 'Документ';
+      const title = trigger.dataset.pdfTitle || appI18n('document', 'Документ');
       if (url) {
         openViewer(url, title);
       }

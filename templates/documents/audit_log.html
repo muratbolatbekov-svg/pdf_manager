@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
-{% block title %}Журнал изменений — PDF Data Base{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Журнал изменений — PDF Data Base" %}{% endblock %}
 {% block content %}
-<h4 class="fw-bold mb-4">Журнал изменений</h4>
+<h4 class="fw-bold mb-4">{% trans "Журнал изменений" %}</h4>
 <div class="card">
   <table class="table mb-0">
-    <thead><tr><th>Время</th><th>Пользователь</th><th>Действие</th><th>Объект</th></tr></thead>
+    <thead><tr><th>{% trans "Время" %}</th><th>{% trans "Пользователь" %}</th><th>{% trans "Действие" %}</th><th>{% trans "Объект" %}</th></tr></thead>
     <tbody>
     {% for log in logs %}
     <tr>
@@ -14,7 +15,7 @@
       <td>{{ log.object_repr }}</td>
     </tr>
     {% empty %}
-    <tr><td colspan="4" class="text-center text-muted py-4">Записей пока нет</td></tr>
+    <tr><td colspan="4" class="text-center text-muted py-4">{% trans "Записей пока нет" %}</td></tr>
     {% endfor %}
     </tbody>
   </table>

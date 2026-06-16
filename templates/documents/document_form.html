@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load i18n static %}
 {% block title %}{{ title }} — PDF Data Base{% endblock %}
 {% block extra_head %}
 <style>
@@ -61,33 +61,33 @@
   <form method="post" enctype="multipart/form-data" id="documentForm" data-has-pdf="{% if has_pdf_file %}true{% else %}false{% endif %}">{% csrf_token %}
     {% include 'documents/_form_errors.html' %}
     <div class="row g-3">
-      <div class="col-12"><label class="form-label fw-medium">Название *</label>{{ form.title }}</div>
+      <div class="col-12"><label class="form-label fw-medium">{% trans "Название *" %}</label>{{ form.title }}</div>
       <div class="col-12">
-        <label class="form-label fw-medium"><i class="bi bi-file-pdf text-danger me-1"></i>PDF файл</label>
+        <label class="form-label fw-medium"><i class="bi bi-file-pdf text-danger me-1"></i>{% trans "PDF файл" %}</label>
         {{ form.pdf_file }}
-        <div class="form-text text-muted" style="font-size:12px;">Загрузите PDF файл — он сохранится в облаке</div>
+        <div class="form-text text-muted" style="font-size:12px;">{% trans "Загрузите PDF файл — он сохранится в облаке" %}</div>
       </div>
-      <div class="col-md-6"><label class="form-label fw-medium">Сумма договора (₸)</label>{{ form.amount }}</div>
-      <div class="col-md-6"><label class="form-label fw-medium">Подписант</label>{{ form.signatory }}</div>
-      <div class="col-md-6"><label class="form-label fw-medium">Дата начала</label>{{ form.start_date }}</div>
-      <div class="col-md-6"><label class="form-label fw-medium">Дата окончания</label>{{ form.end_date }}</div>
-      <div class="col-md-6"><label class="form-label fw-medium">Категория</label>{{ form.category }}</div>
-      <div class="col-md-6"><label class="form-label fw-medium">Статус</label>{{ form.status }}</div>
-      <div class="col-12"><label class="form-label fw-medium">Автор</label>{{ form.author }}</div>
-      <div class="col-12"><label class="form-label fw-medium">Описание</label>{{ form.description }}</div>
+      <div class="col-md-6"><label class="form-label fw-medium">{% trans "Сумма договора (₸)" %}</label>{{ form.amount }}</div>
+      <div class="col-md-6"><label class="form-label fw-medium">{% trans "Подписант" %}</label>{{ form.signatory }}</div>
+      <div class="col-md-6"><label class="form-label fw-medium">{% trans "Дата начала" %}</label>{{ form.start_date }}</div>
+      <div class="col-md-6"><label class="form-label fw-medium">{% trans "Дата окончания" %}</label>{{ form.end_date }}</div>
+      <div class="col-md-6"><label class="form-label fw-medium">{% trans "Категория" %}</label>{{ form.category }}</div>
+      <div class="col-md-6"><label class="form-label fw-medium">{% trans "Статус" %}</label>{{ form.status }}</div>
+      <div class="col-12"><label class="form-label fw-medium">{% trans "Автор" %}</label>{{ form.author }}</div>
+      <div class="col-12"><label class="form-label fw-medium">{% trans "Описание" %}</label>{{ form.description }}</div>
       <div class="col-12">
-        <label class="form-label fw-medium">Теги</label>
+        <label class="form-label fw-medium">{% trans "Теги" %}</label>
         <div class="tag-input-wrapper" data-autocomplete-url="{% url 'tag_autocomplete' %}">
           <div id="tagChips" class="tag-chips"></div>
-          <input type="text" id="tagTextInput" class="tag-text-input" list="tagSuggestions" placeholder="Введите тег и нажмите Enter" autocomplete="off">
+          <input type="text" id="tagTextInput" class="tag-text-input" list="tagSuggestions" placeholder="{% trans 'Введите тег и нажмите Enter' %}" autocomplete="off">
           <datalist id="tagSuggestions"></datalist>
           {{ form.tags_input }}
         </div>
-        <div class="form-text text-muted" style="font-size:12px;">Enter или запятая добавляет тег</div>
+        <div class="form-text text-muted" style="font-size:12px;">{% trans "Enter или запятая добавляет тег" %}</div>
       </div>
       <div class="col-12 pt-2">
-        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-lg me-2"></i>Сохранить</button>
-        <a href="{% url 'document_list' %}" class="btn btn-outline-secondary ms-2">Отмена</a>
+        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-lg me-2"></i>{% trans "Сохранить" %}</button>
+        <a href="{% url 'document_list' %}" class="btn btn-outline-secondary ms-2">{% trans "Отмена" %}</a>
       </div>
     </div>
   </form>
@@ -98,15 +98,15 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content" style="border-radius:16px;">
       <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title fw-bold">Замена PDF файла</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        <h5 class="modal-title fw-bold">{% trans "Замена PDF файла" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Закрыть' %}"></button>
       </div>
       <div class="modal-body">
-        <p class="mb-0">Этот документ уже содержит файл.<br>Что сделать с новым файлом?</p>
+        <p class="mb-0">{% trans "Этот документ уже содержит файл." %}<br>{% trans "Что сделать с новым файлом?" %}</p>
       </div>
       <div class="modal-footer border-0 pt-0">
-        <button type="button" class="btn btn-outline-secondary" id="replacePdfCancel">Отмена</button>
-        <button type="button" class="btn btn-primary" id="replacePdfConfirm">Заменить (старая версия сохранится)</button>
+        <button type="button" class="btn btn-outline-secondary" id="replacePdfCancel">{% trans "Отмена" %}</button>
+        <button type="button" class="btn btn-primary" id="replacePdfConfirm">{% trans "Заменить (старая версия сохранится)" %}</button>
       </div>
     </div>
   </div>
@@ -114,6 +114,9 @@
 {% endif %}
 {% endblock %}
 {% block extra_js %}
+{% trans "Удалить тег" as remove_tag %}
+<script id="app-i18n" type="application/json">{"removeTag":"{{ remove_tag|escapejs }}"}</script>
+<script src="{% static 'js/app-i18n.js' %}"></script>
 <script src="{% static 'js/tag-input.js' %}"></script>
 {% if has_pdf_file %}
 <script src="{% static 'js/pdf-replace-dialog.js' %}"></script>

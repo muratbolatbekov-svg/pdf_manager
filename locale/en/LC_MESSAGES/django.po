@@ -1,0 +1,1061 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PDF Data Base\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "+ Добавить документ"
+msgstr "+ Add document"
+
+msgid "12 мес"
+msgstr "12 mo"
+
+msgid "3 мес"
+msgstr "3 mo"
+
+msgid "6 мес"
+msgstr "6 mo"
+
+msgid "API — PDF Data Base"
+msgstr "API — PDF Data Base"
+
+msgid "API-ключ"
+msgstr "API key"
+
+msgid "API-ключ создан. Скопируйте его сейчас — больше он не будет показан."
+msgstr "API key created. Copy it now — it will not be shown again."
+
+msgid "API-ключ удалён."
+msgstr "API key deleted."
+
+msgid "API-ключей пока нет"
+msgstr "No API keys yet"
+
+msgid "API-ключи"
+msgstr "API keys"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Email-уведомления"
+msgstr "Email notifications"
+
+msgid "Enter или запятая добавляет тег"
+msgstr "Enter or comma adds a tag"
+
+msgid "ID объекта"
+msgstr "Object ID"
+
+msgid "PDF Data Base — Система управления документами"
+msgstr "PDF Data Base — Document management system"
+
+msgid "PDF файл"
+msgstr "PDF file"
+
+msgid "PDF файл не загружен"
+msgstr "PDF file not uploaded"
+
+msgid "Telegram Chat ID"
+msgstr "Telegram Chat ID"
+
+msgid "Telegram-уведомления"
+msgstr "Telegram notifications"
+
+msgid "{{ count }} пользователей"
+msgstr "{{ count }} users"
+
+msgid "А → Я"
+msgstr "A → Z"
+
+msgid "Авг"
+msgstr "Aug"
+
+msgid "Автор"
+msgstr "Author"
+
+msgid "Администратор"
+msgstr "Administrator"
+
+msgid "Акт"
+msgstr "Act"
+
+msgid "Акт выполненных работ"
+msgstr "Work completion certificate"
+
+msgid "Активный"
+msgstr "Active"
+
+msgid "Активных"
+msgstr "Active"
+
+msgid "Аналитика"
+msgstr "Analytics"
+
+msgid "Апр"
+msgstr "Apr"
+
+msgid "Без категории"
+msgstr "Uncategorized"
+
+msgid "Быстрые действия"
+msgstr "Quick actions"
+
+msgid "Быстрый поиск"
+msgstr "Quick search"
+
+msgid "В архиве"
+msgstr "Archived"
+
+msgid "В день истечения"
+msgstr "On expiry day"
+
+msgid "Введите запрос для поиска"
+msgstr "Enter a search query"
+
+msgid "Введите логин"
+msgstr "Enter username"
+
+msgid "Введите пароль"
+msgstr "Enter password"
+
+msgid "Введите тег и нажмите Enter"
+msgstr "Enter a tag and press Enter"
+
+msgid "Введите текст комментария."
+msgstr "Enter comment text."
+
+msgid "Версии"
+msgstr "Versions"
+
+msgid "Версии документов"
+msgstr "Document versions"
+
+msgid "Версий пока нет"
+msgstr "No versions yet"
+
+msgid "Версия"
+msgstr "Version"
+
+msgid "Версия документа"
+msgstr "Document version"
+
+msgid "Возможности"
+msgstr "Features"
+
+msgid "Войти"
+msgstr "Log in"
+
+msgid "Время"
+msgstr "Time"
+
+msgid "Все договоры"
+msgstr "All contracts"
+
+msgid "Все документы"
+msgstr "All documents"
+
+msgid "Всего документов"
+msgstr "Total documents"
+
+msgid "Вход в систему"
+msgstr "Sign in"
+
+msgid "Вход — PDF Data Base"
+msgstr "Sign in — PDF Data Base"
+
+msgid "Вы уверены, что хотите удалить <strong>{{ name }}</strong>?"
+msgstr "Are you sure you want to delete <strong>{{ name }}</strong>?"
+
+msgid ""
+"Вы уверены, что хотите удалить <strong>{{ title }}</strong>? Это действие "
+"нельзя отменить."
+msgstr ""
+"Are you sure you want to delete <strong>{{ title }}</strong>? This action "
+"cannot be undone."
+
+msgid "Выберите документ для связи."
+msgstr "Select a document to link."
+
+msgid "Выбрано: {{ count }}"
+msgstr "Selected: {{ count }}"
+
+msgid "Выбрать"
+msgstr "Select"
+
+msgid "Выбрать теги"
+msgstr "Select tags"
+
+msgid "Выйти"
+msgstr "Log out"
+
+msgid "Группировка документов"
+msgstr "Document grouping"
+
+msgid "Дата"
+msgstr "Date"
+
+msgid "Дата добавления"
+msgstr "Date added"
+
+msgid "Дата истечения"
+msgstr "Expiry date"
+
+msgid "Дата начала"
+msgstr "Start date"
+
+msgid "Дата обновления"
+msgstr "Updated at"
+
+msgid "Дата окончания"
+msgstr "End date"
+
+msgid "Дата окончания не может быть раньше даты начала."
+msgstr "End date cannot be before start date."
+
+msgid "Дата по"
+msgstr "Date to"
+
+msgid "Дата с"
+msgstr "Date from"
+
+msgid "Дата создания"
+msgstr "Created at"
+
+msgid "Дашборд"
+msgstr "Dashboard"
+
+msgid "Дашборд — PDF Data Base"
+msgstr "Dashboard — PDF Data Base"
+
+msgid "Действие"
+msgstr "Action"
+
+msgid "Действия"
+msgstr "Actions"
+
+msgid "Дек"
+msgstr "Dec"
+
+msgid "Детали"
+msgstr "Details"
+
+msgid "Динамика сумм"
+msgstr "Amount trends"
+
+msgid "Добавить"
+msgstr "Add"
+
+msgid "Добавить документ"
+msgstr "Add document"
+
+msgid "Добавить первый"
+msgstr "Add first"
+
+msgid "Добавить связанный документ"
+msgstr "Add linked document"
+
+msgid "Добавить связь"
+msgstr "Add link"
+
+msgid "Добавлен"
+msgstr "Added"
+
+msgid "Договор истекает {{ date }}"
+msgstr "Contract expires {{ date }}"
+
+msgid "Договор просрочен (окончание: {{ date }})"
+msgstr "Contract expired (end: {{ date }})"
+
+msgid "Документ"
+msgstr "Document"
+
+msgid "Документ обновлён!"
+msgstr "Document updated!"
+
+msgid "Документ удалён!"
+msgstr "Document deleted!"
+
+msgid "Документ успешно добавлен!"
+msgstr "Document added successfully!"
+
+msgid "Документация:"
+msgstr "Documentation:"
+
+msgid "Документы"
+msgstr "Documents"
+
+msgid "Документы не найдены"
+msgstr "No documents found"
+
+msgid "Документы не найдены."
+msgstr "No documents found."
+
+msgid "Документы — PDF Data Base"
+msgstr "Documents — PDF Data Base"
+
+msgid "Доп. согл."
+msgstr "Suppl."
+
+msgid "Дополнительное соглашение"
+msgstr "Supplementary agreement"
+
+msgid "Доступ запрещён"
+msgstr "Access denied"
+
+msgid "Доступ запрещён — PDF Data Base"
+msgstr "Access denied — PDF Data Base"
+
+msgid "Другое"
+msgstr "Other"
+
+msgid "Журнал изменений"
+msgstr "Audit log"
+
+msgid "Журнал изменений — PDF Data Base"
+msgstr "Audit log — PDF Data Base"
+
+msgid "За 30 дней"
+msgstr "30 days before"
+
+msgid "За 30 дней до истечения договора"
+msgstr "30 days before contract expiry"
+
+msgid "За 7 дней"
+msgstr "7 days before"
+
+msgid "За 7 дней до истечения договора"
+msgstr "7 days before contract expiry"
+
+msgid "Заблокировать"
+msgstr "Block"
+
+msgid "Заблокировать пользователя {{ username }}?"
+msgstr "Block user {{ username }}?"
+
+msgid "Загружено"
+msgstr "Uploaded"
+
+msgid "Загрузите PDF файл — он сохранится в облаке"
+msgstr "Upload a PDF — it will be stored in the cloud"
+
+msgid "Загрузить новый PDF-договор"
+msgstr "Upload new PDF contract"
+
+msgid "Загрузка PDF…"
+msgstr "Loading PDF…"
+
+msgid "Закрыть"
+msgstr "Close"
+
+msgid "Замена PDF файла"
+msgstr "Replace PDF file"
+
+msgid "Заменить (старая версия сохранится)"
+msgstr "Replace (previous version will be saved)"
+
+msgid "Записей пока нет"
+msgstr "No records yet"
+
+msgid "Изменение"
+msgstr "Updated"
+
+msgid "Имя"
+msgstr "Name"
+
+msgid "Имя пользователя"
+msgstr "Username"
+
+msgid "Используйте заголовок: <code>Authorization: Bearer {{ key }}</code>"
+msgstr "Use header: <code>Authorization: Bearer {{ key }}</code>"
+
+msgid "Истекает в {{ days }} дней"
+msgstr "Expiring in {{ days }} days"
+
+msgid "Истекают в ближайшие {{ days }} дней:"
+msgstr "Expiring in the next {{ days }} days:"
+
+msgid "История изменений"
+msgstr "Change history"
+
+msgid "Июл"
+msgstr "Jul"
+
+msgid "Июн"
+msgstr "Jun"
+
+msgid "Категории"
+msgstr "Categories"
+
+msgid "Категории — PDF Data Base"
+msgstr "Categories — PDF Data Base"
+
+msgid "Категория"
+msgstr "Category"
+
+msgid "Категория обновлена!"
+msgstr "Category updated!"
+
+msgid "Категория создана!"
+msgstr "Category created!"
+
+msgid "Категория удалена!"
+msgstr "Category deleted!"
+
+msgid "Ключ"
+msgstr "Key"
+
+msgid "Когда уведомлять:"
+msgstr "When to notify:"
+
+msgid "Комментариев пока нет"
+msgstr "No comments yet"
+
+msgid "Комментарии"
+msgstr "Comments"
+
+msgid "Комментарий"
+msgstr "Comment"
+
+msgid "Комментарий слишком длинный."
+msgstr "Comment is too long."
+
+msgid "Контрагент"
+msgstr "Counterparty"
+
+msgid "Копировать"
+msgstr "Copy"
+
+msgid "Май"
+msgstr "May"
+
+msgid "Максимум 365 дней."
+msgstr "Maximum 365 days."
+
+msgid "Мар"
+msgstr "Mar"
+
+msgid "Менеджер"
+msgstr "Manager"
+
+msgid "Меню"
+msgstr "Menu"
+
+msgid "Модель"
+msgstr "Model"
+
+msgid "На главную"
+msgstr "Home"
+
+msgid "На страницу входа"
+msgstr "Go to sign in"
+
+msgid "На указанный email будет отправлена ссылка для установки пароля."
+msgstr "A password setup link will be sent to the email provided."
+
+msgid "Назад"
+msgstr "Back"
+
+msgid "Название"
+msgstr "Title"
+
+msgid "Название *"
+msgstr "Title *"
+
+msgid "Название документа"
+msgstr "Document title"
+
+msgid "Название, контрагент..."
+msgstr "Title, counterparty..."
+
+msgid "Написать комментарий..."
+msgstr "Write a comment..."
+
+msgid "Например: Интеграция 1С"
+msgstr "e.g. 1C integration"
+
+msgid "Настройки"
+msgstr "Settings"
+
+msgid "Настройки уведомлений"
+msgstr "Notification settings"
+
+msgid "Настройки уведомлений сохранены."
+msgstr "Notification settings saved."
+
+msgid "Начало"
+msgstr "Начало"
+
+msgid "Не удалось добавить связь"
+msgstr "Could not add link"
+
+msgid "Не удалось загрузить PDF"
+msgstr "Could not load PDF"
+
+msgid "Не удалось отобразить страницу"
+msgstr "Could not render page"
+
+msgid "Неверный логин или пароль"
+msgstr "Invalid username or password"
+
+msgid "Недостаточно прав для этого действия."
+msgstr "You do not have permission for this action."
+
+msgid "Недостаточно прав."
+msgstr "Недостаточно прав."
+
+msgid "Некорректная роль."
+msgstr "Некорректная роль."
+
+msgid "Некорректный тип связи."
+msgstr "Некорректный тип связи."
+
+msgid "Нельзя заблокировать себя."
+msgstr "Нельзя заблокировать себя."
+
+msgid "Нельзя изменить собственную роль."
+msgstr "Нельзя изменить собственную роль."
+
+msgid "Нельзя удалить себя."
+msgstr "Нельзя удалить себя."
+
+msgid "Нет аккаунта? Обратитесь к администратору."
+msgstr "No account? Contact your administrator."
+
+msgid "Нет данных за выбранный период"
+msgstr "No data for the selected period"
+
+msgid "Нет документов."
+msgstr "No documents."
+
+msgid "Нет категорий."
+msgstr "No categories."
+
+msgid "Нет описания"
+msgstr "No description"
+
+msgid "Нет пользователей"
+msgstr "No users"
+
+msgid "Нет тегов"
+msgstr "No tags"
+
+msgid "Ничего не найдено по вашему запросу"
+msgstr "Nothing found for your query"
+
+msgid "Новая категория"
+msgstr "New category"
+
+msgid "Новый пароль"
+msgstr "New password"
+
+msgid "Ноя"
+msgstr "Nov"
+
+msgid "Обзор системы управления документами"
+msgstr "Document management system overview"
+
+msgid "Обновлён"
+msgstr "Updated"
+
+msgid "Объект"
+msgstr "Object"
+
+msgid "Окончание"
+msgstr "End"
+
+msgid "Окт"
+msgstr "Oct"
+
+msgid "Описание"
+msgstr "Description"
+
+msgid "Открыть"
+msgstr "Open"
+
+msgid "Открыть PDF"
+msgstr "Open PDF"
+
+msgid "Открыть дашборд"
+msgstr "Open dashboard"
+
+msgid "Отмена"
+msgstr "Cancel"
+
+msgid "Отправить"
+msgstr "Send"
+
+msgid "Отправить приглашение"
+msgstr "Send invitation"
+
+msgid "Очистить поиск"
+msgstr "Clear search"
+
+msgid "Пароли не совпадают."
+msgstr "Passwords do not match."
+
+msgid "Пароль"
+msgstr "Password"
+
+msgid "Пароль должен содержать минимум 8 символов."
+msgstr "Password must be at least 8 characters."
+
+msgid "Пароль установлен. Теперь можно войти."
+msgstr "Password set. You can sign in now."
+
+msgid "Период графика"
+msgstr "Chart period"
+
+msgid "Печать"
+msgstr "Print"
+
+msgid "По категориям"
+msgstr "By category"
+
+msgid "Повторите пароль"
+msgstr "Repeat password"
+
+msgid "Подписант"
+msgstr "Signatory"
+
+msgid "Поиск"
+msgstr "Search"
+
+msgid "Поиск по названию, категории, подписанту..."
+msgstr "Search by title, category, signatory..."
+
+msgid "Показывать документы, которые истекают через"
+msgstr "Show documents expiring within"
+
+msgid "Пользователи"
+msgstr "Users"
+
+msgid "Пользователи — PDF Data Base"
+msgstr "Users — PDF Data Base"
+
+msgid "Пользователь"
+msgstr "User"
+
+msgid "Пользователь %(username)s заблокирован."
+msgstr "User %(username)s blocked."
+
+msgid "Пользователь %(username)s удалён."
+msgstr "User %(username)s deleted."
+
+msgid "Пользователь с таким email уже существует."
+msgstr "A user with this email already exists."
+
+msgid "Пользователь создан, но письмо не отправлено. Ссылка: %(url)s"
+msgstr "User created but email not sent. Link: %(url)s"
+
+msgid "Порог виджета (дней)"
+msgstr "Widget threshold (days)"
+
+msgid "Порог виджета на дашборде"
+msgstr "Dashboard widget threshold"
+
+msgid "Последнее использование"
+msgstr "Last used"
+
+msgid "Последние документы"
+msgstr "Recent documents"
+
+msgid "Последний вход"
+msgstr "Last login"
+
+msgid "Пригласить пользователя"
+msgstr "Invite user"
+
+msgid "Приглашение отправлено на %(email)s."
+msgstr "Invitation sent to %(email)s."
+
+msgid "Применить"
+msgstr "Apply"
+
+msgid "Проверьте email и роль."
+msgstr "Check email and role."
+
+msgid "Просмотр и поиск по базе"
+msgstr "Browse and search the database"
+
+msgid "Просроченных договоров"
+msgstr "Expired contracts"
+
+msgid "Профили пользователей"
+msgstr "User profiles"
+
+msgid "Профиль пользователя"
+msgstr "User profile"
+
+msgid "Прошлый квартал"
+msgstr "Previous quarter"
+
+msgid "Прошлый месяц"
+msgstr "Previous month"
+
+msgid "Размер файла"
+msgstr "File size"
+
+msgid "Размер файла не должен превышать %(max)s МБ"
+msgstr "File size must not exceed %(max)s MB"
+
+msgid "Редактировать"
+msgstr "Edit"
+
+msgid "Редактировать категорию"
+msgstr "Edit category"
+
+msgid "Результаты поиска"
+msgstr "Search results"
+
+msgid "Роль"
+msgstr "Role"
+
+msgid "Роль пользователя %(username)s обновлена."
+msgstr "Role for user %(username)s updated."
+
+msgid "Сбросить"
+msgstr "Reset"
+
+msgid "Сбросить всё"
+msgstr "Reset all"
+
+msgid "Связанные документы"
+msgstr "Linked documents"
+
+msgid "Связанный документ"
+msgstr "Linked document"
+
+msgid "Связанных документов пока нет"
+msgstr "No linked documents yet"
+
+msgid "Связи документов"
+msgstr "Document links"
+
+msgid "Связь документов"
+msgstr "Document link"
+
+msgid "Сен"
+msgstr "Sep"
+
+msgid "Система управления вашими документами"
+msgstr "Your document management system"
+
+msgid "Скачать"
+msgstr "Download"
+
+msgid "Сначала новые"
+msgstr "Newest first"
+
+msgid "Сначала старые"
+msgstr "Oldest first"
+
+msgid "Создал"
+msgstr "Created by"
+
+msgid "Создан"
+msgstr "Создан"
+
+msgid "Создание"
+msgstr "Created"
+
+msgid "Создано"
+msgstr "Created"
+
+msgid "Создать"
+msgstr "Create"
+
+msgid "Создать API-ключ"
+msgstr "Create API key"
+
+msgid "Создать первую"
+msgstr "Create first"
+
+msgid "Сохраните ключ — он больше не будет показан"
+msgstr "Save the key — it will not be shown again"
+
+msgid "Сохранить"
+msgstr "Save"
+
+msgid "Сохранить и войти"
+msgstr "Save and sign in"
+
+msgid "Срок"
+msgstr "Deadline"
+
+msgid ""
+"Срок действия приглашения истёк или ссылка уже использована. Обратитесь к "
+"администратору."
+msgstr "Invitation expired or link already used. Contact your administrator."
+
+msgid "Ссылка недействительна"
+msgstr "Invalid link"
+
+msgid "Ссылка недействительна — PDF Data Base"
+msgstr "Invalid link — PDF Data Base"
+
+msgid "Статистика"
+msgstr "Statistics"
+
+msgid "Статус"
+msgstr "Status"
+
+msgid "Стр. %(page)s из %(total)s"
+msgstr "Page %(page)s of %(total)s"
+
+msgid "Стр. {{ page }} из {{ total }}"
+msgstr "Page {{ page }} of {{ total }}"
+
+msgid "Сумма"
+msgstr "Amount"
+
+msgid "Сумма (₸)"
+msgstr "Amount (₸)"
+
+msgid "Сумма до"
+msgstr "Amount to"
+
+msgid "Сумма договора"
+msgstr "Contract amount"
+
+msgid "Сумма договора (₸)"
+msgstr "Contract amount (₸)"
+
+msgid "Сумма договоров, ₸"
+msgstr "Contract amounts, ₸"
+
+msgid "Сумма от"
+msgstr "Amount from"
+
+msgid "Сумма ↑"
+msgstr "Amount ↑"
+
+msgid "Сумма ↓"
+msgstr "Amount ↓"
+
+msgid "Суммы, сроки"
+msgstr "Amounts and deadlines"
+
+msgid "Суффикс"
+msgstr "Suffix"
+
+msgid "Счёт"
+msgstr "Invoice"
+
+msgid "Тег"
+msgstr "Tag"
+
+msgid "Теги"
+msgstr "Tags"
+
+msgid "Текст"
+msgstr "Text"
+
+msgid "Текст PDF"
+msgstr "PDF text"
+
+msgid "Текущий год"
+msgstr "Current year"
+
+msgid "Текущий квартал"
+msgstr "Current quarter"
+
+msgid "Текущий месяц"
+msgstr "Current month"
+
+msgid "Тип связи"
+msgstr "Link type"
+
+msgid "У вас недостаточно прав для просмотра этой страницы."
+msgstr "You do not have permission to view this page."
+
+msgid "Убрать фильтр"
+msgstr "Remove filter"
+
+msgid "Уведомления"
+msgstr "Notifications"
+
+msgid "Уведомления о сроках договоров"
+msgstr "Contract expiry notifications"
+
+msgid "Уведомления — PDF Data Base"
+msgstr "Notifications — PDF Data Base"
+
+msgid "Уведомлять меня по:"
+msgstr "Notify me via:"
+
+msgid "Удаление"
+msgstr "Deleted"
+
+msgid "Удалить"
+msgstr "Delete"
+
+msgid "Удалить API-ключ «{{ name }}»?"
+msgstr "Delete API key «{{ name }}»?"
+
+msgid "Удалить документ — PDF Data Base"
+msgstr "Delete document — PDF Data Base"
+
+msgid "Удалить документ?"
+msgstr "Delete document?"
+
+msgid "Удалить категорию — PDF Data Base"
+msgstr "Delete category — PDF Data Base"
+
+msgid "Удалить категорию?"
+msgstr "Delete category?"
+
+msgid "Удалить пользователя {{ username }}? Это действие необратимо."
+msgstr "Delete user {{ username }}? This action is irreversible."
+
+msgid "Удалить связь"
+msgstr "Remove link"
+
+msgid "Удалить тег"
+msgstr "Remove tag"
+
+msgid "Укажите Telegram Chat ID или ссылку."
+msgstr "Provide Telegram Chat ID or link."
+
+msgid "Укажите email для уведомлений."
+msgstr "Provide email for notifications."
+
+msgid "Укажите значение от 1 до 365."
+msgstr "Enter a value from 1 to 365."
+
+msgid "Укажите название ключа."
+msgstr "Provide key name."
+
+msgid "Управление API-ключами"
+msgstr "API key management"
+
+msgid "Управление договорами и файлами"
+msgstr "Manage contracts and files"
+
+msgid "Управление категориями"
+msgstr "Category management"
+
+msgid "Управление пользователями"
+msgstr "User management"
+
+msgid "Установка пароля"
+msgstr "Set password"
+
+msgid "Установка пароля — PDF Data Base"
+msgstr "Set password — PDF Data Base"
+
+msgid "ФИО автора"
+msgstr "Author full name"
+
+msgid "ФИО подписанта"
+msgstr "Signatory full name"
+
+msgid "Файл"
+msgstr "File"
+
+msgid "Файл должен быть в формате PDF"
+msgstr "File must be in PDF format"
+
+msgid "Фев"
+msgstr "Feb"
+
+msgid "Фильтры"
+msgstr "Filters"
+
+msgid "Фильтры:"
+msgstr "Filters:"
+
+msgid "Хеш ключа"
+msgstr "Key hash"
+
+msgid "Хранение"
+msgstr "Storage"
+
+msgid "Черновик"
+msgstr "Draft"
+
+msgid "Черновиков"
+msgstr "Drafts"
+
+msgid "Числовой Chat ID (через @userinfobot) или ссылка на профиль"
+msgstr "Numeric Chat ID (via @userinfobot) or profile link"
+
+msgid "Читатель"
+msgstr "Viewer"
+
+msgid "Что сделать с новым файлом?"
+msgstr "What to do with the new file?"
+
+msgid "Экспорт → Excel"
+msgstr "Export → Excel"
+
+msgid "Этот документ уже содержит файл."
+msgstr "This document already has a file."
+
+msgid "Я → А"
+msgstr "Z → A"
+
+msgid "Язык"
+msgstr "Language"
+
+msgid "Янв"
+msgstr "Jan"
+
+msgid "в одном месте"
+msgstr "in one place"
+
+msgid "вчера"
+msgstr "yesterday"
+
+msgid "вы"
+msgstr "yes"
+
+msgid "дней"
+msgstr "days"
+
+msgid "до %(date)s"
+msgstr "until %(date)s"
+
+msgid "договор"
+msgstr "contract"
+
+msgid "договора"
+msgstr "contracts"
+
+msgid "договоров"
+msgstr "contracts"
+
+msgid "заблокирован"
+msgstr "blocked"
+
+msgid "загрузить"
+msgstr "upload"
+
+msgid "и статистика"
+msgstr "and statistics"
+
+msgid "нет"
+msgstr "none"
+
+msgid "от %(date)s"
+msgstr "from %(date)s"
+
+msgid "по любым полям"
+msgstr "across all fields"
+
+msgid "сегодня"
+msgstr "today"
+
+msgid "система"
+msgstr "system"
+
+msgid "сумма до %(amount)s ₸"
+msgstr "amount up to %(amount)s ₸"
+
+msgid "сумма от %(amount)s ₸"
+msgstr "amount from %(amount)s ₸"
+
+msgid "текущая"
+msgstr "current"

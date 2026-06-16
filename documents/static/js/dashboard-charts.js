@@ -53,7 +53,7 @@
       data: {
         labels,
         datasets: [{
-          label: 'Сумма договоров, ₸',
+          label: appI18n('chartAmountLabel', 'Сумма договоров, ₸'),
           data: values,
           borderColor: '#0071e3',
           backgroundColor: 'rgba(0,113,227,0.08)',

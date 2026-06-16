@@ -39,7 +39,7 @@
         '<div class="comment-text">' + escapeHtml(comment.text) + '</div>' +
       '</div>' +
       (comment.can_delete
-        ? '<button type="button" class="btn btn-sm btn-link text-danger comment-delete" data-comment-id="' + comment.id + '" title="Удалить"><i class="bi bi-trash"></i></button>'
+        ? '<button type="button" class="btn btn-sm btn-link text-danger comment-delete" data-comment-id="' + comment.id + '" title="' + appI18n('delete', 'Удалить') + '"><i class="bi bi-trash"></i></button>'
         : '');
 
     bindDelete(item.querySelector('.comment-delete'), item);

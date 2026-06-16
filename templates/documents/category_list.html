@@ -1,13 +1,14 @@
 {% extends 'base.html' %}
-{% block title %}Категории — PDF Data Base{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Категории — PDF Data Base" %}{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
-    <h4 class="fw-bold mb-0">Категории</h4>
-    <p class="text-muted mb-0" style="font-size:14px;">Группировка документов</p>
+    <h4 class="fw-bold mb-0">{% trans "Категории" %}</h4>
+    <p class="text-muted mb-0" style="font-size:14px;">{% trans "Группировка документов" %}</p>
   </div>
   {% if user_role == 'admin' %}
-  <a href="{% url 'category_create' %}" class="btn btn-primary"><i class="bi bi-plus me-1"></i>Создать</a>
+  <a href="{% url 'category_create' %}" class="btn btn-primary"><i class="bi bi-plus me-1"></i>{% trans "Создать" %}</a>
   {% endif %}
 </div>
 <div class="row g-3">
@@ -17,12 +18,12 @@
     <div class="d-flex justify-content-between align-items-start">
       <div>
         <h6 class="fw-bold mb-1">{{ cat.name }}</h6>
-        <p class="text-muted mb-0" style="font-size:13px;">{{ cat.description|default:"Нет описания" }}</p>
+        <p class="text-muted mb-0" style="font-size:13px;">{{ cat.description|default:_("Нет описания") }}</p>
       </div>
       <span class="badge" style="background: var(--apple-bg); color: var(--apple-muted); border-radius: 100px; font-weight: 500; padding: 4px 10px; font-size: 12px;">{{ cat.doc_count }}</span>
     </div>
     <div class="mt-3 d-flex gap-2">
-      <a href="{% url 'document_list' %}?category={{ cat.pk }}" class="btn btn-sm btn-outline-secondary">Документы</a>
+      <a href="{% url 'document_list' %}?category={{ cat.pk }}" class="btn btn-sm btn-outline-secondary">{% trans "Документы" %}</a>
       {% if user_role == 'admin' %}
       <a href="{% url 'category_edit' cat.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
       <a href="{% url 'category_delete' cat.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
@@ -34,7 +35,7 @@
 <div class="col-12">
   <div class="text-center py-5 text-muted">
     <i class="bi bi-folder2 fs-1 d-block mb-3 opacity-25"></i>
-    <p>Нет категорий. {% if user_role == 'admin' %}<a href="{% url 'category_create' %}" style="color: var(--apple-blue);">Создать первую</a>{% endif %}</p>
+    <p>{% trans "Нет категорий." %} {% if user_role == 'admin' %}<a href="{% url 'category_create' %}" style="color: var(--apple-blue);">{% trans "Создать первую" %}</a>{% endif %}</p>
   </div>
 </div>
 {% endfor %}

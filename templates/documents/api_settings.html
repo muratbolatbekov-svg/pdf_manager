@@ -1,24 +1,25 @@
 {% extends 'base.html' %}
-{% block title %}API — PDF Data Base{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "API — PDF Data Base" %}{% endblock %}
 {% block content %}
-<h4 class="fw-bold mb-1">Настройки</h4>
-<p class="text-muted mb-4" style="font-size:15px;">Управление API-ключами</p>
+<h4 class="fw-bold mb-1">{% trans "Настройки" %}</h4>
+<p class="text-muted mb-4" style="font-size:15px;">{% trans "Управление API-ключами" %}</p>
 
 {% if new_api_key %}
 <div class="alert alert-warning mb-4">
-  <div class="fw-bold mb-2"><i class="bi bi-exclamation-triangle me-1"></i>Сохраните ключ — он больше не будет показан</div>
+  <div class="fw-bold mb-2"><i class="bi bi-exclamation-triangle me-1"></i>{% trans "Сохраните ключ — он больше не будет показан" %}</div>
   <div class="d-flex align-items-center gap-2 flex-wrap">
     <code id="newApiKeyValue" class="user-select-all px-2 py-1 rounded" style="background:#fff;">{{ new_api_key }}</code>
-    <button type="button" class="btn btn-sm btn-outline-secondary" id="copyApiKeyBtn"><i class="bi bi-clipboard me-1"></i>Копировать</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" id="copyApiKeyBtn"><i class="bi bi-clipboard me-1"></i>{% trans "Копировать" %}</button>
   </div>
-  <div class="form-text mt-2">Используйте заголовок: <code>Authorization: Bearer {{ new_api_key }}</code></div>
+  <div class="form-text mt-2">{% blocktrans with key=new_api_key %}Используйте заголовок: <code>Authorization: Bearer {{ key }}</code>{% endblocktrans %}</div>
 </div>
 {% endif %}
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <span class="text-muted" style="font-size:14px;">Документация: <a href="{% url 'api-docs' %}" target="_blank" rel="noopener">/api/docs/</a></span>
+  <span class="text-muted" style="font-size:14px;">{% trans "Документация:" %} <a href="{% url 'api-docs' %}" target="_blank" rel="noopener">/api/docs/</a></span>
   <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createKeyModal">
-    <i class="bi bi-plus me-1"></i>Создать API-ключ
+    <i class="bi bi-plus me-1"></i>{% trans "Создать API-ключ" %}
   </button>
 </div>
 
@@ -27,10 +28,10 @@
     <table class="table table-hover mb-0 align-middle">
       <thead>
         <tr>
-          <th>Название</th>
-          <th>Ключ</th>
-          <th>Создан</th>
-          <th>Последнее использование</th>
+          <th>{% trans "Название" %}</th>
+          <th>{% trans "Ключ" %}</th>
+          <th>{% trans "Создан" %}</th>
+          <th>{% trans "Последнее использование" %}</th>
           <th style="width:80px;"></th>
         </tr>
       </thead>
@@ -42,14 +43,14 @@
           <td class="text-muted small">{{ key.created_at|date:"d.m.Y H:i" }}</td>
           <td class="text-muted small">{% if key.last_used_at %}{{ key.last_used_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}</td>
           <td>
-            <form method="post" action="{% url 'api_key_delete' key.pk %}" onsubmit="return confirm('Удалить API-ключ «{{ key.name }}»?');">
+            <form method="post" action="{% url 'api_key_delete' key.pk %}" onsubmit='return confirm("{% filter escapejs %}{% blocktrans with name=key.name %}Удалить API-ключ «{{ name }}»?{% endblocktrans %}{% endfilter %}");'>
               {% csrf_token %}
-              <button type="submit" class="btn btn-sm btn-outline-danger" title="Удалить"><i class="bi bi-trash"></i></button>
+              <button type="submit" class="btn btn-sm btn-outline-danger" title="{% trans 'Удалить' %}"><i class="bi bi-trash"></i></button>
             </form>
           </td>
         </tr>
         {% empty %}
-        <tr><td colspan="5" class="text-center text-muted py-4">API-ключей пока нет</td></tr>
+        <tr><td colspan="5" class="text-center text-muted py-4">{% trans "API-ключей пока нет" %}</td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -62,16 +63,16 @@
       <form method="post" action="{% url 'api_key_create' %}">
         {% csrf_token %}
         <div class="modal-header border-0 pb-0">
-          <h5 class="modal-title fw-bold">Создать API-ключ</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <h5 class="modal-title fw-bold">{% trans "Создать API-ключ" %}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Закрыть' %}"></button>
         </div>
         <div class="modal-body">
-          <label class="form-label">Название</label>
-          <input type="text" name="name" class="form-control" placeholder="Например: Интеграция 1С" required maxlength="100" autofocus>
+          <label class="form-label">{% trans "Название" %}</label>
+          <input type="text" name="name" class="form-control" placeholder="{% trans 'Например: Интеграция 1С' %}" required maxlength="100" autofocus>
         </div>
         <div class="modal-footer border-0 pt-0">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
-          <button type="submit" class="btn btn-primary">Создать</button>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{% trans "Отмена" %}</button>
+          <button type="submit" class="btn btn-primary">{% trans "Создать" %}</button>
         </div>
       </form>
     </div>

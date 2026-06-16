@@ -1,5 +1,6 @@
 from django import template
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 register = template.Library()
 
@@ -12,9 +13,9 @@ def last_login_label(value):
     login_date = local_dt.date()
     today = timezone.localdate()
     if login_date == today:
-        return 'сегодня'
+        return _('сегодня')
     if login_date == today - timezone.timedelta(days=1):
-        return 'вчера'
+        return _('вчера')
     return local_dt.strftime('%d.%m.%Y')
 
 

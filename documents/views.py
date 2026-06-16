@@ -15,6 +15,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils import timezone
 from django.utils.dateparse import parse_date
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from openpyxl import Workbook
@@ -40,11 +41,13 @@ SORT_OPTIONS = {
     'title_desc': '-title',
 }
 
-STATUS_LABELS = {
-    'active': 'Активный',
-    'draft': 'Черновик',
-    'archived': 'В архиве',
-}
+
+def _status_labels():
+    return dict(Document.STATUS_CHOICES)
+
+
+def _status_keys():
+    return set(_status_labels().keys())
 
 
 def _parse_decimal(value):
@@ -66,7 +69,7 @@ def _parse_document_filters(request):
             selected_category = None
 
     status = request.GET.get('status', '').strip()
-    if status not in STATUS_LABELS:
+    if status not in _status_keys():
         status = ''
 
     sort = request.GET.get('sort', 'date_desc')
@@ -135,15 +138,25 @@ def _active_filter_tags(filters, categories, all_tags=None):
         if category:
             tags.append({'param': 'category', 'value': None, 'label': category.name})
     if filters['status']:
-        tags.append({'param': 'status', 'value': None, 'label': STATUS_LABELS[filters['status']]})
+        tags.append({'param': 'status', 'value': None, 'label': str(_status_labels()[filters['status']])})
     if filters['date_from']:
-        tags.append({'param': 'date_from', 'value': None, 'label': f'от {filters["date_from"].strftime("%d.%m.%Y")}'})
+        tags.append({
+            'param': 'date_from',
+            'value': None,
+            'label': _('от %(date)s') % {'date': filters['date_from'].strftime('%d.%m.%Y')},
+        })
     if filters['date_to']:
-        tags.append({'param': 'date_to', 'value': None, 'label': f'до {filters["date_to"].strftime("%d.%m.%Y")}'})
+        tags.append({
+            'param': 'date_to',
+            'value': None,
+            'label': _('до %(date)s') % {'date': filters['date_to'].strftime('%d.%m.%Y')},
+        })
     if filters['amount_min'] is not None:
-        tags.append({'param': 'amount_min', 'value': None, 'label': f'сумма от {filters["amount_min"]:,.0f} ₸'.replace(',', ' ')})
+        amount = f'{filters["amount_min"]:,.0f}'.replace(',', ' ')
+        tags.append({'param': 'amount_min', 'value': None, 'label': _('сумма от %(amount)s ₸') % {'amount': amount}})
     if filters['amount_max'] is not None:
-        tags.append({'param': 'amount_max', 'value': None, 'label': f'сумма до {filters["amount_max"]:,.0f} ₸'.replace(',', ' ')})
+        amount = f'{filters["amount_max"]:,.0f}'.replace(',', ' ')
+        tags.append({'param': 'amount_max', 'value': None, 'label': _('сумма до %(amount)s ₸') % {'amount': amount}})
     if filters.get('tags') and all_tags is not None:
         tag_map = {t.pk: t.name for t in all_tags}
         for tag_id in filters['tags']:
@@ -185,12 +198,12 @@ def _contract_word(count):
     n = abs(count) % 100
     n1 = n % 10
     if 11 <= n <= 19:
-        return 'договоров'
+        return _('договоров')
     if n1 == 1:
-        return 'договор'
+        return _('договор')
     if 2 <= n1 <= 4:
-        return 'договора'
-    return 'договоров'
+        return _('договора')
+    return _('договоров')
 
 
 def _get_notification_settings(user):
@@ -286,7 +299,7 @@ def document_list(request):
         'active_filters': active_filters,
         'has_active_filters': bool(active_filters),
         'filters_querystring': _filters_querystring(filters),
-        'status_labels': STATUS_LABELS,
+        'status_labels': _status_labels(),
         'user_role': get_user_role(request.user),
     }
     return render(request, 'documents/document_list.html', context)
@@ -365,11 +378,11 @@ def document_create(request):
         form = DocumentForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             document = form.save()
-            messages.success(request, 'Документ успешно добавлен!')
+            messages.success(request, _('Документ успешно добавлен!'))
             return redirect('document_detail', slug=document.slug)
     else:
         form = DocumentForm(user=request.user)
-    return render(request, 'documents/document_form.html', {'form': form, 'title': 'Добавить документ'})
+    return render(request, 'documents/document_form.html', {'form': form, 'title': _('Добавить документ')})
 
 
 @login_required
@@ -380,13 +393,13 @@ def document_edit(request, slug):
         form = DocumentForm(request.POST, request.FILES, instance=document, user=request.user)
         if form.is_valid():
             document = form.save()
-            messages.success(request, 'Документ обновлён!')
+            messages.success(request, _('Документ обновлён!'))
             return redirect('document_detail', slug=document.slug)
     else:
         form = DocumentForm(instance=document, user=request.user)
     return render(request, 'documents/document_form.html', {
         'form': form,
-        'title': 'Редактировать',
+        'title': _('Редактировать'),
         'has_pdf_file': bool(document.pdf_file),
     })
 
@@ -398,9 +411,16 @@ def document_delete(request, slug):
     if request.method == 'POST':
         document._audit_user = request.user
         document.delete()
-        messages.success(request, 'Документ удалён!')
+        messages.success(request, _('Документ удалён!'))
         return redirect('document_list')
     return render(request, 'documents/document_confirm_delete.html', {'document': document})
+
+
+def _export_headers():
+    return [
+        _('Название'), _('Категория'), _('Статус'), _('Дата создания'),
+        _('Дата истечения'), _('Сумма (₸)'), _('Контрагент'),
+    ]
 
 
 @login_required
@@ -412,11 +432,8 @@ def document_export(request):
     if export_format == 'xlsx':
         workbook = Workbook()
         sheet = workbook.active
-        sheet.title = 'Документы'
-        sheet.append([
-            'Название', 'Категория', 'Статус', 'Дата создания',
-            'Дата истечения', 'Сумма (₸)', 'Контрагент',
-        ])
+        sheet.title = str(_('Документы'))
+        sheet.append(_export_headers())
         for doc in documents:
             sheet.append([
                 doc.title,
@@ -438,10 +455,7 @@ def document_export(request):
     response['Content-Disposition'] = f'attachment; filename="documents_{export_date}.csv"'
     response.write('\ufeff')
     writer = csv.writer(response)
-    writer.writerow([
-        'Название', 'Категория', 'Статус', 'Дата создания',
-        'Дата истечения', 'Сумма (₸)', 'Контрагент',
-    ])
+    writer.writerow(_export_headers())
     for doc in documents:
         writer.writerow([
             doc.title,
@@ -472,11 +486,11 @@ def category_create(request):
         form.user = request.user
         if form.is_valid():
             form.save()
-            messages.success(request, 'Категория создана!')
+            messages.success(request, _('Категория создана!'))
             return redirect('category_list')
     else:
         form = CategoryForm()
-    return render(request, 'documents/category_form.html', {'form': form, 'title': 'Новая категория'})
+    return render(request, 'documents/category_form.html', {'form': form, 'title': _('Новая категория')})
 
 
 @login_required
@@ -488,11 +502,11 @@ def category_edit(request, pk):
         form.user = request.user
         if form.is_valid():
             form.save()
-            messages.success(request, 'Категория обновлена!')
+            messages.success(request, _('Категория обновлена!'))
             return redirect('category_list')
     else:
         form = CategoryForm(instance=category)
-    return render(request, 'documents/category_form.html', {'form': form, 'title': 'Редактировать категорию'})
+    return render(request, 'documents/category_form.html', {'form': form, 'title': _('Редактировать категорию')})
 
 
 @login_required
@@ -502,7 +516,7 @@ def category_delete(request, pk):
     if request.method == 'POST':
         category._audit_user = request.user
         category.delete()
-        messages.success(request, 'Категория удалена!')
+        messages.success(request, _('Категория удалена!'))
         return redirect('category_list')
     return render(request, 'documents/category_confirm_delete.html', {'category': category})
 
@@ -521,7 +535,7 @@ def notification_settings(request):
         form = NotificationSettingsForm(request.POST, instance=settings_obj)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Настройки уведомлений сохранены.')
+            messages.success(request, _('Настройки уведомлений сохранены.'))
             return redirect('notification_settings')
     else:
         form = NotificationSettingsForm(instance=settings_obj)
@@ -559,16 +573,16 @@ def user_list(request):
 def user_update_role(request, user_id):
     target = get_object_or_404(User, pk=user_id)
     if target == request.user:
-        messages.error(request, 'Нельзя изменить собственную роль.')
+        messages.error(request, _('Нельзя изменить собственную роль.'))
         return redirect('user_list')
     form = UserRoleForm(request.POST)
     if form.is_valid():
         profile, _ = UserProfile.objects.get_or_create(user=target)
         profile.role = form.cleaned_data['role']
         profile.save()
-        messages.success(request, f'Роль пользователя {target.username} обновлена.')
+        messages.success(request, _('Роль пользователя %(username)s обновлена.') % {'username': target.username})
     else:
-        messages.error(request, 'Некорректная роль.')
+        messages.error(request, _('Некорректная роль.'))
     return redirect('user_list')
 
 
@@ -578,11 +592,11 @@ def user_update_role(request, user_id):
 def user_block(request, user_id):
     target = get_object_or_404(User, pk=user_id)
     if target == request.user:
-        messages.error(request, 'Нельзя заблокировать себя.')
+        messages.error(request, _('Нельзя заблокировать себя.'))
         return redirect('user_list')
     target.is_active = False
     target.save(update_fields=['is_active'])
-    messages.success(request, f'Пользователь {target.username} заблокирован.')
+    messages.success(request, _('Пользователь %(username)s заблокирован.') % {'username': target.username})
     return redirect('user_list')
 
 
@@ -592,11 +606,11 @@ def user_block(request, user_id):
 def user_delete(request, user_id):
     target = get_object_or_404(User, pk=user_id)
     if target == request.user:
-        messages.error(request, 'Нельзя удалить себя.')
+        messages.error(request, _('Нельзя удалить себя.'))
         return redirect('user_list')
     username = target.username
     target.delete()
-    messages.success(request, f'Пользователь {username} удалён.')
+    messages.success(request, _('Пользователь %(username)s удалён.') % {'username': username})
     return redirect('user_list')
 
 
@@ -606,7 +620,7 @@ def user_delete(request, user_id):
 def user_invite(request):
     form = UserInviteForm(request.POST)
     if not form.is_valid():
-        messages.error(request, 'Проверьте email и роль.')
+        messages.error(request, _('Проверьте email и роль.'))
         return redirect('user_list')
 
     email = form.cleaned_data['email']
@@ -628,11 +642,11 @@ def user_invite(request):
     invite_url = request.build_absolute_uri(invite_path)
     try:
         send_user_invite(email, invite_url)
-        messages.success(request, f'Приглашение отправлено на {email}.')
+        messages.success(request, _('Приглашение отправлено на %(email)s.') % {'email': email})
     except Exception:
         messages.warning(
             request,
-            f'Пользователь создан, но письмо не отправлено. Ссылка: {invite_url}',
+            _('Пользователь создан, но письмо не отправлено. Ссылка: %(url)s') % {'url': invite_url},
         )
     return redirect('user_list')
 
@@ -651,14 +665,14 @@ def invite_set_password(request, uidb64, token):
         password = request.POST.get('password', '')
         password2 = request.POST.get('password2', '')
         if len(password) < 8:
-            messages.error(request, 'Пароль должен содержать минимум 8 символов.')
+            messages.error(request, _('Пароль должен содержать минимум 8 символов.'))
         elif password != password2:
-            messages.error(request, 'Пароли не совпадают.')
+            messages.error(request, _('Пароли не совпадают.'))
         else:
             user.set_password(password)
             user.is_active = True
             user.save()
-            messages.success(request, 'Пароль установлен. Теперь можно войти.')
+            messages.success(request, _('Пароль установлен. Теперь можно войти.'))
             return redirect('login')
 
     return render(request, 'documents/invite_set_password.html', {'email': user.email})
@@ -670,9 +684,9 @@ def document_comment_create(request, slug):
     document = get_object_or_404(Document, slug=slug)
     text = request.POST.get('text', '').strip()
     if not text:
-        return JsonResponse({'error': 'Введите текст комментария.'}, status=400)
+        return JsonResponse({'error': _('Введите текст комментария.')}, status=400)
     if len(text) > 2000:
-        return JsonResponse({'error': 'Комментарий слишком длинный.'}, status=400)
+        return JsonResponse({'error': _('Комментарий слишком длинный.')}, status=400)
     comment = DocumentComment.objects.create(document=document, user=request.user, text=text)
     return JsonResponse({
         'comment': comment_to_dict(comment, request.user),
@@ -687,7 +701,7 @@ def document_comment_delete(request, slug, comment_id):
     comment = get_object_or_404(DocumentComment, pk=comment_id, document=document)
     user_role = get_user_role(request.user)
     if user_role != UserProfile.ROLE_ADMIN and comment.user_id != request.user.id:
-        return JsonResponse({'error': 'Недостаточно прав.'}, status=403)
+        return JsonResponse({'error': _('Недостаточно прав.')}, status=403)
     comment.delete()
     return JsonResponse({'count': document.comments.count()})
 
@@ -719,7 +733,7 @@ def document_link_create(request, slug):
     link_type = request.POST.get('link_type', DocumentLink.TYPE_OTHER)
     valid_types = {choice[0] for choice in DocumentLink.TYPE_CHOICES}
     if link_type not in valid_types:
-        return JsonResponse({'error': 'Некорректный тип связи.'}, status=400)
+        return JsonResponse({'error': _('Некорректный тип связи.')}, status=400)
 
     linked_ids = request.POST.getlist('linked_ids')
     if not linked_ids:
@@ -747,7 +761,7 @@ def document_link_create(request, slug):
     if not created_links and errors:
         return JsonResponse({'error': errors[0]}, status=400)
     if not created_links:
-        return JsonResponse({'error': 'Выберите документ для связи.'}, status=400)
+        return JsonResponse({'error': _('Выберите документ для связи.')}, status=400)
 
     return JsonResponse({'links': created_links})
 
@@ -780,11 +794,11 @@ def api_settings(request):
 def api_key_create(request):
     name = request.POST.get('name', '').strip()
     if not name:
-        messages.error(request, 'Укажите название ключа.')
+        messages.error(request, _('Укажите название ключа.'))
         return redirect('api_settings')
     _, raw_key = ApiKey.create_key(name, request.user)
     request.session['new_api_key'] = raw_key
-    messages.success(request, 'API-ключ создан. Скопируйте его сейчас — больше он не будет показан.')
+    messages.success(request, _('API-ключ создан. Скопируйте его сейчас — больше он не будет показан.'))
     return redirect('api_settings')
 
 
@@ -794,7 +808,7 @@ def api_key_create(request):
 def api_key_delete(request, key_id):
     api_key = get_object_or_404(ApiKey, pk=key_id)
     api_key.delete()
-    messages.success(request, 'API-ключ удалён.')
+    messages.success(request, _('API-ключ удалён.'))
     return redirect('api_settings')
 
 

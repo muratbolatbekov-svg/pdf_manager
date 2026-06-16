@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
-{% block title %}PDF Data Base — Система управления документами{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "PDF Data Base — Система управления документами" %}{% endblock %}
 
 {% block content %}
 <style>
@@ -149,30 +150,30 @@
   </div>
   <div>
     <h1 class="home-hero-title">PDF Data Base</h1>
-    <p class="home-hero-subtitle">Система управления вашими документами</p>
+    <p class="home-hero-subtitle">{% trans "Система управления вашими документами" %}</p>
     <div class="d-flex flex-wrap gap-2 home-hero-actions">
       {% if user.is_authenticated %}
-      <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg px-4">Открыть дашборд</a>
+      <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg px-4">{% trans "Открыть дашборд" %}</a>
       {% if user_role != 'viewer' %}
-      <a href="{% url 'document_create' %}" class="btn btn-outline-secondary btn-lg px-4">Добавить документ</a>
+      <a href="{% url 'document_create' %}" class="btn btn-outline-secondary btn-lg px-4">{% trans "Добавить документ" %}</a>
       {% endif %}
       {% else %}
-      <a href="{% url 'login' %}" class="btn btn-primary btn-lg px-4">Войти</a>
+      <a href="{% url 'login' %}" class="btn btn-primary btn-lg px-4">{% trans "Войти" %}</a>
       {% endif %}
     </div>
   </div>
 </section>
 
 <section class="mb-5">
-  <h2 class="home-section-title">Возможности</h2>
+  <h2 class="home-section-title">{% trans "Возможности" %}</h2>
   <div class="row g-3">
     <div class="col-md-4">
       <a href="{% url 'document_list' %}" class="card feature-card feature-card-link">
         <div class="feature-icon feature-icon-storage" aria-hidden="true">
           <i class="bi bi-folder2"></i>
         </div>
-        <div class="feature-title">Хранение</div>
-        <p class="feature-desc">Все договоры<br>в одном месте</p>
+        <div class="feature-title">{% trans "Хранение" %}</div>
+        <p class="feature-desc">{% trans "Все договоры" %}<br>{% trans "в одном месте" %}</p>
       </a>
     </div>
     <div class="col-md-4">
@@ -180,8 +181,8 @@
         <div class="feature-icon feature-icon-search" aria-hidden="true">
           <i class="bi bi-search"></i>
         </div>
-        <div class="feature-title">Поиск</div>
-        <p class="feature-desc">Быстрый поиск<br>по любым полям</p>
+        <div class="feature-title">{% trans "Поиск" %}</div>
+        <p class="feature-desc">{% trans "Быстрый поиск" %}<br>{% trans "по любым полям" %}</p>
       </a>
     </div>
     <div class="col-md-4">
@@ -189,8 +190,8 @@
         <div class="feature-icon feature-icon-analytics" aria-hidden="true">
           <i class="bi bi-bar-chart-line"></i>
         </div>
-        <div class="feature-title">Аналитика</div>
-        <p class="feature-desc">Суммы, сроки<br>и статистика</p>
+        <div class="feature-title">{% trans "Аналитика" %}</div>
+        <p class="feature-desc">{% trans "Суммы, сроки" %}<br>{% trans "и статистика" %}</p>
       </a>
     </div>
   </div>
@@ -198,29 +199,29 @@
 
 {% if user.is_authenticated %}
 <section class="mb-5">
-  <h2 class="home-section-title">Статистика</h2>
+  <h2 class="home-section-title">{% trans "Статистика" %}</h2>
   <div class="row g-3">
     <div class="col-6 col-md-3">
       <div class="card stat-card">
-        <div class="stat-label">Всего документов</div>
+        <div class="stat-label">{% trans "Всего документов" %}</div>
         <div class="stat-value">{{ total_docs }}</div>
       </div>
     </div>
     <div class="col-6 col-md-3">
       <div class="card stat-card">
-        <div class="stat-label">Активных</div>
+        <div class="stat-label">{% trans "Активных" %}</div>
         <div class="stat-value" style="color: #34c759;">{{ active_docs }}</div>
       </div>
     </div>
     <div class="col-6 col-md-3">
       <div class="card stat-card">
-        <div class="stat-label">Черновиков</div>
+        <div class="stat-label">{% trans "Черновиков" %}</div>
         <div class="stat-value" style="color: #9a6b00;">{{ draft_docs }}</div>
       </div>
     </div>
     <div class="col-6 col-md-3">
       <div class="card stat-card">
-        <div class="stat-label">В архиве</div>
+        <div class="stat-label">{% trans "В архиве" %}</div>
         <div class="stat-value" style="color: var(--apple-muted);">{{ archived_docs }}</div>
       </div>
     </div>
@@ -228,15 +229,15 @@
 </section>
 
 <section>
-  <h2 class="home-section-title">Быстрые действия</h2>
+  <h2 class="home-section-title">{% trans "Быстрые действия" %}</h2>
   <div class="row g-3">
     {% if user_role != 'viewer' %}
     <div class="col-md-4">
       <a href="{% url 'document_create' %}" class="card action-card">
         <div class="action-card-icon"><i class="bi bi-plus-lg"></i></div>
         <div>
-          <p class="action-card-title">+ Добавить документ</p>
-          <p class="action-card-desc">Загрузить новый PDF-договор</p>
+          <p class="action-card-title">{% trans "+ Добавить документ" %}</p>
+          <p class="action-card-desc">{% trans "Загрузить новый PDF-договор" %}</p>
         </div>
       </a>
     </div>
@@ -245,8 +246,8 @@
       <a href="{% url 'document_list' %}" class="card action-card">
         <div class="action-card-icon"><i class="bi bi-files"></i></div>
         <div>
-          <p class="action-card-title">Все документы</p>
-          <p class="action-card-desc">Просмотр и поиск по базе</p>
+          <p class="action-card-title">{% trans "Все документы" %}</p>
+          <p class="action-card-desc">{% trans "Просмотр и поиск по базе" %}</p>
         </div>
       </a>
     </div>
@@ -254,8 +255,8 @@
       <a href="{% url 'category_list' %}" class="card action-card">
         <div class="action-card-icon"><i class="bi bi-folder2"></i></div>
         <div>
-          <p class="action-card-title">Категории</p>
-          <p class="action-card-desc">Управление категориями</p>
+          <p class="action-card-title">{% trans "Категории" %}</p>
+          <p class="action-card-desc">{% trans "Управление категориями" %}</p>
         </div>
       </a>
     </div>

@@ -5,23 +5,25 @@ from decimal import Decimal
 from django.db.models import Count, Sum
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
 
 from .models import Category, Document
 
 
 PERIOD_CHOICES = [
-    ('current_month', 'Текущий месяц'),
-    ('prev_month', 'Прошлый месяц'),
-    ('current_quarter', 'Текущий квартал'),
-    ('prev_quarter', 'Прошлый квартал'),
-    ('current_year', 'Текущий год'),
+    ('current_month', _lazy('Текущий месяц')),
+    ('prev_month', _lazy('Прошлый месяц')),
+    ('current_quarter', _lazy('Текущий квартал')),
+    ('prev_quarter', _lazy('Прошлый квартал')),
+    ('current_year', _lazy('Текущий год')),
 ]
 
 PERIOD_KEYS = {key for key, _ in PERIOD_CHOICES}
 
-MONTH_NAMES_RU = [
-    'Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн',
-    'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек',
+MONTH_ABBR = [
+    _lazy('Янв'), _lazy('Фев'), _lazy('Мар'), _lazy('Апр'), _lazy('Май'), _lazy('Июн'),
+    _lazy('Июл'), _lazy('Авг'), _lazy('Сен'), _lazy('Окт'), _lazy('Ноя'), _lazy('Дек'),
 ]
 
 
@@ -115,7 +117,7 @@ def get_monthly_amounts(end_date, months_count):
         month_end = _last_day_of_month(cursor.year, cursor.month)
         if month_end > range_end:
             month_end = range_end
-        label = f'{MONTH_NAMES_RU[cursor.month - 1]} {cursor.year}'
+        label = f'{MONTH_ABBR[cursor.month - 1]} {cursor.year}'
         amount = float(totals_by_month.get(cursor, Decimal('0')))
         points.append({'label': label, 'amount': amount, 'month': cursor.isoformat()})
         if cursor.month == 12:
@@ -141,7 +143,7 @@ def get_category_breakdown(start, end):
     items = []
     for row in qs:
         amount = row['total_amount'] or Decimal('0')
-        name = row['category__name'] or 'Без категории'
+        name = row['category__name'] or _('Без категории')
         pct = float(amount / grand_total * 100) if grand_total else 0.0
         items.append({
             'name': name,

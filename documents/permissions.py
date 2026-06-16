@@ -1,6 +1,7 @@
 from functools import wraps
 
 from django.core.exceptions import PermissionDenied
+from django.utils.translation import gettext_lazy as _
 
 from .models import UserProfile
 
@@ -20,7 +21,7 @@ def role_required(*roles):
         def wrapper(request, *args, **kwargs):
             role = get_user_role(request.user)
             if role not in roles:
-                raise PermissionDenied('Недостаточно прав для этого действия.')
+                raise PermissionDenied(_('Недостаточно прав для этого действия.'))
             return view_func(request, *args, **kwargs)
 
         return wrapper

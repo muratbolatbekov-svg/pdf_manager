@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="ru">
+{% load i18n static %}
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE|slice:':2' }}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -204,6 +206,7 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
   ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+  .language-switcher .btn { flex: 1; font-size: 11px; font-weight: 600; padding: 4px 0; }
   @media (max-width: 768px) {
     .sidebar-toggle { display: block; }
     .sidebar { transform: translateX(-100%); }
@@ -216,38 +219,40 @@
 {% block extra_head %}{% endblock %}
 </head>
 <body>
-<button class="sidebar-toggle" id="sidebarToggle" aria-label="Меню"><i class="bi bi-list fs-5"></i></button>
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="{% trans 'Меню' %}"><i class="bi bi-list fs-5"></i></button>
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <div class="sidebar" id="sidebar">
   <a href="{% url 'home' %}" class="brand text-decoration-none {% if request.resolver_match.url_name == 'home' %}active{% endif %}"><i class="bi bi-file-pdf-fill text-danger me-2"></i>PDF Data Base</a>
   {% if user.is_authenticated %}
   <ul class="nav flex-column flex-grow-1">
-    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"><i class="bi bi-speedometer2"></i>Дашборд</a></li>
-    <li class="nav-item"><a class="nav-link {% if 'document' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'document_list' %}"><i class="bi bi-files"></i>Документы</a></li>
-    <li class="nav-item"><a class="nav-link {% if 'category' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'category_list' %}"><i class="bi bi-folder2"></i>Категории</a></li>
+    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"><i class="bi bi-speedometer2"></i>{% trans "Дашборд" %}</a></li>
+    <li class="nav-item"><a class="nav-link {% if 'document' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'document_list' %}"><i class="bi bi-files"></i>{% trans "Документы" %}</a></li>
+    <li class="nav-item"><a class="nav-link {% if 'category' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'category_list' %}"><i class="bi bi-folder2"></i>{% trans "Категории" %}</a></li>
     {% if user_role != 'viewer' %}
-    <li class="nav-item mt-3"><a class="nav-link" href="{% url 'document_create' %}"><i class="bi bi-plus-circle"></i>Добавить документ</a></li>
+    <li class="nav-item mt-3"><a class="nav-link" href="{% url 'document_create' %}"><i class="bi bi-plus-circle"></i>{% trans "Добавить документ" %}</a></li>
     {% endif %}
     {% if user_role == 'admin' %}
-    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'audit_log' %}active{% endif %}" href="{% url 'audit_log' %}"><i class="bi bi-journal-text"></i>Журнал изменений</a></li>
+    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'audit_log' %}active{% endif %}" href="{% url 'audit_log' %}"><i class="bi bi-journal-text"></i>{% trans "Журнал изменений" %}</a></li>
     {% endif %}
-    <li class="nav-item mt-3 px-3"><small class="text-muted text-uppercase" style="font-size:11px; letter-spacing:0.04em;">Настройки</small></li>
-    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'notification_settings' %}active{% endif %}" href="{% url 'notification_settings' %}"><i class="bi bi-bell"></i>Уведомления</a></li>
+    <li class="nav-item mt-3 px-3"><small class="text-muted text-uppercase" style="font-size:11px; letter-spacing:0.04em;">{% trans "Настройки" %}</small></li>
+    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'notification_settings' %}active{% endif %}" href="{% url 'notification_settings' %}"><i class="bi bi-bell"></i>{% trans "Уведомления" %}</a></li>
     {% if user_role == 'admin' %}
-    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}" href="{% url 'user_list' %}"><i class="bi bi-people"></i>Пользователи</a></li>
+    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}" href="{% url 'user_list' %}"><i class="bi bi-people"></i>{% trans "Пользователи" %}</a></li>
     <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'api_settings' %}active{% endif %}" href="{% url 'api_settings' %}"><i class="bi bi-key"></i>API</a></li>
     {% endif %}
   </ul>
   <div class="mt-auto pt-3 border-top" style="border-color: var(--apple-border) !important;">
+    <div class="mb-3">{% include 'partials/language_switcher.html' %}</div>
     <div class="d-flex align-items-center justify-content-between">
       <span class="user-badge"><i class="bi bi-person-circle me-1"></i>{{ request.user.username }}</span>
-      <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-secondary border-0" title="Выйти"><i class="bi bi-box-arrow-right"></i></a>
+      <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-secondary border-0" title="{% trans 'Выйти' %}"><i class="bi bi-box-arrow-right"></i></a>
     </div>
   </div>
   {% else %}
   <div class="flex-grow-1"></div>
   <div class="mt-auto pt-3 border-top" style="border-color: var(--apple-border) !important;">
-    <a href="{% url 'login' %}" class="btn btn-primary w-100">Войти</a>
+    <div class="mb-3">{% include 'partials/language_switcher.html' %}</div>
+    <a href="{% url 'login' %}" class="btn btn-primary w-100">{% trans "Войти" %}</a>
   </div>
   {% endif %}
 </div>

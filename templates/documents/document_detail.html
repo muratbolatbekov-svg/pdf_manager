@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static documents_extras %}
+{% load i18n static documents_extras %}
 {% block title %}{{ document.title }} — PDF Data Base{% endblock %}
 {% block extra_head %}
 <style>
@@ -67,21 +67,21 @@
 {% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-  <a href="{% url 'document_list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Назад</a>
+  <a href="{% url 'document_list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>{% trans "Назад" %}</a>
   <div>
     {% if user_role != 'viewer' %}
-    <a href="{% url 'document_edit' document.slug %}" class="btn btn-primary btn-sm me-2"><i class="bi bi-pencil me-1"></i>Редактировать</a>
+    <a href="{% url 'document_edit' document.slug %}" class="btn btn-primary btn-sm me-2"><i class="bi bi-pencil me-1"></i>{% trans "Редактировать" %}</a>
     {% endif %}
     {% if user_role == 'admin' %}
-    <a href="{% url 'document_delete' document.slug %}" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash me-1"></i>Удалить</a>
+    <a href="{% url 'document_delete' document.slug %}" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash me-1"></i>{% trans "Удалить" %}</a>
     {% endif %}
   </div>
 </div>
 
 {% if document.is_expired %}
-<div class="alert alert-danger mb-3"><i class="bi bi-exclamation-circle me-2"></i>Договор просрочен (окончание: {{ document.end_date|date:"d.m.Y" }})</div>
+<div class="alert alert-danger mb-3"><i class="bi bi-exclamation-circle me-2"></i>{% blocktrans with date=document.end_date|date:"d.m.Y" %}Договор просрочен (окончание: {{ date }}){% endblocktrans %}</div>
 {% elif document.is_expiring_soon %}
-<div class="alert alert-warning mb-3"><i class="bi bi-exclamation-triangle me-2"></i>Договор истекает {{ document.end_date|date:"d.m.Y" }}</div>
+<div class="alert alert-warning mb-3"><i class="bi bi-exclamation-triangle me-2"></i>{% blocktrans with date=document.end_date|date:"d.m.Y" %}Договор истекает {{ date }}{% endblocktrans %}</div>
 {% endif %}
 
 <div class="card p-4 mb-3">
@@ -98,31 +98,31 @@
 
   {% if document.pdf_file %}
   <div class="mb-4 p-3 rounded" style="background: var(--apple-bg);">
-    <div class="fw-medium mb-2"><i class="bi bi-file-pdf text-danger me-1"></i>PDF файл</div>
-    <a href="{{ document.pdf_file.url }}" target="_blank" class="btn btn-primary btn-sm me-2"><i class="bi bi-eye me-1"></i>Открыть PDF</a>
-    <a href="{{ document.pdf_file.url }}" download class="btn btn-outline-secondary btn-sm"><i class="bi bi-download me-1"></i>Скачать</a>
+    <div class="fw-medium mb-2"><i class="bi bi-file-pdf text-danger me-1"></i>{% trans "PDF файл" %}</div>
+    <a href="{{ document.pdf_file.url }}" target="_blank" class="btn btn-primary btn-sm me-2"><i class="bi bi-eye me-1"></i>{% trans "Открыть PDF" %}</a>
+    <a href="{{ document.pdf_file.url }}" download class="btn btn-outline-secondary btn-sm"><i class="bi bi-download me-1"></i>{% trans "Скачать" %}</a>
   </div>
   <div class="mb-4 rounded overflow-hidden border" style="border-color: var(--apple-border) !important;">
     <iframe src="{{ document.pdf_file.url }}" title="PDF preview" style="width:100%; height:600px; border:none;"></iframe>
   </div>
   {% else %}
   <div class="mb-4 p-3 rounded text-muted" style="background: var(--apple-bg);">
-    <i class="bi bi-file-earmark me-1"></i>PDF файл не загружен
-    {% if user_role != 'viewer' %}— <a href="{% url 'document_edit' document.slug %}" style="color: var(--apple-blue);">загрузить</a>{% endif %}
+    <i class="bi bi-file-earmark me-1"></i>{% trans "PDF файл не загружен" %}
+    {% if user_role != 'viewer' %}— <a href="{% url 'document_edit' document.slug %}" style="color: var(--apple-blue);">{% trans "загрузить" %}</a>{% endif %}
   </div>
   {% endif %}
 
   <div class="row g-3 mb-3">
-    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Сумма договора</div><div class="fw-bold" style="font-size:22px;">{% if document.amount %}{{ document.amount_formatted }}{% else %}—{% endif %}</div></div>
-    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Подписант</div><div class="fw-medium">{{ document.signatory|default:"—" }}</div></div>
-    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Автор</div><div class="fw-medium">{{ document.author|default:"—" }}</div></div>
-    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Категория</div><div class="fw-medium">{{ document.category|default:"—" }}</div></div>
-    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Начало</div><div class="fw-medium">{{ document.start_date|date:"d.m.Y"|default:"—" }}</div></div>
-    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Окончание</div><div class="fw-medium">{{ document.end_date|date:"d.m.Y"|default:"—" }}</div></div>
-    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Добавлен</div><div class="fw-medium">{{ document.created_at|date:"d.m.Y H:i" }}</div></div>
-    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Обновлён</div><div class="fw-medium">{{ document.updated_at|date:"d.m.Y H:i" }}</div></div>
+    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">{% trans "Сумма договора" %}</div><div class="fw-bold" style="font-size:22px;">{% if document.amount %}{{ document.amount_formatted }}{% else %}—{% endif %}</div></div>
+    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">{% trans "Подписант" %}</div><div class="fw-medium">{{ document.signatory|default:"—" }}</div></div>
+    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">{% trans "Автор" %}</div><div class="fw-medium">{{ document.author|default:"—" }}</div></div>
+    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">{% trans "Категория" %}</div><div class="fw-medium">{{ document.category|default:"—" }}</div></div>
+    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">{% trans "Начало" %}</div><div class="fw-medium">{{ document.start_date|date:"d.m.Y"|default:"—" }}</div></div>
+    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">{% trans "Окончание" %}</div><div class="fw-medium">{{ document.end_date|date:"d.m.Y"|default:"—" }}</div></div>
+    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">{% trans "Добавлен" %}</div><div class="fw-medium">{{ document.created_at|date:"d.m.Y H:i" }}</div></div>
+    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">{% trans "Обновлён" %}</div><div class="fw-medium">{{ document.updated_at|date:"d.m.Y H:i" }}</div></div>
   </div>
-  {% if document.description %}<div class="mb-0"><div class="text-muted small mb-1" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Описание</div><p style="color: var(--apple-muted); margin-bottom:0;">{{ document.description }}</p></div>{% endif %}
+  {% if document.description %}<div class="mb-0"><div class="text-muted small mb-1" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">{% trans "Описание" %}</div><p style="color: var(--apple-muted); margin-bottom:0;">{{ document.description }}</p></div>{% endif %}
 </div>
 
 <div class="card p-4 mb-3"
@@ -133,10 +133,10 @@
      data-doc-detail-prefix="{% url 'document_list' %}"
      data-can-manage="{% if can_manage_links %}true{% else %}false{% endif %}">
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h6 class="fw-bold mb-0"><i class="bi bi-link-45deg me-1"></i>Связанные документы</h6>
+    <h6 class="fw-bold mb-0"><i class="bi bi-link-45deg me-1"></i>{% trans "Связанные документы" %}</h6>
     {% if can_manage_links %}
     <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addLinkModal">
-      <i class="bi bi-plus me-1"></i>Добавить
+      <i class="bi bi-plus me-1"></i>{% trans "Добавить" %}
     </button>
     {% endif %}
   </div>
@@ -149,14 +149,14 @@
         <span class="badge link-badge-{{ link.link_type }} flex-shrink-0">{{ link.short_label }}</span>
       </div>
       <div class="d-flex gap-1 flex-shrink-0">
-        <a href="{% url 'document_detail' link.linked.slug %}" class="btn btn-sm btn-outline-secondary" title="Открыть"><i class="bi bi-arrow-right"></i></a>
+        <a href="{% url 'document_detail' link.linked.slug %}" class="btn btn-sm btn-outline-secondary" title="{% trans 'Открыть' %}"><i class="bi bi-arrow-right"></i></a>
         {% if can_manage_links %}
-        <button type="button" class="btn btn-sm btn-outline-danger link-delete-btn" data-link-id="{{ link.id }}" title="Удалить связь"><i class="bi bi-trash"></i></button>
+        <button type="button" class="btn btn-sm btn-outline-danger link-delete-btn" data-link-id="{{ link.id }}" title="{% trans 'Удалить связь' %}"><i class="bi bi-trash"></i></button>
         {% endif %}
       </div>
     </div>
     {% empty %}
-    <p class="text-muted text-center py-3 mb-0" id="documentLinksEmpty">Связанных документов пока нет</p>
+    <p class="text-muted text-center py-3 mb-0" id="documentLinksEmpty">{% trans "Связанных документов пока нет" %}</p>
     {% endfor %}
   </div>
 </div>
@@ -166,18 +166,18 @@
   <div class="modal-dialog">
     <div class="modal-content" style="border-radius:16px;">
       <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title fw-bold" id="addLinkModalLabel">Добавить связанный документ</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        <h5 class="modal-title fw-bold" id="addLinkModalLabel">{% trans "Добавить связанный документ" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Закрыть' %}"></button>
       </div>
       <div class="modal-body">
         <form id="addLinkForm">
           {% csrf_token %}
           <div class="mb-3">
-            <label class="form-label">Поиск</label>
-            <input type="search" id="linkSearchInput" class="form-control" placeholder="Название, контрагент..." autocomplete="off">
+            <label class="form-label">{% trans "Поиск" %}</label>
+            <input type="search" id="linkSearchInput" class="form-control" placeholder="{% trans 'Название, контрагент...' %}" autocomplete="off">
           </div>
           <div class="mb-3">
-            <label class="form-label d-block">Тип связи</label>
+            <label class="form-label d-block">{% trans "Тип связи" %}</label>
             {% for value, label in link_type_choices %}
             <div class="form-check">
               <input class="form-check-input" type="radio" name="link_type" id="linkType{{ value }}" value="{{ value }}" {% if value == 'supplement' %}checked{% endif %}>
@@ -186,16 +186,16 @@
             {% endfor %}
           </div>
           <div>
-            <label class="form-label">Результаты поиска</label>
+            <label class="form-label">{% trans "Результаты поиска" %}</label>
             <div id="linkSearchResults" class="border rounded p-2" style="max-height:200px; overflow-y:auto; border-color: var(--apple-border) !important;">
-              <p class="text-muted small mb-0">Введите запрос для поиска</p>
+              <p class="text-muted small mb-0">{% trans "Введите запрос для поиска" %}</p>
             </div>
           </div>
         </form>
       </div>
       <div class="modal-footer border-0 pt-0">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
-        <button type="button" class="btn btn-primary" id="addLinkSubmit">Добавить связь</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{% trans "Отмена" %}</button>
+        <button type="button" class="btn btn-primary" id="addLinkSubmit">{% trans "Добавить связь" %}</button>
       </div>
     </div>
   </div>
@@ -203,8 +203,8 @@
 {% endif %}
 
 <ul class="nav doc-tabs mb-0" role="tablist">
-  <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabComments" type="button"><i class="bi bi-chat-dots me-1"></i>Комментарии (<span id="commentsCount">{{ comments|length }}</span>)</button></li>
-  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabVersions" type="button"><i class="bi bi-clock-history me-1"></i>Версии</button></li>
+  <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabComments" type="button"><i class="bi bi-chat-dots me-1"></i>{% trans "Комментарии" %} (<span id="commentsCount">{{ comments|length }}</span>)</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabVersions" type="button"><i class="bi bi-clock-history me-1"></i>{% trans "Версии" %}</button></li>
 </ul>
 
 <div class="tab-content">
@@ -225,17 +225,17 @@
             <div class="comment-text">{{ comment.text }}</div>
           </div>
           {% if comment.can_delete %}
-          <button type="button" class="btn btn-sm btn-link text-danger comment-delete" data-comment-id="{{ comment.id }}" title="Удалить"><i class="bi bi-trash"></i></button>
+          <button type="button" class="btn btn-sm btn-link text-danger comment-delete" data-comment-id="{{ comment.id }}" title="{% trans 'Удалить' %}"><i class="bi bi-trash"></i></button>
           {% endif %}
         </div>
         {% empty %}
-        <p class="text-muted text-center py-3 mb-0" id="commentsEmpty">Комментариев пока нет</p>
+        <p class="text-muted text-center py-3 mb-0" id="commentsEmpty">{% trans "Комментариев пока нет" %}</p>
         {% endfor %}
       </div>
       <form id="commentForm" class="d-flex gap-2 mt-3 pt-3 border-top" style="border-color: var(--apple-border) !important;">
         {% csrf_token %}
-        <input type="text" id="commentInput" class="form-control" placeholder="Написать комментарий..." maxlength="2000" autocomplete="off">
-        <button type="submit" class="btn btn-primary flex-shrink-0">Отправить</button>
+        <input type="text" id="commentInput" class="form-control" placeholder="{% trans 'Написать комментарий...' %}" maxlength="2000" autocomplete="off">
+        <button type="submit" class="btn btn-primary flex-shrink-0">{% trans "Отправить" %}</button>
       </form>
     </div>
   </div>
@@ -245,18 +245,18 @@
       {% if current_version or document.versions.all %}
       {% if current_version %}
       <div class="version-row version-current">
-        <span>v{{ current_version.number }} · {{ current_version.uploaded_at }} · {{ current_version.uploaded_by }} · {{ current_version.file_size }} <span class="badge bg-primary ms-1">текущая</span></span>
-        <a href="{{ current_version.url }}" download class="btn btn-sm btn-outline-secondary"><i class="bi bi-download me-1"></i>Скачать</a>
+        <span>v{{ current_version.number }} · {{ current_version.uploaded_at }} · {{ current_version.uploaded_by }} · {{ current_version.file_size }} <span class="badge bg-primary ms-1">{% trans "текущая" %}</span></span>
+        <a href="{{ current_version.url }}" download class="btn btn-sm btn-outline-secondary"><i class="bi bi-download me-1"></i>{% trans "Скачать" %}</a>
       </div>
       {% endif %}
       {% for version in document.versions.all %}
       <div class="version-row">
         <span>v{{ version.version_number }} · {{ version.uploaded_at|date:"d.m.Y" }} · {{ version.uploaded_by|user_display_name|default:"—" }} · {{ version.file_size|format_bytes }}</span>
-        <a href="{{ version.pdf_file.url }}" download class="btn btn-sm btn-outline-secondary"><i class="bi bi-download me-1"></i>Скачать</a>
+        <a href="{{ version.pdf_file.url }}" download class="btn btn-sm btn-outline-secondary"><i class="bi bi-download me-1"></i>{% trans "Скачать" %}</a>
       </div>
       {% endfor %}
       {% else %}
-      <p class="text-muted text-center py-4 mb-0">Версий пока нет</p>
+      <p class="text-muted text-center py-4 mb-0">{% trans "Версий пока нет" %}</p>
       {% endif %}
     </div>
   </div>
@@ -264,14 +264,22 @@
 
 {% if audit_logs %}
 <div class="card p-4 mt-3">
-  <h6 class="fw-bold mb-3">История изменений</h6>
+  <h6 class="fw-bold mb-3">{% trans "История изменений" %}</h6>
   {% for log in audit_logs %}
-  <div class="text-muted small py-1">{{ log.timestamp|date:"d.m.Y H:i" }} — {{ log.get_action_display }} ({{ log.user.username|default:"система" }})</div>
+  <div class="text-muted small py-1">{{ log.timestamp|date:"d.m.Y H:i" }} — {{ log.get_action_display }} ({% if log.user.username %}{{ log.user.username }}{% else %}{% trans "система" %}{% endif %})</div>
   {% endfor %}
 </div>
 {% endif %}
 {% endblock %}
 {% block extra_js %}
+{% trans "Удалить" as delete_label %}
+{% trans "Открыть" as open_label %}
+{% trans "Удалить связь" as delete_link_label %}
+{% trans "Связанных документов пока нет" as no_links %}
+{% trans "Документы не найдены" as no_docs_found %}
+{% trans "Не удалось добавить связь" as add_link_error %}
+<script id="app-i18n" type="application/json">{"delete":"{{ delete_label|escapejs }}","open":"{{ open_label|escapejs }}","deleteLink":"{{ delete_link_label|escapejs }}","noLinks":"{{ no_links|escapejs }}","noDocsFound":"{{ no_docs_found|escapejs }}","addLinkError":"{{ add_link_error|escapejs }}"}</script>
+<script src="{% static 'js/app-i18n.js' %}"></script>
 <script src="{% static 'js/document-comments.js' %}"></script>
 <script src="{% static 'js/document-links.js' %}"></script>
 {% endblock %}

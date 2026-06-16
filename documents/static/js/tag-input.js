@@ -23,7 +23,7 @@
     tags.forEach(function (tag, index) {
       const chip = document.createElement('span');
       chip.className = 'tag-chip';
-      chip.innerHTML = tag + '<button type="button" class="tag-chip-remove" aria-label="Удалить тег">&times;</button>';
+      chip.innerHTML = tag + '<button type="button" class="tag-chip-remove" aria-label="' + appI18n('removeTag', 'Удалить тег') + '">&times;</button>';
       chip.querySelector('.tag-chip-remove').addEventListener('click', function () {
         tags.splice(index, 1);
         renderChips();

@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
-{% load static documents_extras %}
-{% block title %}Документы — PDF Data Base{% endblock %}
+{% load i18n static documents_extras %}
+{% block title %}{% trans "Документы — PDF Data Base" %}{% endblock %}
 {% block extra_head %}
 <style>
   .pdf-viewer-dialog {
@@ -136,15 +136,15 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
   <div>
-    <h4 class="fw-bold mb-0">Документы</h4>
-    <p class="text-muted mb-0" style="font-size:14px;">Управление договорами и файлами</p>
+    <h4 class="fw-bold mb-0">{% trans "Документы" %}</h4>
+    <p class="text-muted mb-0" style="font-size:14px;">{% trans "Управление договорами и файлами" %}</p>
   </div>
   <div class="d-flex gap-2">
     <a href="{% url 'document_export' %}?format=xlsx{% if filters_querystring %}&{{ filters_querystring }}{% endif %}" class="btn btn-outline-secondary btn-sm">
-      <i class="bi bi-file-earmark-excel me-1"></i>Экспорт → Excel
+      <i class="bi bi-file-earmark-excel me-1"></i>{% trans "Экспорт → Excel" %}
     </a>
     {% if user_role != 'viewer' %}
-    <a href="{% url 'document_create' %}" class="btn btn-primary"><i class="bi bi-plus me-1"></i>Добавить</a>
+    <a href="{% url 'document_create' %}" class="btn btn-primary"><i class="bi bi-plus me-1"></i>{% trans "Добавить" %}</a>
     {% endif %}
   </div>
 </div>
@@ -153,32 +153,32 @@
   <div class="d-flex flex-wrap gap-2 align-items-center">
     <div class="doc-search-wrap flex-grow-1">
       <i class="bi bi-search doc-search-icon"></i>
-      <input type="search" id="docSearchInput" class="form-control" placeholder="Поиск по названию, категории, подписанту..." autocomplete="off">
-      <button type="button" id="docSearchClear" class="doc-search-clear d-none" aria-label="Очистить поиск">×</button>
+      <input type="search" id="docSearchInput" class="form-control" placeholder="{% trans 'Поиск по названию, категории, подписанту...' %}" autocomplete="off">
+      <button type="button" id="docSearchClear" class="doc-search-clear d-none" aria-label="{% trans 'Очистить поиск' %}">×</button>
     </div>
     <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#filtersPanel" aria-expanded="{% if has_active_filters %}true{% else %}false{% endif %}">
-      <i class="bi bi-funnel me-1"></i>Фильтры
+      <i class="bi bi-funnel me-1"></i>{% trans "Фильтры" %}
     </button>
     <select name="sort" form="filtersForm" class="form-select" style="width: auto; min-width: 160px;">
-      <option value="date_desc" {% if filters.sort == 'date_desc' %}selected{% endif %}>Сначала новые</option>
-      <option value="date_asc" {% if filters.sort == 'date_asc' %}selected{% endif %}>Сначала старые</option>
-      <option value="amount_desc" {% if filters.sort == 'amount_desc' %}selected{% endif %}>Сумма ↓</option>
-      <option value="amount_asc" {% if filters.sort == 'amount_asc' %}selected{% endif %}>Сумма ↑</option>
-      <option value="title_asc" {% if filters.sort == 'title_asc' %}selected{% endif %}>А → Я</option>
-      <option value="title_desc" {% if filters.sort == 'title_desc' %}selected{% endif %}>Я → А</option>
+      <option value="date_desc" {% if filters.sort == 'date_desc' %}selected{% endif %}>{% trans "Сначала новые" %}</option>
+      <option value="date_asc" {% if filters.sort == 'date_asc' %}selected{% endif %}>{% trans "Сначала старые" %}</option>
+      <option value="amount_desc" {% if filters.sort == 'amount_desc' %}selected{% endif %}>{% trans "Сумма ↓" %}</option>
+      <option value="amount_asc" {% if filters.sort == 'amount_asc' %}selected{% endif %}>{% trans "Сумма ↑" %}</option>
+      <option value="title_asc" {% if filters.sort == 'title_asc' %}selected{% endif %}>{% trans "А → Я" %}</option>
+      <option value="title_desc" {% if filters.sort == 'title_desc' %}selected{% endif %}>{% trans "Я → А" %}</option>
     </select>
   </div>
 
   {% if has_active_filters %}
   <div id="activeFilterTags" class="d-flex flex-wrap align-items-center gap-2 mt-3">
-    <span class="text-muted small">Фильтры:</span>
+    <span class="text-muted small">{% trans "Фильтры:" %}</span>
     {% for tag in active_filters %}
     <span class="filter-tag">
       {{ tag.label }}
-      <button type="button" class="filter-tag-remove" data-filter-param="{{ tag.param }}" data-filter-value="{{ tag.value|default:'' }}" aria-label="Убрать фильтр">×</button>
+      <button type="button" class="filter-tag-remove" data-filter-param="{{ tag.param }}" data-filter-value="{{ tag.value|default:'' }}" aria-label="{% trans 'Убрать фильтр' %}">×</button>
     </span>
     {% endfor %}
-    <button type="button" id="resetAllFiltersBtn" class="btn btn-link btn-sm text-decoration-none p-0">Сбросить всё</button>
+    <button type="button" id="resetAllFiltersBtn" class="btn btn-link btn-sm text-decoration-none p-0">{% trans "Сбросить всё" %}</button>
   </div>
   {% endif %}
 
@@ -186,44 +186,44 @@
     <form method="get" id="filtersForm" class="mt-0">
       <div class="row g-3 align-items-end">
         <div class="col-md-3">
-          <label class="form-label small text-muted mb-1">Категория</label>
+          <label class="form-label small text-muted mb-1">{% trans "Категория" %}</label>
           <select name="category" class="form-select">
-            <option value="">Выбрать</option>
+            <option value="">{% trans "Выбрать" %}</option>
             {% for cat in categories %}
             <option value="{{ cat.pk }}" {% if filters.category == cat.pk %}selected{% endif %}>{{ cat.name }}</option>
             {% endfor %}
           </select>
         </div>
         <div class="col-md-3">
-          <label class="form-label small text-muted mb-1">Статус</label>
+          <label class="form-label small text-muted mb-1">{% trans "Статус" %}</label>
           <select name="status" class="form-select">
-            <option value="">Выбрать</option>
-            <option value="active" {% if filters.status == 'active' %}selected{% endif %}>Активный</option>
-            <option value="draft" {% if filters.status == 'draft' %}selected{% endif %}>Черновик</option>
-            <option value="archived" {% if filters.status == 'archived' %}selected{% endif %}>В архиве</option>
+            <option value="">{% trans "Выбрать" %}</option>
+            <option value="active" {% if filters.status == 'active' %}selected{% endif %}>{% trans "Активный" %}</option>
+            <option value="draft" {% if filters.status == 'draft' %}selected{% endif %}>{% trans "Черновик" %}</option>
+            <option value="archived" {% if filters.status == 'archived' %}selected{% endif %}>{% trans "В архиве" %}</option>
           </select>
         </div>
         <div class="col-md-3">
-          <label class="form-label small text-muted mb-1">Дата с</label>
+          <label class="form-label small text-muted mb-1">{% trans "Дата с" %}</label>
           <input type="date" name="date_from" class="form-control" value="{% if filters.date_from %}{{ filters.date_from|date:'Y-m-d' }}{% endif %}">
         </div>
         <div class="col-md-3">
-          <label class="form-label small text-muted mb-1">Дата по</label>
+          <label class="form-label small text-muted mb-1">{% trans "Дата по" %}</label>
           <input type="date" name="date_to" class="form-control" value="{% if filters.date_to %}{{ filters.date_to|date:'Y-m-d' }}{% endif %}">
         </div>
         <div class="col-md-3">
-          <label class="form-label small text-muted mb-1">Сумма от</label>
+          <label class="form-label small text-muted mb-1">{% trans "Сумма от" %}</label>
           <input type="number" name="amount_min" class="form-control" min="0" step="0.01" placeholder="0" value="{% if filters.amount_min is not None %}{{ filters.amount_min }}{% endif %}">
         </div>
         <div class="col-md-3">
-          <label class="form-label small text-muted mb-1">Сумма до</label>
+          <label class="form-label small text-muted mb-1">{% trans "Сумма до" %}</label>
           <input type="number" name="amount_max" class="form-control" min="0" step="0.01" placeholder="0" value="{% if filters.amount_max is not None %}{{ filters.amount_max }}{% endif %}">
         </div>
         <div class="col-md-6">
-          <label class="form-label small text-muted mb-1">Теги</label>
+          <label class="form-label small text-muted mb-1">{% trans "Теги" %}</label>
           <div class="dropdown">
             <button class="btn btn-outline-secondary w-100 text-start dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
-              {% if filters.tags %}Выбрано: {{ filters.tags|length }}{% else %}Выбрать теги{% endif %}
+              {% if filters.tags %}{% blocktrans with count=filters.tags|length %}Выбрано: {{ count }}{% endblocktrans %}{% else %}{% trans "Выбрать теги" %}{% endif %}
             </button>
             <div class="dropdown-menu p-3" style="min-width:240px; max-height:240px; overflow-y:auto;">
               {% for tag in all_tags %}
@@ -233,14 +233,14 @@
                 <label class="form-check-label" for="filterTag{{ tag.pk }}">{{ tag.name }}</label>
               </div>
               {% empty %}
-              <span class="text-muted small">Нет тегов</span>
+              <span class="text-muted small">{% trans "Нет тегов" %}</span>
               {% endfor %}
             </div>
           </div>
         </div>
         <div class="col-md-6 d-flex gap-2 justify-content-md-end align-items-end">
-          <button type="submit" class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Применить</button>
-          <button type="button" id="filtersResetBtn" class="btn btn-outline-secondary">Сбросить</button>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check2 me-1"></i>{% trans "Применить" %}</button>
+          <button type="button" id="filtersResetBtn" class="btn btn-outline-secondary">{% trans "Сбросить" %}</button>
         </div>
       </div>
     </form>
@@ -250,7 +250,7 @@
 <div class="card">
   {% if documents %}
   <table class="table mb-0">
-    <thead><tr><th>Документ</th><th>Категория</th><th>Подписант</th><th>Сумма</th><th>Срок</th><th>Статус</th><th>Теги</th><th>Файл</th><th></th></tr></thead>
+    <thead><tr><th>{% trans "Документ" %}</th><th>{% trans "Категория" %}</th><th>{% trans "Подписант" %}</th><th>{% trans "Сумма" %}</th><th>{% trans "Срок" %}</th><th>{% trans "Статус" %}</th><th>{% trans "Теги" %}</th><th>{% trans "Файл" %}</th><th></th></tr></thead>
     <tbody>
     {% for doc in documents %}
     {% with tag_summary=doc.tags|doc_tag_summary %}
@@ -285,7 +285,7 @@
       </td>
       <td>{% if doc.pdf_file %}<button type="button" class="btn btn-sm btn-outline-success pdf-preview-trigger"
            data-pdf-url="{% url 'document_pdf_preview' doc.slug %}"
-           data-pdf-title="{{ doc.title|escape }}"><i class="bi bi-eye"></i></button>{% else %}<span class="text-muted small">нет</span>{% endif %}</td>
+           data-pdf-title="{{ doc.title|escape }}"><i class="bi bi-eye"></i></button>{% else %}<span class="text-muted small">{% trans "нет" %}</span>{% endif %}</td>
       <td>
         {% if user_role != 'viewer' %}
         <a href="{% url 'document_edit' doc.slug %}" class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil"></i></a>
@@ -298,7 +298,7 @@
     {% endwith %}
     {% endfor %}
     <tr id="docSearchNoMatch" class="d-none">
-      <td colspan="9" class="text-center text-muted py-4">Ничего не найдено по вашему запросу</td>
+      <td colspan="9" class="text-center text-muted py-4">{% trans "Ничего не найдено по вашему запросу" %}</td>
     </tr>
     </tbody>
   </table>
@@ -307,7 +307,7 @@
     {% if page_obj.has_previous %}
     <a class="btn btn-sm btn-outline-secondary" href="?{% if filters_querystring %}{{ filters_querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">←</a>
     {% endif %}
-    <span class="align-self-center text-muted small">Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+    <span class="align-self-center text-muted small">{% blocktrans with page=page_obj.number total=page_obj.paginator.num_pages %}Стр. {{ page }} из {{ total }}{% endblocktrans %}</span>
     {% if page_obj.has_next %}
     <a class="btn btn-sm btn-outline-secondary" href="?{% if filters_querystring %}{{ filters_querystring }}&{% endif %}page={{ page_obj.next_page_number }}">→</a>
     {% endif %}
@@ -316,7 +316,7 @@
   {% else %}
   <div class="text-center py-5 text-muted">
     <i class="bi bi-search fs-1 d-block mb-3 opacity-25"></i>
-    <p>Документы не найдены. {% if user_role != 'viewer' %}<a href="{% url 'document_create' %}" style="color: var(--apple-blue);">Добавить первый</a>{% endif %}</p>
+    <p>{% trans "Документы не найдены." %} {% if user_role != 'viewer' %}<a href="{% url 'document_create' %}" style="color: var(--apple-blue);">{% trans "Добавить первый" %}</a>{% endif %}</p>
   </div>
   {% endif %}
 </div>
@@ -325,6 +325,12 @@
 {% endblock %}
 
 {% block extra_js %}
+{% trans "Стр. %(page)s из %(total)s" as page_of %}
+{% trans "Не удалось отобразить страницу" as render_error %}
+{% trans "Не удалось загрузить PDF" as load_error %}
+{% trans "Документ" as document_label %}
+<script id="app-i18n" type="application/json">{"pageOf":"{{ page_of|escapejs }}","renderError":"{{ render_error|escapejs }}","loadError":"{{ load_error|escapejs }}","document":"{{ document_label|escapejs }}"}</script>
+<script src="{% static 'js/app-i18n.js' %}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="{% static 'js/pdf-viewer.js' %}"></script>
 <script src="{% static 'js/document-filters.js' %}"></script>

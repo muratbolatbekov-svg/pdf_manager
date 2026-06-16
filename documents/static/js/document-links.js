@@ -45,9 +45,9 @@
         '<span class="badge ' + badgeClass + ' flex-shrink-0">' + escapeHtml(link.link_type_label) + '</span>' +
       '</div>' +
       '<div class="d-flex gap-1 flex-shrink-0">' +
-        '<a href="' + detailPrefix + encodeURIComponent(link.linked_slug) + '/" class="btn btn-sm btn-outline-secondary" title="Открыть"><i class="bi bi-arrow-right"></i></a>' +
+        '<a href="' + detailPrefix + encodeURIComponent(link.linked_slug) + '/" class="btn btn-sm btn-outline-secondary" title="' + appI18n('open', 'Открыть') + '"><i class="bi bi-arrow-right"></i></a>' +
         (canManage
-          ? '<button type="button" class="btn btn-sm btn-outline-danger link-delete-btn" data-link-id="' + link.id + '" title="Удалить связь"><i class="bi bi-trash"></i></button>'
+          ? '<button type="button" class="btn btn-sm btn-outline-danger link-delete-btn" data-link-id="' + link.id + '" title="' + appI18n('deleteLink', 'Удалить связь') + '"><i class="bi bi-trash"></i></button>'
           : '') +
       '</div>';
     bindDelete(row.querySelector('.link-delete-btn'), row);
@@ -70,7 +70,7 @@
       const p = document.createElement('p');
       p.id = 'documentLinksEmpty';
       p.className = 'text-muted text-center py-3 mb-0';
-      p.textContent = 'Связанных документов пока нет';
+      p.textContent = appI18n('noLinks', 'Связанных документов пока нет');
       listEl.appendChild(p);
     }
   }
@@ -96,7 +96,7 @@
     resultsEl.innerHTML = '';
     selectedIds.clear();
     if (!data.results.length) {
-      resultsEl.innerHTML = '<p class="text-muted small mb-0">Документы не найдены</p>';
+      resultsEl.innerHTML = '<p class="text-muted small mb-0">' + appI18n('noDocsFound', 'Документы не найдены') + '</p>';
       return;
     }
     data.results.forEach(function (doc) {
@@ -146,7 +146,7 @@
 
     if (!response.ok) {
       const err = await response.json().catch(function () { return {}; });
-      alert(err.error || 'Не удалось добавить связь');
+      alert(err.error || appI18n('addLinkError', 'Не удалось добавить связь'));
       return;
     }
 

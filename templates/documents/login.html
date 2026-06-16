@@ -1,9 +1,11 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="{{ LANGUAGE_CODE|slice:':2' }}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Вход — PDF Data Base</title>
+<title>{% trans "Вход — PDF Data Base" %}</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
 <style>
@@ -78,33 +80,37 @@
     text-align: left;
   }
   .alert-danger { background: #ffe5e5; color: #b00020; }
+  .language-switcher-wrap { margin-bottom: 24px; }
 </style>
 </head>
 <body>
 <div class="login-card">
   <div class="brand"><i class="bi bi-file-pdf-fill text-danger me-2"></i>PDF Data Base</div>
-  <div class="subtitle">Вход в систему</div>
+  <div class="subtitle">{% trans "Вход в систему" %}</div>
 
   {% if form.errors %}
-  <div class="alert alert-danger py-2 mb-3"><i class="bi bi-exclamation-triangle me-2"></i>Неверный логин или пароль</div>
+  <div class="alert alert-danger py-2 mb-3"><i class="bi bi-exclamation-triangle me-2"></i>{% trans "Неверный логин или пароль" %}</div>
   {% endif %}
 
   <form method="post" action="{% url 'login' %}">
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ next }}">
     <div class="mb-3 text-start">
-      <label class="form-label">Имя пользователя</label>
-      <input type="text" name="username" class="form-control" placeholder="Введите логин" required autofocus>
+      <label class="form-label">{% trans "Имя пользователя" %}</label>
+      <input type="text" name="username" class="form-control" placeholder="{% trans 'Введите логин' %}" required autofocus>
     </div>
     <div class="mb-4 text-start">
-      <label class="form-label">Пароль</label>
-      <input type="password" name="password" class="form-control" placeholder="Введите пароль" required>
+      <label class="form-label">{% trans "Пароль" %}</label>
+      <input type="password" name="password" class="form-control" placeholder="{% trans 'Введите пароль' %}" required>
     </div>
-    <button type="submit" class="btn btn-primary btn-login"><i class="bi bi-box-arrow-in-right me-2"></i>Войти</button>
+    <div class="language-switcher-wrap">
+      {% include 'partials/language_switcher.html' %}
+    </div>
+    <button type="submit" class="btn btn-primary btn-login"><i class="bi bi-box-arrow-in-right me-2"></i>{% trans "Войти" %}</button>
   </form>
 
   <div class="mt-4 text-muted" style="font-size:13px;">
-    Нет аккаунта? Обратитесь к администратору.
+    {% trans "Нет аккаунта? Обратитесь к администратору." %}
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

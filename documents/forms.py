@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.validators import FileExtensionValidator
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 
 from .models import Category, Document, DocumentVersion, Tag, UserNotificationSettings, UserProfile
 from .notifications import parse_telegram_chat_id
@@ -18,7 +19,7 @@ class DocumentForm(forms.ModelForm):
     )
     tags_input = forms.CharField(
         required=False,
-        label='Теги',
+        label=_('Теги'),
         widget=forms.HiddenInput(),
     )
 
@@ -29,12 +30,12 @@ class DocumentForm(forms.ModelForm):
             'author', 'status', 'start_date', 'end_date',
         ]
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Название документа'}),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Название документа')}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'category': forms.Select(attrs={'class': 'form-select'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00'}),
-            'signatory': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ФИО подписанта'}),
-            'author': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ФИО автора'}),
+            'signatory': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('ФИО подписанта')}),
+            'author': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('ФИО автора')}),
             'status': forms.Select(attrs={'class': 'form-select'}),
             'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
@@ -74,15 +75,15 @@ class DocumentForm(forms.ModelForm):
         max_size = getattr(settings, 'PDF_MAX_SIZE', 10 * 1024 * 1024)
         file_size = self._file_size(pdf)
         if file_size is not None and file_size > max_size:
-            raise ValidationError(f'Размер файла не должен превышать {max_size // (1024 * 1024)} МБ')
+            raise ValidationError(_('Размер файла не должен превышать %(max)s МБ') % {'max': max_size // (1024 * 1024)})
 
         content_type = getattr(pdf, 'content_type', None)
         if content_type and content_type not in ('application/pdf', 'application/x-pdf'):
-            raise ValidationError('Файл должен быть в формате PDF')
+            raise ValidationError(_('Файл должен быть в формате PDF'))
 
         name = getattr(pdf, 'name', '') or ''
         if not name.lower().endswith('.pdf'):
-            raise ValidationError('Файл должен быть в формате PDF')
+            raise ValidationError(_('Файл должен быть в формате PDF'))
 
         return pdf
 
@@ -91,7 +92,7 @@ class DocumentForm(forms.ModelForm):
         start_date = cleaned_data.get('start_date')
         end_date = cleaned_data.get('end_date')
         if start_date and end_date and end_date < start_date:
-            raise ValidationError('Дата окончания не может быть раньше даты начала.')
+            raise ValidationError(_('Дата окончания не может быть раньше даты начала.'))
         return cleaned_data
 
     def _archive_previous_pdf(self, instance):
@@ -175,7 +176,7 @@ class NotificationSettingsForm(forms.ModelForm):
         email = (self.cleaned_data.get('notify_email') or '').strip()
         notify_enabled = self.cleaned_data.get('notify_email_enabled')
         if notify_enabled and not email:
-            raise ValidationError('Укажите email для уведомлений.')
+            raise ValidationError(_('Укажите email для уведомлений.'))
         return email
 
     def clean_telegram_chat_id(self):
@@ -184,15 +185,15 @@ class NotificationSettingsForm(forms.ModelForm):
         if not notify_enabled:
             return raw
         if not raw:
-            raise ValidationError('Укажите Telegram Chat ID или ссылку.')
+            raise ValidationError(_('Укажите Telegram Chat ID или ссылку.'))
         return parse_telegram_chat_id(raw)
 
     def clean_dashboard_expiry_days(self):
         days = self.cleaned_data.get('dashboard_expiry_days')
         if days is None or days < 1:
-            raise ValidationError('Укажите значение от 1 до 365.')
+            raise ValidationError(_('Укажите значение от 1 до 365.'))
         if days > 365:
-            raise ValidationError('Максимум 365 дней.')
+            raise ValidationError(_('Максимум 365 дней.'))
         return days
 
 
@@ -208,7 +209,7 @@ class UserInviteForm(forms.Form):
     def clean_email(self):
         email = self.cleaned_data['email'].strip().lower()
         if User.objects.filter(email__iexact=email).exists():
-            raise ValidationError('Пользователь с таким email уже существует.')
+            raise ValidationError(_('Пользователь с таким email уже существует.'))
         return email
 
 
