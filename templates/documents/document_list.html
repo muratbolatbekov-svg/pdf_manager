@@ -123,6 +123,19 @@
     margin-top: 16px;
     padding-top: 16px;
   }
+  .documents-table {
+    width: 100%;
+    table-layout: auto;
+  }
+  .documents-table th.col-signatory,
+  .documents-table th.col-amount,
+  .documents-table td.col-signatory,
+  .documents-table td.col-amount {
+    white-space: nowrap;
+  }
+  .documents-table td.col-amount {
+    font-variant-numeric: tabular-nums;
+  }
   @media (max-width: 768px) {
     .pdf-viewer-dialog {
       width: 96vw;
@@ -249,8 +262,9 @@
 
 <div class="card">
   {% if documents %}
-  <table class="table mb-0">
-    <thead><tr><th>{% trans "Документ" %}</th><th>{% trans "Категория" %}</th><th>{% trans "Подписант" %}</th><th>{% trans "Сумма" %}</th><th>{% trans "Срок" %}</th><th>{% trans "НДС" %}</th><th>{% trans "Статус" %}</th><th>{% trans "Теги" %}</th><th>{% trans "Файл" %}</th><th></th></tr></thead>
+  <div class="table-responsive">
+  <table class="table mb-0 documents-table">
+    <thead><tr><th>{% trans "Документ" %}</th><th>{% trans "Категория" %}</th><th class="col-signatory">{% trans "Подписант" %}</th><th class="col-amount">{% trans "Сумма" %}</th><th>{% trans "Срок" %}</th><th>{% trans "НДС" %}</th><th>{% trans "Статус" %}</th><th>{% trans "Теги" %}</th><th>{% trans "Файл" %}</th><th></th></tr></thead>
     <tbody>
     {% for doc in documents %}
     {% with tag_summary=doc.tags|doc_tag_summary %}
@@ -269,8 +283,8 @@
         {% endif %}
       </td>
       <td class="text-muted">{{ doc.category|default:"—" }}</td>
-      <td>{{ doc.signatory|default:"—" }}</td>
-      <td class="fw-medium">{% if doc.amount %}{{ doc.amount_formatted }}{% else %}—{% endif %}</td>
+      <td class="col-signatory">{{ doc.signatory|default:"—" }}</td>
+      <td class="col-amount fw-medium">{% if doc.amount %}{{ doc.amount_formatted }}{% else %}—{% endif %}</td>
       <td class="small {% if doc.is_expired %}text-danger{% elif doc.is_expiring_soon %}text-warning{% else %}text-muted{% endif %}">
         {% if doc.end_date %}{{ doc.end_date|date:"d.m.Y" }}{% else %}—{% endif %}
       </td>
@@ -303,6 +317,7 @@
     </tr>
     </tbody>
   </table>
+  </div>
   {% if page_obj.has_other_pages %}
   <div class="d-flex justify-content-center py-3 gap-2">
     {% if page_obj.has_previous %}
