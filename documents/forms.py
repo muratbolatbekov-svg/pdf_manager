@@ -1,10 +1,11 @@
 from django import forms
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.validators import FileExtensionValidator
 from django.conf import settings
 
-from .models import Category, Document, DocumentVersion, Tag, UserNotificationSettings
+from .models import Category, Document, DocumentVersion, Tag, UserNotificationSettings, UserProfile
 from .notifications import parse_telegram_chat_id
 from .utils import extract_pdf_text, parse_tags, sync_document_tags
 
@@ -191,6 +192,26 @@ class NotificationSettingsForm(forms.ModelForm):
         if days > 365:
             raise ValidationError('Максимум 365 дней.')
         return days
+
+
+class UserInviteForm(forms.Form):
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'email@example.com'}),
+    )
+    role = forms.ChoiceField(
+        choices=UserProfile.ROLE_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+
+    def clean_email(self):
+        email = self.cleaned_data['email'].strip().lower()
+        if User.objects.filter(email__iexact=email).exists():
+            raise ValidationError('Пользователь с таким email уже существует.')
+        return email
+
+
+class UserRoleForm(forms.Form):
+    role = forms.ChoiceField(choices=UserProfile.ROLE_CHOICES)
 
 
 class CategoryForm(forms.ModelForm):

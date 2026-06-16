@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load documents_extras %}
+{% block title %}Пользователи — PDF Data Base{% endblock %}
+{% block content %}
+<h4 class="fw-bold mb-1">Настройки</h4>
+<p class="text-muted mb-4" style="font-size:15px;">Управление пользователями</p>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <span class="text-muted" style="font-size:14px;">{{ users|length }} пользовател{{ users|length|pluralize:"ь,я,ей" }}</span>
+  <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#inviteModal">
+    <i class="bi bi-person-plus me-1"></i>Пригласить пользователя
+  </button>
+</div>
+
+<div class="card overflow-hidden">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead>
+        <tr>
+          <th style="width:48px;"></th>
+          <th>Имя</th>
+          <th>Email</th>
+          <th style="width:180px;">Роль</th>
+          <th style="width:140px;">Последний вход</th>
+          <th style="width:56px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr class="{% if not u.is_active %}text-muted{% endif %}">
+          <td><i class="bi bi-person-circle fs-5"></i></td>
+          <td>
+            {{ u|user_display_name }}
+            {% if not u.is_active %}<span class="badge bg-secondary ms-1">заблокирован</span>{% endif %}
+            {% if u == request.user %}<span class="badge bg-light text-dark ms-1">вы</span>{% endif %}
+          </td>
+          <td>{{ u.email|default:"—" }}</td>
+          <td>
+            {% if u == request.user %}
+            <span class="badge bg-primary">{{ u.profile.get_role_display }}</span>
+            {% else %}
+            <form method="post" action="{% url 'user_update_role' u.pk %}" class="role-form">
+              {% csrf_token %}
+              <select name="role" class="form-select form-select-sm" onchange="this.form.submit()">
+                {% for value, label in role_choices %}
+                <option value="{{ value }}" {% if u.profile.role == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </form>
+            {% endif %}
+          </td>
+          <td>{{ u.last_login|last_login_label }}</td>
+          <td>
+            {% if u != request.user %}
+            <div class="dropdown">
+              <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown" aria-label="Действия">
+                <i class="bi bi-three-dots"></i>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                {% if u.is_active %}
+                <li>
+                  <form method="post" action="{% url 'user_block' u.pk %}" onsubmit="return confirm('Заблокировать пользователя {{ u.username }}?');">
+                    {% csrf_token %}
+                    <button type="submit" class="dropdown-item">Заблокировать</button>
+                  </form>
+                </li>
+                {% endif %}
+                <li>
+                  <form method="post" action="{% url 'user_delete' u.pk %}" onsubmit="return confirm('Удалить пользователя {{ u.username }}? Это действие необратимо.');">
+                    {% csrf_token %}
+                    <button type="submit" class="dropdown-item text-danger">Удалить</button>
+                  </form>
+                </li>
+              </ul>
+            </div>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-4">Нет пользователей</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal fade" id="inviteModal" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content" style="border-radius:16px;">
+      <form method="post" action="{% url 'user_invite' %}">
+        {% csrf_token %}
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" id="inviteModalLabel">Пригласить пользователя</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small">На указанный email будет отправлена ссылка для установки пароля.</p>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            {{ invite_form.email }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Роль</label>
+            {{ invite_form.role }}
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+          <button type="submit" class="btn btn-primary">Отправить приглашение</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

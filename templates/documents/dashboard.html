@@ -1,55 +1,98 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Дашборд — PDF Data Base{% endblock %}
 {% block extra_head %}
 <style>
   .dashboard-stat-link { transition: transform 0.2s ease, box-shadow 0.2s ease; }
   a:hover .dashboard-stat-link { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+  .dashboard-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+  .period-dropdown .dropdown-toggle {
+    border-radius: 100px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid var(--apple-border);
+    background: #fff;
+    color: var(--apple-text);
+  }
+  .period-dropdown .dropdown-toggle:hover { background: var(--apple-bg); }
+  .period-dropdown .dropdown-item { font-size: 14px; }
+  .period-dropdown .dropdown-item.active { background: rgba(0,113,227,0.08); color: var(--apple-blue); }
+  .period-dot { display: inline-block; width: 16px; font-size: 10px; }
+  .chart-card { min-height: 360px; }
+  .chart-wrap { position: relative; height: 280px; }
+  .range-toggle .btn {
+    border-radius: 100px;
+    padding: 4px 12px;
+    font-size: 13px;
+  }
+  .range-toggle .btn.active {
+    background: var(--apple-blue);
+    border-color: var(--apple-blue);
+    color: #fff;
+  }
+  .chart-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--apple-muted);
+    font-size: 14px;
+  }
 </style>
 {% endblock %}
 {% block content %}
-<h4 class="fw-bold mb-1">Дашборд</h4>
-<p class="text-muted mb-4" style="font-size:15px;">Обзор системы управления документами</p>
+<div class="dashboard-header">
+  <div>
+    <h4 class="fw-bold mb-1">Дашборд</h4>
+    <p class="text-muted mb-0" style="font-size:15px;">Обзор системы управления документами</p>
+  </div>
+  <div class="dropdown period-dropdown">
+    <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <span id="dashboardPeriodLabel">{{ analytics_json.period_label }}</span>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" id="dashboardPeriodMenu">
+      {% for key, label in period_choices %}
+      <li>
+        <button type="button" class="dropdown-item {% if analytics_json.period == key %}active{% endif %}" data-period="{{ key }}">
+          <span class="period-dot">{% if analytics_json.period == key %}●{% else %}○{% endif %}</span>
+          {{ label }}
+        </button>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
 
 <div class="row g-3 mb-4">
   <div class="col-md-3">
     <div class="card stat-card">
       <div class="stat-label">Всего документов</div>
-      <div class="stat-value">{{ total_docs }}</div>
+      <div class="stat-value" id="statTotalDocs">{{ analytics_json.stats.total_docs }}</div>
     </div>
   </div>
   <div class="col-md-3">
     <div class="card stat-card">
       <div class="stat-label">Активных</div>
-      <div class="stat-value" style="color: #34c759;">{{ active_docs }}</div>
+      <div class="stat-value" id="statActiveDocs" style="color: #34c759;">{{ analytics_json.stats.active_docs }}</div>
     </div>
   </div>
   <div class="col-md-3">
     <div class="card stat-card">
       <div class="stat-label">Черновиков</div>
-      <div class="stat-value" style="color: #9a6b00;">{{ draft_docs }}</div>
+      <div class="stat-value" id="statDraftDocs" style="color: #9a6b00;">{{ analytics_json.stats.draft_docs }}</div>
     </div>
   </div>
   <div class="col-md-3">
     <div class="card stat-card">
       <div class="stat-label">В архиве</div>
-      <div class="stat-value" style="color: var(--apple-muted);">{{ archived_docs }}</div>
+      <div class="stat-value" id="statArchivedDocs" style="color: var(--apple-muted);">{{ analytics_json.stats.archived_docs }}</div>
     </div>
   </div>
 </div>
 
 <div class="row g-3 mb-4">
-  <div class="col-md-4">
-    <div class="card stat-card">
-      <div class="stat-label">Общая сумма договоров</div>
-      <div class="stat-value">{{ total_amount|floatformat:0 }} ₸</div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="card stat-card">
-      <div class="stat-label">Просроченных договоров</div>
-      <div class="stat-value" style="color: #ff3b30;">{{ expired_count }}</div>
-    </div>
-  </div>
   <div class="col-md-4">
     <a href="{{ expiring_filter_url }}" class="text-decoration-none d-block h-100">
       <div class="card stat-card h-100 dashboard-stat-link">
@@ -60,6 +103,12 @@
         <div class="text-muted small mt-1">{{ expiring_label }}</div>
       </div>
     </a>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card">
+      <div class="stat-label">Просроченных договоров</div>
+      <div class="stat-value" style="color: #ff3b30;">{{ expired_count }}</div>
+    </div>
   </div>
 </div>
 
@@ -72,6 +121,37 @@
   {% endfor %}
 </div>
 {% endif %}
+
+<h6 class="fw-bold mb-3" style="font-size:17px;">Аналитика</h6>
+<div id="dashboardAnalyticsRoot" data-analytics-url="{% url 'dashboard_analytics' %}">
+  {{ analytics_json|json_script:"dashboardAnalyticsConfig" }}
+  <div class="row g-3 mb-4">
+    <div class="col-lg-7">
+      <div class="card p-4 chart-card">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <h6 class="fw-bold mb-0" style="font-size:16px;">Динамика сумм</h6>
+          <div class="btn-group range-toggle" role="group" aria-label="Период графика">
+            <button type="button" class="btn btn-outline-secondary btn-sm {% if analytics_json.months == 3 %}active{% endif %}" data-months="3">3 мес</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm {% if analytics_json.months == 6 %}active{% endif %}" data-months="6">6 мес</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm {% if analytics_json.months == 12 %}active{% endif %}" data-months="12">12 мес</button>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="amountTrendChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="card p-4 chart-card">
+        <h6 class="fw-bold mb-3" style="font-size:16px;">По категориям</h6>
+        <div class="chart-wrap">
+          <canvas id="categoryChart"></canvas>
+          <div class="chart-empty {% if analytics_json.categories %}d-none{% endif %}">Нет данных за выбранный период</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="row g-3">
   <div class="col-md-7">
@@ -97,7 +177,7 @@
     </div>
   </div>
   <div class="col-md-5">
-    <div class="card p-4 mb-3">
+    <div class="card p-4">
       <h6 class="fw-bold mb-3" style="font-size:17px;">Категории</h6>
       {% if categories %}
         {% for cat in categories %}
@@ -110,17 +190,10 @@
       <p class="text-muted text-center py-4">Нет категорий. <a href="{% url 'category_create' %}" style="color: var(--apple-blue);">Создать</a></p>
       {% endif %}
     </div>
-    {% if amount_by_category %}
-    <div class="card p-4">
-      <h6 class="fw-bold mb-3" style="font-size:17px;">Сумма по категориям</h6>
-      {% for cat in amount_by_category %}
-      <div class="d-flex justify-content-between py-2 {% if not forloop.last %}border-bottom{% endif %}" style="border-color: var(--apple-border) !important;">
-        <span>{{ cat.name }}</span>
-        <span class="fw-medium">{{ cat.total_amount|floatformat:0 }} ₸</span>
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
   </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/dashboard-charts.js' %}"></script>
 {% endblock %}

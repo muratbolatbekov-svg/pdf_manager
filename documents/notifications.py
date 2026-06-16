@@ -116,6 +116,19 @@ def send_expiry_telegram(chat_id, document, days_left):
         return False
 
 
+def send_user_invite(recipient, invite_url):
+    send_mail(
+        subject='PDF Data Base: приглашение в систему',
+        message=(
+            'Вас пригласили в PDF Data Base.\n\n'
+            f'Перейдите по ссылке, чтобы установить пароль и войти:\n{invite_url}'
+        ),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[recipient],
+        fail_silently=False,
+    )
+
+
 def expiring_documents_queryset(days_ahead=None):
     from .models import Document
 

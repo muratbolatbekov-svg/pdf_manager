@@ -4,19 +4,25 @@ from urllib.parse import urlencode
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
 from django.core.paginator import Paginator
 from django.db.models import Count, Sum
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils import timezone
 from django.utils.dateparse import parse_date
+from django.views.decorators.http import require_POST
 
 from openpyxl import Workbook
 
-from .forms import CategoryForm, DocumentForm, NotificationSettingsForm
+from .analytics import PERIOD_CHOICES, build_dashboard_analytics
+from .forms import CategoryForm, DocumentForm, NotificationSettingsForm, UserInviteForm, UserRoleForm
 from .models import AuditLog, Category, Document, UserNotificationSettings, UserProfile
-from .notifications import expiring_documents_queryset
+from .notifications import expiring_documents_queryset, send_user_invite
 from .permissions import get_user_role, role_required
 
 
@@ -200,14 +206,14 @@ def dashboard(request):
         'amount_min': None,
         'amount_max': None,
     })
-    amount_by_category = (
-        Category.objects.annotate(total_amount=Sum('document__amount'))
-        .filter(total_amount__gt=0)
-        .order_by('-total_amount')[:5]
-    )
+    period = request.GET.get('period', 'current_month')
+    months = request.GET.get('months', '12')
+    try:
+        months_count = int(months)
+    except (TypeError, ValueError):
+        months_count = 12
+    analytics = build_dashboard_analytics(period, months_count, today)
     context = {
-        **_document_stats(),
-        'total_amount': Document.objects.aggregate(total=Sum('amount'))['total'] or Decimal('0'),
         'categories': Category.objects.annotate(doc_count=Count('document')),
         'recent_docs': Document.objects.select_related('category').prefetch_related('tags')[:5],
         'expiring_soon': expiring_soon,
@@ -216,10 +222,21 @@ def dashboard(request):
         'expiry_days': expiry_days,
         'expiring_filter_url': f"{reverse('document_list')}?{expiring_filter_qs}",
         'expired_count': expired,
-        'amount_by_category': amount_by_category,
+        'period_choices': PERIOD_CHOICES,
+        'analytics_json': analytics,
         'user_role': get_user_role(request.user),
     }
     return render(request, 'documents/dashboard.html', context)
+
+
+@login_required
+def dashboard_analytics(request):
+    period = request.GET.get('period', 'current_month')
+    try:
+        months_count = int(request.GET.get('months', 12))
+    except (TypeError, ValueError):
+        months_count = 12
+    return JsonResponse(build_dashboard_analytics(period, months_count))
 
 
 @login_required
@@ -273,7 +290,7 @@ def document_detail(request, slug):
 
 
 @login_required
-@role_required(UserProfile.ROLE_EDITOR, UserProfile.ROLE_ADMIN)
+@role_required(UserProfile.ROLE_MANAGER, UserProfile.ROLE_ADMIN)
 def document_create(request):
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES, user=request.user)
@@ -287,7 +304,7 @@ def document_create(request):
 
 
 @login_required
-@role_required(UserProfile.ROLE_EDITOR, UserProfile.ROLE_ADMIN)
+@role_required(UserProfile.ROLE_MANAGER, UserProfile.ROLE_ADMIN)
 def document_edit(request, slug):
     document = get_object_or_404(Document, slug=slug)
     if request.method == 'POST':
@@ -314,53 +331,53 @@ def document_delete(request, slug):
 
 
 @login_required
-@role_required(UserProfile.ROLE_ADMIN)
 def document_export(request):
     documents, filters = _documents_queryset(request)
-    export_format = request.GET.get('format', 'csv')
+    export_format = request.GET.get('format', 'xlsx')
+    export_date = timezone.localdate().strftime('%Y-%m-%d')
 
     if export_format == 'xlsx':
         workbook = Workbook()
         sheet = workbook.active
         sheet.title = 'Документы'
-        sheet.append(['Название', 'Категория', 'Подписант', 'Автор', 'Сумма', 'Статус', 'Начало', 'Окончание', 'Теги', 'Создан'])
+        sheet.append([
+            'Название', 'Категория', 'Статус', 'Дата создания',
+            'Дата истечения', 'Сумма (₸)', 'Контрагент',
+        ])
         for doc in documents:
             sheet.append([
                 doc.title,
                 doc.category.name if doc.category else '',
-                doc.signatory,
-                doc.author,
-                float(doc.amount),
                 doc.get_status_display(),
-                doc.start_date.isoformat() if doc.start_date else '',
-                doc.end_date.isoformat() if doc.end_date else '',
-                doc.tag_names(),
                 doc.created_at.strftime('%d.%m.%Y'),
+                doc.end_date.strftime('%d.%m.%Y') if doc.end_date else '',
+                float(doc.amount),
+                doc.signatory,
             ])
         response = HttpResponse(
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
-        response['Content-Disposition'] = 'attachment; filename="documents.xlsx"'
+        response['Content-Disposition'] = f'attachment; filename="documents_{export_date}.xlsx"'
         workbook.save(response)
         return response
 
     response = HttpResponse(content_type='text/csv; charset=utf-8')
-    response['Content-Disposition'] = 'attachment; filename="documents.csv"'
+    response['Content-Disposition'] = f'attachment; filename="documents_{export_date}.csv"'
     response.write('\ufeff')
     writer = csv.writer(response)
-    writer.writerow(['Название', 'Категория', 'Подписант', 'Автор', 'Сумма', 'Статус', 'Начало', 'Окончание', 'Теги', 'Создан'])
+    writer.writerow([
+        'Название', 'Категория', 'Статус', 'Дата создания',
+        'Дата истечения', 'Сумма (₸)', 'Контрагент',
+    ])
     for doc in documents:
         writer.writerow([
             doc.title,
             doc.category.name if doc.category else '',
-            doc.signatory,
-            doc.author,
-            doc.amount,
             doc.get_status_display(),
-            doc.start_date or '',
-            doc.end_date or '',
-            doc.tag_names(),
             doc.created_at.strftime('%d.%m.%Y'),
+            doc.end_date.strftime('%d.%m.%Y') if doc.end_date else '',
+            doc.amount,
+            doc.signatory,
         ])
     return response
 
@@ -439,3 +456,140 @@ def notification_settings(request):
         'form': form,
         'user_role': get_user_role(request.user),
     })
+
+
+def _build_invite_url(user):
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+    return reverse('invite_set_password', kwargs={'uidb64': uid, 'token': token})
+
+
+@login_required
+@role_required(UserProfile.ROLE_ADMIN)
+def user_list(request):
+    users = User.objects.select_related('profile').order_by('-last_login', 'username')
+    for user in users:
+        UserProfile.objects.get_or_create(user=user)
+    users = User.objects.select_related('profile').order_by('-last_login', 'username')
+    invite_form = UserInviteForm()
+    return render(request, 'documents/user_list.html', {
+        'users': users,
+        'invite_form': invite_form,
+        'role_choices': UserProfile.ROLE_CHOICES,
+        'user_role': get_user_role(request.user),
+    })
+
+
+@login_required
+@role_required(UserProfile.ROLE_ADMIN)
+@require_POST
+def user_update_role(request, user_id):
+    target = get_object_or_404(User, pk=user_id)
+    if target == request.user:
+        messages.error(request, 'Нельзя изменить собственную роль.')
+        return redirect('user_list')
+    form = UserRoleForm(request.POST)
+    if form.is_valid():
+        profile, _ = UserProfile.objects.get_or_create(user=target)
+        profile.role = form.cleaned_data['role']
+        profile.save()
+        messages.success(request, f'Роль пользователя {target.username} обновлена.')
+    else:
+        messages.error(request, 'Некорректная роль.')
+    return redirect('user_list')
+
+
+@login_required
+@role_required(UserProfile.ROLE_ADMIN)
+@require_POST
+def user_block(request, user_id):
+    target = get_object_or_404(User, pk=user_id)
+    if target == request.user:
+        messages.error(request, 'Нельзя заблокировать себя.')
+        return redirect('user_list')
+    target.is_active = False
+    target.save(update_fields=['is_active'])
+    messages.success(request, f'Пользователь {target.username} заблокирован.')
+    return redirect('user_list')
+
+
+@login_required
+@role_required(UserProfile.ROLE_ADMIN)
+@require_POST
+def user_delete(request, user_id):
+    target = get_object_or_404(User, pk=user_id)
+    if target == request.user:
+        messages.error(request, 'Нельзя удалить себя.')
+        return redirect('user_list')
+    username = target.username
+    target.delete()
+    messages.success(request, f'Пользователь {username} удалён.')
+    return redirect('user_list')
+
+
+@login_required
+@role_required(UserProfile.ROLE_ADMIN)
+@require_POST
+def user_invite(request):
+    form = UserInviteForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, 'Проверьте email и роль.')
+        return redirect('user_list')
+
+    email = form.cleaned_data['email']
+    role = form.cleaned_data['role']
+    username = email.split('@')[0]
+    base_username = username
+    counter = 1
+    while User.objects.filter(username=username).exists():
+        username = f'{base_username}{counter}'
+        counter += 1
+
+    user = User(username=username, email=email, is_active=True)
+    user.set_unusable_password()
+    user.save()
+    UserProfile.objects.update_or_create(user=user, defaults={'role': role})
+    UserNotificationSettings.objects.get_or_create(user=user, defaults={'notify_email': email})
+
+    invite_path = _build_invite_url(user)
+    invite_url = request.build_absolute_uri(invite_path)
+    try:
+        send_user_invite(email, invite_url)
+        messages.success(request, f'Приглашение отправлено на {email}.')
+    except Exception:
+        messages.warning(
+            request,
+            f'Пользователь создан, но письмо не отправлено. Ссылка: {invite_url}',
+        )
+    return redirect('user_list')
+
+
+def invite_set_password(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is None or not default_token_generator.check_token(user, token):
+        return render(request, 'documents/invite_invalid.html', status=400)
+
+    if request.method == 'POST':
+        password = request.POST.get('password', '')
+        password2 = request.POST.get('password2', '')
+        if len(password) < 8:
+            messages.error(request, 'Пароль должен содержать минимум 8 символов.')
+        elif password != password2:
+            messages.error(request, 'Пароли не совпадают.')
+        else:
+            user.set_password(password)
+            user.is_active = True
+            user.save()
+            messages.success(request, 'Пароль установлен. Теперь можно войти.')
+            return redirect('login')
+
+    return render(request, 'documents/invite_set_password.html', {'email': user.email})
+
+
+def permission_denied(request, exception=None):
+    return render(request, '403.html', status=403)

@@ -133,16 +133,16 @@ class AuditLog(models.Model):
 
 class UserProfile(models.Model):
     ROLE_VIEWER = 'viewer'
-    ROLE_EDITOR = 'editor'
+    ROLE_MANAGER = 'manager'
     ROLE_ADMIN = 'admin'
     ROLE_CHOICES = [
-        (ROLE_VIEWER, 'Просмотр'),
-        (ROLE_EDITOR, 'Редактор'),
+        (ROLE_VIEWER, 'Читатель'),
+        (ROLE_MANAGER, 'Менеджер'),
         (ROLE_ADMIN, 'Администратор'),
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', verbose_name='Пользователь')
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=ROLE_EDITOR, verbose_name='Роль')
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=ROLE_MANAGER, verbose_name='Роль')
 
     class Meta:
         verbose_name = 'Профиль пользователя'

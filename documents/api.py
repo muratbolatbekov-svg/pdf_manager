@@ -47,7 +47,7 @@ class RolePermission(IsAuthenticated):
             return True
         if request.method == 'DELETE':
             return role == UserProfile.ROLE_ADMIN
-        return role in (UserProfile.ROLE_EDITOR, UserProfile.ROLE_ADMIN)
+        return role in (UserProfile.ROLE_MANAGER, UserProfile.ROLE_ADMIN)
 
 
 class DocumentViewSet(viewsets.ModelViewSet):

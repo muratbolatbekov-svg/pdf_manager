@@ -1,17 +1,34 @@
+import json
 from decimal import Decimal
 
-from django.core.exceptions import ValidationError
-from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.auth.tokens import default_token_generator
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, RequestFactory, TestCase
 from django.urls import reverse
 from django.http import Http404
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.utils import timezone
+
+from datetime import date
 
 from documents.models import AuditLog, Category, Document, UserNotificationSettings, UserProfile
 from documents.notifications import parse_telegram_chat_id
 from documents.utils import generate_unique_slug, parse_tags
-from documents.views import document_create, document_detail, document_list, document_pdf_preview, dashboard, notification_settings
+from documents.views import (
+    document_create,
+    document_detail,
+    document_list,
+    document_pdf_preview,
+    dashboard,
+    dashboard_analytics,
+    document_export,
+    home,
+    notification_settings,
+    user_list,
+)
 
 
 class SlugUtilsTests(TestCase):
@@ -34,8 +51,8 @@ class DocumentViewTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.factory = RequestFactory()
-        self.user = User.objects.create_user(username='editor', password='pass12345')
-        UserProfile.objects.filter(user=self.user).update(role=UserProfile.ROLE_EDITOR)
+        self.user = User.objects.create_user(username='manager', password='pass12345')
+        UserProfile.objects.filter(user=self.user).update(role=UserProfile.ROLE_MANAGER)
         self.admin = User.objects.create_user(username='admin', password='pass12345')
         UserProfile.objects.filter(user=self.admin).update(role=UserProfile.ROLE_ADMIN)
         self.category = Category.objects.create(name='Договоры')
@@ -51,7 +68,9 @@ class DocumentViewTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_home_public(self):
-        response = self.client.get(reverse('home'))
+        request = self.factory.get('/')
+        request.user = AnonymousUser()
+        response = home(request)
         self.assertEqual(response.status_code, 200)
         content = response.content.decode()
         self.assertIn('PDF Data Base', content)
@@ -59,8 +78,9 @@ class DocumentViewTests(TestCase):
         self.assertNotIn('Быстрые действия', content)
 
     def test_home_authenticated(self):
-        self.client.login(username='editor', password='pass12345')
-        response = self.client.get(reverse('home'))
+        request = self.factory.get('/')
+        request.user = self.user
+        response = home(request)
         self.assertEqual(response.status_code, 200)
         content = response.content.decode()
         self.assertIn('Статистика', content)
@@ -104,11 +124,12 @@ class DocumentViewTests(TestCase):
     def test_viewer_cannot_create(self):
         viewer = User.objects.create_user(username='viewer', password='pass12345')
         UserProfile.objects.filter(user=viewer).update(role=UserProfile.ROLE_VIEWER)
-        self.client.login(username='viewer', password='pass12345')
-        response = self.client.get(reverse('document_create'))
-        self.assertEqual(response.status_code, 302)
+        request = self.factory.get('/documents/create/')
+        request.user = viewer
+        with self.assertRaises(PermissionDenied):
+            document_create(request)
 
-    def test_editor_can_create(self):
+    def test_manager_can_create(self):
         request = self.factory.get('/documents/create/')
         request.user = self.user
         response = document_create(request)
@@ -146,6 +167,31 @@ class DocumentViewTests(TestCase):
         content = response.content.decode()
         self.assertIn('Истекает в', content)
         self.assertIn('date_from=', content)
+        self.assertIn('Аналитика', content)
+        self.assertIn('amountTrendChart', content)
+
+    def test_dashboard_analytics_json(self):
+        request = self.factory.get('/dashboard/analytics/', {'period': 'current_month', 'months': '6'})
+        request.user = self.user
+        response = dashboard_analytics(request)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertIn('stats', data)
+        self.assertIn('trend', data)
+        self.assertIn('categories', data)
+        self.assertEqual(data['months'], 6)
+
+    def test_document_export_xlsx(self):
+        request = self.factory.get('/documents/export/?format=xlsx')
+        request.user = self.user
+        response = document_export(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            response['Content-Type'],
+        )
+        self.assertIn('documents_', response['Content-Disposition'])
+        self.assertIn('.xlsx', response['Content-Disposition'])
 
     def test_notification_settings_page(self):
         request = self.factory.get('/settings/notifications/')
@@ -159,7 +205,7 @@ class DocumentViewTests(TestCase):
             user=self.user,
             defaults={'notify_email': 'old@example.com'},
         )
-        self.client.login(username='editor', password='pass12345')
+        self.client.login(username='manager', password='pass12345')
         response = self.client.post(reverse('notification_settings'), {
             'notify_email_enabled': 'on',
             'notify_email': 'user@example.com',
@@ -190,9 +236,69 @@ class DocumentViewTests(TestCase):
         self.assertTrue(AuditLog.objects.filter(action='delete', object_repr__contains='Тестовый').exists())
 
 
+class UserManagementTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.factory = RequestFactory()
+        self.admin = User.objects.create_user(username='admin', password='pass12345', email='admin@example.com')
+        UserProfile.objects.filter(user=self.admin).update(role=UserProfile.ROLE_ADMIN)
+        self.manager = User.objects.create_user(username='manager', password='pass12345', email='mgr@example.com')
+        UserProfile.objects.filter(user=self.manager).update(role=UserProfile.ROLE_MANAGER)
+
+    def test_user_list_admin_only(self):
+        request = self.factory.get('/settings/users/')
+        request.user = self.manager
+        with self.assertRaises(PermissionDenied):
+            user_list(request)
+
+    def test_user_list_renders_for_admin(self):
+        request = self.factory.get('/settings/users/')
+        request.user = self.admin
+        response = user_list(request)
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertIn('Пригласить пользователя', content)
+        self.assertIn('mgr@example.com', content)
+
+    def test_admin_can_update_role(self):
+        self.client.login(username='admin', password='pass12345')
+        response = self.client.post(
+            reverse('user_update_role', kwargs={'user_id': self.manager.pk}),
+            {'role': UserProfile.ROLE_VIEWER},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.manager.profile.refresh_from_db()
+        self.assertEqual(self.manager.profile.role, UserProfile.ROLE_VIEWER)
+
+    def test_admin_cannot_change_own_role(self):
+        self.client.login(username='admin', password='pass12345')
+        response = self.client.post(
+            reverse('user_update_role', kwargs={'user_id': self.admin.pk}),
+            {'role': UserProfile.ROLE_VIEWER},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.admin.profile.refresh_from_db()
+        self.assertEqual(self.admin.profile.role, UserProfile.ROLE_ADMIN)
+
+    def test_invite_set_password(self):
+        invited = User(username='invite', email='invite@example.com')
+        invited.set_unusable_password()
+        invited.save()
+        UserProfile.objects.update_or_create(user=invited, defaults={'role': UserProfile.ROLE_VIEWER})
+        uid = urlsafe_base64_encode(force_bytes(invited.pk))
+        token = default_token_generator.make_token(invited)
+        response = self.client.post(
+            reverse('invite_set_password', kwargs={'uidb64': uid, 'token': token}),
+            {'password': 'newpass123', 'password2': 'newpass123'},
+        )
+        self.assertEqual(response.status_code, 302)
+        invited.refresh_from_db()
+        self.assertTrue(invited.check_password('newpass123'))
+
+
 class DocumentFormTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username='editor', password='pass12345')
+        self.user = User.objects.create_user(username='manager', password='pass12345')
 
     def test_pdf_validation_rejects_non_pdf(self):
         from documents.forms import DocumentForm

@@ -1,7 +1,6 @@
 from functools import wraps
 
-from django.contrib import messages
-from django.shortcuts import redirect
+from django.core.exceptions import PermissionDenied
 
 from .models import UserProfile
 
@@ -21,10 +20,17 @@ def role_required(*roles):
         def wrapper(request, *args, **kwargs):
             role = get_user_role(request.user)
             if role not in roles:
-                messages.error(request, 'Недостаточно прав для этого действия.')
-                return redirect('dashboard')
+                raise PermissionDenied('Недостаточно прав для этого действия.')
             return view_func(request, *args, **kwargs)
 
         return wrapper
 
     return decorator
+
+
+def can_manage_documents(user):
+    return get_user_role(user) in (UserProfile.ROLE_MANAGER, UserProfile.ROLE_ADMIN)
+
+
+def can_manage_users(user):
+    return get_user_role(user) == UserProfile.ROLE_ADMIN
