@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 
+import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -85,17 +86,14 @@ TEMPLATES = [{
 }]
 WSGI_APPLICATION = 'config.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    },
-}
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES = {'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)}
+else:
+    DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': BASE_DIR / 'db.sqlite3'}}
 
 B2_CREDENTIALS = load_b2_credentials()
 MEDIA_URL = '/media/'
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 if B2_CREDENTIALS:
     AWS_ACCESS_KEY_ID = B2_CREDENTIALS['KEY_ID']
@@ -109,14 +107,7 @@ if B2_CREDENTIALS:
     AWS_QUERYSTRING_AUTH = os.environ.get('B2_QUERYSTRING_AUTH', 'True') == 'True'
     AWS_QUERYSTRING_EXPIRE = int(os.environ.get('B2_URL_EXPIRE', '604800'))
     AWS_S3_FILE_OVERWRITE = False
-    STORAGES = {
-        'default': {
-            'BACKEND': 'documents.storage.PdfB2Storage',
-        },
-        'staticfiles': {
-            'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
-        },
-    }
+    DEFAULT_FILE_STORAGE = 'documents.storage.PdfB2Storage'
 elif has_partial_b2_env():
     missing = ', '.join(missing_b2_env_keys())
     raise ImproperlyConfigured(
@@ -124,27 +115,15 @@ elif has_partial_b2_env():
         'Set B2_KEY_ID, B2_APPLICATION_KEY, B2_BUCKET_NAME and B2_ENDPOINT.'
     )
 elif DEBUG and not ON_RAILWAY:
-    STORAGES = {
-        'default': {
-            'BACKEND': 'django.core.files.storage.FileSystemStorage',
-        },
-        'staticfiles': {
-            'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
-        },
-    }
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
     MEDIA_ROOT = BASE_DIR / 'media'
 else:
-    cloudinary_leftover = any(
-        os.environ.get(key, '').strip()
-        for key in ('CLOUDINARY_URL', 'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET')
+    raise ImproperlyConfigured(
+        'Backblaze B2 credentials are required. Set B2_KEY_ID, B2_APPLICATION_KEY, '
+        'B2_BUCKET_NAME and B2_ENDPOINT in environment variables.'
     )
-    hint = (
-        ' Cloudinary was replaced with Backblaze B2 — remove CLOUDINARY_* variables '
-        'and set B2_KEY_ID, B2_APPLICATION_KEY, B2_BUCKET_NAME, B2_ENDPOINT in Railway Variables.'
-        if cloudinary_leftover
-        else ' Set B2_KEY_ID, B2_APPLICATION_KEY, B2_BUCKET_NAME and B2_ENDPOINT in Railway Variables.'
-    )
-    raise ImproperlyConfigured('Backblaze B2 credentials are required.' + hint)
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -165,6 +144,9 @@ LANGUAGES = [
 ]
 
 LOCALE_PATHS = [BASE_DIR / 'locale']
+
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 PDF_MAX_SIZE = 10 * 1024 * 1024
 CONTRACT_EXPIRY_WARNING_DAYS = int(os.environ.get('CONTRACT_EXPIRY_WARNING_DAYS', '30'))

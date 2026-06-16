@@ -1,7 +1,0 @@
-[build]
-builder = "nixpacks"
-
-[deploy]
-preDeployCommand = "python manage.py migrate --noinput && python manage.py bootstrap_admin"
-startCommand = "gunicorn config.wsgi --bind 0.0.0.0:$PORT --log-file -"
-restartPolicyType = "on_failure"
