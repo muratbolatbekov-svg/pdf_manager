@@ -1,7 +1,6 @@
 from pathlib import Path
 import os
 
-import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -86,49 +85,12 @@ TEMPLATES = [{
 }]
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
-def _database_config(url):
-    """Configure PostgreSQL; require SSL only for public Railway hosts."""
-    options = {
-        'default': url,
-        'conn_max_age': 600,
-        'conn_health_checks': True,
-    }
-    url_lower = url.lower()
-    if 'sslmode=' not in url_lower and not DEBUG:
-        # Railway internal hostnames do not accept SSL; public proxy URLs do.
-        if 'railway.internal' not in url_lower:
-            options['ssl_require'] = True
-    return dj_database_url.config(**options)
-
-
-def _ensure_psycopg3_engine(db_config):
-    """Django 4.2 uses psycopg3 via django.db.backends.postgresql."""
-    db_config['ENGINE'] = 'django.db.backends.postgresql'
-    return db_config
-
-
-DATABASE_URL = (
-    os.environ.get('DATABASE_URL', '').strip()
-    or os.environ.get('DATABASE_PRIVATE_URL', '').strip()
-)
-if DATABASE_URL:
-    DATABASES = {'default': _ensure_psycopg3_engine(_database_config(DATABASE_URL))}
-elif ON_RAILWAY:
-    raise ImproperlyConfigured(
-        'DATABASE_URL is required on Railway. Add a PostgreSQL service and link it to this app.'
-    )
-elif DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        },
-    }
-else:
-    raise ImproperlyConfigured(
-        'DATABASE_URL is required in production. Use a PostgreSQL connection string.'
-    )
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    },
+}
 
 B2_CREDENTIALS = load_b2_credentials()
 MEDIA_URL = '/media/'
