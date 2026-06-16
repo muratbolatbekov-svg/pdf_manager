@@ -2,4 +2,4 @@
 nixPkgs = ["python311", "gcc"]
 
 [start]
-cmd = "python manage.py migrate --noinput && python manage.py bootstrap_admin && gunicorn config.wsgi --bind 0.0.0.0:$PORT --log-file -"
+cmd = "gunicorn config.wsgi --bind 0.0.0.0:$PORT --log-file -"

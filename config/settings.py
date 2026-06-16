@@ -86,19 +86,28 @@ TEMPLATES = [{
 }]
 WSGI_APPLICATION = 'config.wsgi.application'
 
+
+def _database_config(url):
+    """Configure PostgreSQL; require SSL only for public Railway hosts."""
+    options = {
+        'default': url,
+        'conn_max_age': 600,
+        'conn_health_checks': True,
+    }
+    url_lower = url.lower()
+    if 'sslmode=' not in url_lower and not DEBUG:
+        # Railway internal hostnames do not accept SSL; public proxy URLs do.
+        if 'railway.internal' not in url_lower:
+            options['ssl_require'] = True
+    return dj_database_url.config(**options)
+
+
 DATABASE_URL = (
     os.environ.get('DATABASE_URL', '').strip()
     or os.environ.get('DATABASE_PRIVATE_URL', '').strip()
 )
 if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=DATABASE_URL,
-            conn_max_age=600,
-            conn_health_checks=True,
-            ssl_require=not DEBUG,
-        ),
-    }
+    DATABASES = {'default': _database_config(DATABASE_URL)}
 elif ON_RAILWAY:
     raise ImproperlyConfigured(
         'DATABASE_URL is required on Railway. Add a PostgreSQL service and link it to this app.'
@@ -117,6 +126,8 @@ else:
 
 B2_CREDENTIALS = load_b2_credentials()
 MEDIA_URL = '/media/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 if B2_CREDENTIALS:
     AWS_ACCESS_KEY_ID = B2_CREDENTIALS['KEY_ID']
@@ -130,7 +141,14 @@ if B2_CREDENTIALS:
     AWS_QUERYSTRING_AUTH = os.environ.get('B2_QUERYSTRING_AUTH', 'True') == 'True'
     AWS_QUERYSTRING_EXPIRE = int(os.environ.get('B2_URL_EXPIRE', '604800'))
     AWS_S3_FILE_OVERWRITE = False
-    DEFAULT_FILE_STORAGE = 'documents.storage.PdfB2Storage'
+    STORAGES = {
+        'default': {
+            'BACKEND': 'documents.storage.PdfB2Storage',
+        },
+        'staticfiles': {
+            'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
+        },
+    }
 elif has_partial_b2_env():
     missing = ', '.join(missing_b2_env_keys())
     raise ImproperlyConfigured(
@@ -138,15 +156,27 @@ elif has_partial_b2_env():
         'Set B2_KEY_ID, B2_APPLICATION_KEY, B2_BUCKET_NAME and B2_ENDPOINT.'
     )
 elif DEBUG and not ON_RAILWAY:
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    STORAGES = {
+        'default': {
+            'BACKEND': 'django.core.files.storage.FileSystemStorage',
+        },
+        'staticfiles': {
+            'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+        },
+    }
     MEDIA_ROOT = BASE_DIR / 'media'
 else:
-    raise ImproperlyConfigured(
-        'Backblaze B2 credentials are required. Set B2_KEY_ID, B2_APPLICATION_KEY, '
-        'B2_BUCKET_NAME and B2_ENDPOINT in environment variables.'
+    cloudinary_leftover = any(
+        os.environ.get(key, '').strip()
+        for key in ('CLOUDINARY_URL', 'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET')
     )
-
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+    hint = (
+        ' Cloudinary was replaced with Backblaze B2 — remove CLOUDINARY_* variables '
+        'and set B2_KEY_ID, B2_APPLICATION_KEY, B2_BUCKET_NAME, B2_ENDPOINT in Railway Variables.'
+        if cloudinary_leftover
+        else ' Set B2_KEY_ID, B2_APPLICATION_KEY, B2_BUCKET_NAME and B2_ENDPOINT in Railway Variables.'
+    )
+    raise ImproperlyConfigured('Backblaze B2 credentials are required.' + hint)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -167,9 +197,6 @@ LANGUAGES = [
 ]
 
 LOCALE_PATHS = [BASE_DIR / 'locale']
-
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 PDF_MAX_SIZE = 10 * 1024 * 1024
 CONTRACT_EXPIRY_WARNING_DAYS = int(os.environ.get('CONTRACT_EXPIRY_WARNING_DAYS', '30'))
