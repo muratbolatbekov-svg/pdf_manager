@@ -8,13 +8,15 @@ from django.core.paginator import Paginator
 from django.db.models import Count, Sum
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 
 from openpyxl import Workbook
 
-from .forms import CategoryForm, DocumentForm
-from .models import AuditLog, Category, Document, UserProfile
+from .forms import CategoryForm, DocumentForm, NotificationSettingsForm
+from .models import AuditLog, Category, Document, UserNotificationSettings, UserProfile
+from .notifications import expiring_documents_queryset
 from .permissions import get_user_role, role_required
 
 
@@ -143,6 +145,26 @@ def _documents_queryset(request):
     return documents.order_by(order), filters
 
 
+def _contract_word(count):
+    n = abs(count) % 100
+    n1 = n % 10
+    if 11 <= n <= 19:
+        return 'договоров'
+    if n1 == 1:
+        return 'договор'
+    if 2 <= n1 <= 4:
+        return 'договора'
+    return 'договоров'
+
+
+def _get_notification_settings(user):
+    settings_obj, _ = UserNotificationSettings.objects.get_or_create(
+        user=user,
+        defaults={'notify_email': user.email or ''},
+    )
+    return settings_obj
+
+
 def _document_stats():
     return {
         'total_docs': Document.objects.count(),
@@ -163,12 +185,21 @@ def home(request):
 @login_required
 def dashboard(request):
     today = timezone.localdate()
-    expiring_soon = Document.objects.filter(
-        end_date__gte=today,
-        end_date__lte=today + timezone.timedelta(days=30),
-        status='active',
-    ).select_related('category')[:10]
+    user_settings = _get_notification_settings(request.user)
+    expiry_days = user_settings.dashboard_expiry_days
+    expiring_qs = expiring_documents_queryset(expiry_days)
+    expiring_soon = expiring_qs.select_related('category')[:10]
+    expiring_count = expiring_qs.count()
     expired = Document.objects.filter(end_date__lt=today, status='active').count()
+    expiring_filter_qs = _filters_querystring({
+        'category': None,
+        'status': 'active',
+        'sort': 'date_desc',
+        'date_from': today,
+        'date_to': today + timezone.timedelta(days=expiry_days),
+        'amount_min': None,
+        'amount_max': None,
+    })
     amount_by_category = (
         Category.objects.annotate(total_amount=Sum('document__amount'))
         .filter(total_amount__gt=0)
@@ -180,6 +211,10 @@ def dashboard(request):
         'categories': Category.objects.annotate(doc_count=Count('document')),
         'recent_docs': Document.objects.select_related('category').prefetch_related('tags')[:5],
         'expiring_soon': expiring_soon,
+        'expiring_count': expiring_count,
+        'expiring_label': _contract_word(expiring_count),
+        'expiry_days': expiry_days,
+        'expiring_filter_url': f"{reverse('document_list')}?{expiring_filter_qs}",
         'expired_count': expired,
         'amount_by_category': amount_by_category,
         'user_role': get_user_role(request.user),
@@ -387,3 +422,20 @@ def category_delete(request, pk):
 def audit_log_list(request):
     logs = AuditLog.objects.select_related('user')[:100]
     return render(request, 'documents/audit_log.html', {'logs': logs})
+
+
+@login_required
+def notification_settings(request):
+    settings_obj = _get_notification_settings(request.user)
+    if request.method == 'POST':
+        form = NotificationSettingsForm(request.POST, instance=settings_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Настройки уведомлений сохранены.')
+            return redirect('notification_settings')
+    else:
+        form = NotificationSettingsForm(instance=settings_obj)
+    return render(request, 'documents/notification_settings.html', {
+        'form': form,
+        'user_role': get_user_role(request.user),
+    })

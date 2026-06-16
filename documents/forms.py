@@ -4,7 +4,8 @@ from django.core.files.base import ContentFile
 from django.core.validators import FileExtensionValidator
 from django.conf import settings
 
-from .models import Category, Document, DocumentVersion, Tag
+from .models import Category, Document, DocumentVersion, Tag, UserNotificationSettings
+from .notifications import parse_telegram_chat_id
 from .utils import extract_pdf_text, parse_tags, sync_document_tags
 
 
@@ -130,6 +131,66 @@ class DocumentForm(forms.ModelForm):
                     Document.objects.filter(pk=instance.pk).update(pdf_text=pdf_text)
 
         return instance
+
+
+class NotificationSettingsForm(forms.ModelForm):
+    class Meta:
+        model = UserNotificationSettings
+        fields = [
+            'notify_email_enabled',
+            'notify_email',
+            'notify_telegram_enabled',
+            'telegram_chat_id',
+            'notify_30_days',
+            'notify_7_days',
+            'notify_on_expiry_day',
+            'dashboard_expiry_days',
+        ]
+        widgets = {
+            'notify_email_enabled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'notify_email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'email@example.com',
+            }),
+            'notify_telegram_enabled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'telegram_chat_id': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Chat ID или https://t.me/username',
+            }),
+            'notify_30_days': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'notify_7_days': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'notify_on_expiry_day': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'dashboard_expiry_days': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': 1,
+                'max': 365,
+                'style': 'max-width: 100px;',
+            }),
+        }
+
+    def clean_notify_email(self):
+        email = (self.cleaned_data.get('notify_email') or '').strip()
+        notify_enabled = self.cleaned_data.get('notify_email_enabled')
+        if notify_enabled and not email:
+            raise ValidationError('Укажите email для уведомлений.')
+        return email
+
+    def clean_telegram_chat_id(self):
+        raw = (self.cleaned_data.get('telegram_chat_id') or '').strip()
+        notify_enabled = self.cleaned_data.get('notify_telegram_enabled')
+        if not notify_enabled:
+            return raw
+        if not raw:
+            raise ValidationError('Укажите Telegram Chat ID или ссылку.')
+        return parse_telegram_chat_id(raw)
+
+    def clean_dashboard_expiry_days(self):
+        days = self.cleaned_data.get('dashboard_expiry_days')
+        if days is None or days < 1:
+            raise ValidationError('Укажите значение от 1 до 365.')
+        if days > 365:
+            raise ValidationError('Максимум 365 дней.')
+        return days
 
 
 class CategoryForm(forms.ModelForm):

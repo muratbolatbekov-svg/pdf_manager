@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Уведомления — PDF Data Base{% endblock %}
+{% block content %}
+<h4 class="fw-bold mb-1">Настройки</h4>
+<p class="text-muted mb-4" style="font-size:15px;">Уведомления о сроках договоров</p>
+
+<div class="card p-4" style="max-width: 720px;">
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    <h6 class="fw-bold mb-3">Уведомлять меня по:</h6>
+    <div class="mb-3">
+      <div class="form-check mb-2">
+        {{ form.notify_email_enabled }}
+        <label class="form-check-label ms-1" for="{{ form.notify_email_enabled.id_for_label }}">Email</label>
+      </div>
+      {{ form.notify_email }}
+      {% if form.notify_email.errors %}<div class="text-danger small mt-1">{{ form.notify_email.errors.0 }}</div>{% endif %}
+    </div>
+
+    <div class="mb-4">
+      <div class="form-check mb-2">
+        {{ form.notify_telegram_enabled }}
+        <label class="form-check-label ms-1" for="{{ form.notify_telegram_enabled.id_for_label }}">Telegram</label>
+      </div>
+      {{ form.telegram_chat_id }}
+      <div class="form-text">Числовой Chat ID (через @userinfobot) или ссылка на профиль</div>
+      {% if form.telegram_chat_id.errors %}<div class="text-danger small mt-1">{{ form.telegram_chat_id.errors.0 }}</div>{% endif %}
+    </div>
+
+    <h6 class="fw-bold mb-3">Когда уведомлять:</h6>
+    <div class="mb-4">
+      <div class="form-check mb-2">
+        {{ form.notify_30_days }}
+        <label class="form-check-label ms-1" for="{{ form.notify_30_days.id_for_label }}">За 30 дней до истечения договора</label>
+      </div>
+      <div class="form-check mb-2">
+        {{ form.notify_7_days }}
+        <label class="form-check-label ms-1" for="{{ form.notify_7_days.id_for_label }}">За 7 дней до истечения договора</label>
+      </div>
+      <div class="form-check">
+        {{ form.notify_on_expiry_day }}
+        <label class="form-check-label ms-1" for="{{ form.notify_on_expiry_day.id_for_label }}">В день истечения</label>
+      </div>
+    </div>
+
+    <h6 class="fw-bold mb-3">Порог виджета на дашборде</h6>
+    <div class="d-flex align-items-center gap-2 mb-4 flex-wrap">
+      <span class="text-muted">Показывать документы, которые истекают через</span>
+      {{ form.dashboard_expiry_days }}
+      <span class="text-muted">дней</span>
+    </div>
+    {% if form.dashboard_expiry_days.errors %}<div class="text-danger small mb-3">{{ form.dashboard_expiry_days.errors.0 }}</div>{% endif %}
+
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Сохранить</button>
+  </form>
+</div>
+{% endblock %}

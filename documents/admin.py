@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AuditLog, Category, Document, DocumentVersion, Tag, UserProfile
+from .models import AuditLog, Category, Document, DocumentVersion, Tag, UserNotificationSettings, UserProfile
 
 
 @admin.register(Category)
@@ -41,3 +41,14 @@ class AuditLogAdmin(admin.ModelAdmin):
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ['user', 'role']
     list_filter = ['role']
+
+
+@admin.register(UserNotificationSettings)
+class UserNotificationSettingsAdmin(admin.ModelAdmin):
+    list_display = [
+        'user',
+        'notify_email_enabled',
+        'notify_telegram_enabled',
+        'dashboard_expiry_days',
+    ]
+    search_fields = ['user__username', 'notify_email', 'telegram_chat_id']

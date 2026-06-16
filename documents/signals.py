@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
 
-from .models import AuditLog, Category, Document, DocumentVersion, UserProfile
+from .models import AuditLog, Category, Document, DocumentVersion, UserNotificationSettings, UserProfile
 from .utils import delete_cloudinary_file
 
 
@@ -10,6 +10,10 @@ from .utils import delete_cloudinary_file
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.get_or_create(user=instance)
+        UserNotificationSettings.objects.get_or_create(
+            user=instance,
+            defaults={'notify_email': instance.email or ''},
+        )
 
 
 @receiver(pre_delete, sender=Document)

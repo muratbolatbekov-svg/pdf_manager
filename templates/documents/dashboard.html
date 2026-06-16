@@ -1,5 +1,11 @@
 {% extends 'base.html' %}
 {% block title %}Дашборд — PDF Data Base{% endblock %}
+{% block extra_head %}
+<style>
+  .dashboard-stat-link { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+  a:hover .dashboard-stat-link { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+</style>
+{% endblock %}
 {% block content %}
 <h4 class="fw-bold mb-1">Дашборд</h4>
 <p class="text-muted mb-4" style="font-size:15px;">Обзор системы управления документами</p>
@@ -32,24 +38,35 @@
 </div>
 
 <div class="row g-3 mb-4">
-  <div class="col-md-6">
+  <div class="col-md-4">
     <div class="card stat-card">
       <div class="stat-label">Общая сумма договоров</div>
       <div class="stat-value">{{ total_amount|floatformat:0 }} ₸</div>
     </div>
   </div>
-  <div class="col-md-6">
+  <div class="col-md-4">
     <div class="card stat-card">
       <div class="stat-label">Просроченных договоров</div>
       <div class="stat-value" style="color: #ff3b30;">{{ expired_count }}</div>
     </div>
+  </div>
+  <div class="col-md-4">
+    <a href="{{ expiring_filter_url }}" class="text-decoration-none d-block h-100">
+      <div class="card stat-card h-100 dashboard-stat-link">
+        <div class="stat-label">Истекает в {{ expiry_days }} дней</div>
+        <div class="stat-value" style="color: {% if expiring_count > 0 %}#ff9500{% else %}#34c759{% endif %};">
+          {{ expiring_count }}
+        </div>
+        <div class="text-muted small mt-1">{{ expiring_label }}</div>
+      </div>
+    </a>
   </div>
 </div>
 
 {% if expiring_soon %}
 <div class="alert alert-warning mb-4">
   <i class="bi bi-exclamation-triangle me-2"></i>
-  <strong>Истекают в ближайшие 30 дней:</strong>
+  <strong>Истекают в ближайшие {{ expiry_days }} дней:</strong>
   {% for doc in expiring_soon %}
     <a href="{% url 'document_detail' doc.slug %}" class="ms-2">{{ doc.title }}</a>{% if not forloop.last %},{% endif %}
   {% endfor %}

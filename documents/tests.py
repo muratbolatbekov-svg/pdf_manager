@@ -1,14 +1,17 @@
 from decimal import Decimal
 
+from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, RequestFactory, TestCase
 from django.urls import reverse
 from django.http import Http404
+from django.utils import timezone
 
-from documents.models import AuditLog, Category, Document, UserProfile
+from documents.models import AuditLog, Category, Document, UserNotificationSettings, UserProfile
+from documents.notifications import parse_telegram_chat_id
 from documents.utils import generate_unique_slug, parse_tags
-from documents.views import document_create, document_detail, document_list, document_pdf_preview
+from documents.views import document_create, document_detail, document_list, document_pdf_preview, dashboard, notification_settings
 
 
 class SlugUtilsTests(TestCase):
@@ -129,6 +132,54 @@ class DocumentViewTests(TestCase):
         content = response.content.decode()
         self.assertIn('filter-tag', content)
         self.assertIn('Активный', content)
+
+    def test_dashboard_expiring_card(self):
+        today = timezone.localdate()
+        Document.objects.filter(pk=self.document.pk).update(
+            end_date=today + timezone.timedelta(days=10),
+            status='active',
+        )
+        request = self.factory.get('/dashboard/')
+        request.user = self.user
+        response = dashboard(request)
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertIn('Истекает в', content)
+        self.assertIn('date_from=', content)
+
+    def test_notification_settings_page(self):
+        request = self.factory.get('/settings/notifications/')
+        request.user = self.user
+        response = notification_settings(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('Настройки', response.content.decode())
+
+    def test_notification_settings_save(self):
+        UserNotificationSettings.objects.get_or_create(
+            user=self.user,
+            defaults={'notify_email': 'old@example.com'},
+        )
+        self.client.login(username='editor', password='pass12345')
+        response = self.client.post(reverse('notification_settings'), {
+            'notify_email_enabled': 'on',
+            'notify_email': 'user@example.com',
+            'notify_telegram_enabled': '',
+            'telegram_chat_id': '',
+            'notify_30_days': 'on',
+            'notify_7_days': 'on',
+            'notify_on_expiry_day': '',
+            'dashboard_expiry_days': '14',
+        })
+        self.assertEqual(response.status_code, 302)
+        prefs = UserNotificationSettings.objects.get(user=self.user)
+        self.assertEqual(prefs.notify_email, 'user@example.com')
+        self.assertEqual(prefs.dashboard_expiry_days, 14)
+
+    def test_parse_telegram_chat_id(self):
+        self.assertEqual(parse_telegram_chat_id('123456789'), '123456789')
+        self.assertEqual(parse_telegram_chat_id('-1001234567890'), '-1001234567890')
+        with self.assertRaises(ValidationError):
+            parse_telegram_chat_id('https://t.me/MyBot')
 
     def test_admin_can_delete(self):
         self.client.login(username='admin', password='pass12345')

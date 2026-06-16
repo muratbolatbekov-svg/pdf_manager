@@ -231,6 +231,7 @@
     {% if user_role == 'admin' %}
     <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'audit_log' %}active{% endif %}" href="{% url 'audit_log' %}"><i class="bi bi-journal-text"></i>Журнал аудита</a></li>
     {% endif %}
+    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'notification_settings' %}active{% endif %}" href="{% url 'notification_settings' %}"><i class="bi bi-bell"></i>Уведомления</a></li>
   </ul>
   <div class="mt-auto pt-3 border-top" style="border-color: var(--apple-border) !important;">
     <div class="d-flex align-items-center justify-content-between">

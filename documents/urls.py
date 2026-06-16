@@ -17,6 +17,7 @@ urlpatterns = [
     path('categories/<int:pk>/edit/', views.category_edit, name='category_edit'),
     path('categories/<int:pk>/delete/', views.category_delete, name='category_delete'),
     path('audit/', views.audit_log_list, name='audit_log'),
+    path('settings/notifications/', views.notification_settings, name='notification_settings'),
     path('login/', auth_views.LoginView.as_view(template_name='documents/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
 ]

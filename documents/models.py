@@ -150,3 +150,31 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f'{self.user.username} ({self.get_role_display()})'
+
+
+class UserNotificationSettings(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='notification_settings',
+        verbose_name='Пользователь',
+    )
+    notify_email_enabled = models.BooleanField(default=True, verbose_name='Email-уведомления')
+    notify_email = models.EmailField(blank=True, verbose_name='Email')
+    notify_telegram_enabled = models.BooleanField(default=False, verbose_name='Telegram-уведомления')
+    telegram_chat_id = models.CharField(max_length=128, blank=True, verbose_name='Telegram Chat ID')
+    notify_30_days = models.BooleanField(default=True, verbose_name='За 30 дней')
+    notify_7_days = models.BooleanField(default=True, verbose_name='За 7 дней')
+    notify_on_expiry_day = models.BooleanField(default=False, verbose_name='В день истечения')
+    dashboard_expiry_days = models.PositiveIntegerField(default=30, verbose_name='Порог виджета (дней)')
+
+    class Meta:
+        verbose_name = 'Настройки уведомлений'
+        verbose_name_plural = 'Настройки уведомлений'
+
+    def __str__(self):
+        return f'Уведомления: {self.user.username}'
+
+    @property
+    def notifications_enabled(self):
+        return self.notify_email_enabled or self.notify_telegram_enabled

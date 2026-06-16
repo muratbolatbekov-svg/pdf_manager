@@ -160,6 +160,10 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@pdf-database.local')
 NOTIFY_EMAIL = os.environ.get('NOTIFY_EMAIL', '')
+APP_URL = os.environ.get('APP_URL', '').strip()
+if not APP_URL and CSRF_TRUSTED_ORIGINS:
+    APP_URL = CSRF_TRUSTED_ORIGINS[0]
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '').strip()
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
