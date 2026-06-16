@@ -44,7 +44,7 @@ class Document(models.Model):
     )
     pdf_file = models.FileField(upload_to='pdfs/', blank=True, null=True, verbose_name='PDF файл')
     amount = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name='Сумма договора')
-    initiator = models.CharField(max_length=255, blank=True, verbose_name='Инициатор')
+    signatory = models.CharField(max_length=255, blank=True, verbose_name='Подписант')
     author = models.CharField(max_length=150, blank=True, verbose_name='Автор')
     tags = models.ManyToManyField(Tag, blank=True, related_name='documents', verbose_name='Теги')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name='Статус')
@@ -123,8 +123,8 @@ class AuditLog(models.Model):
     details = models.JSONField(default=dict, blank=True, verbose_name='Детали')
 
     class Meta:
-        verbose_name = 'Журнал аудита'
-        verbose_name_plural = 'Журнал аудита'
+        verbose_name = 'Журнал изменений'
+        verbose_name_plural = 'Журнал изменений'
         ordering = ['-timestamp']
 
     def __str__(self):

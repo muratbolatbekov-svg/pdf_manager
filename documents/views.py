@@ -323,12 +323,12 @@ def document_export(request):
         workbook = Workbook()
         sheet = workbook.active
         sheet.title = 'Документы'
-        sheet.append(['Название', 'Категория', 'Инициатор', 'Автор', 'Сумма', 'Статус', 'Начало', 'Окончание', 'Теги', 'Создан'])
+        sheet.append(['Название', 'Категория', 'Подписант', 'Автор', 'Сумма', 'Статус', 'Начало', 'Окончание', 'Теги', 'Создан'])
         for doc in documents:
             sheet.append([
                 doc.title,
                 doc.category.name if doc.category else '',
-                doc.initiator,
+                doc.signatory,
                 doc.author,
                 float(doc.amount),
                 doc.get_status_display(),
@@ -348,12 +348,12 @@ def document_export(request):
     response['Content-Disposition'] = 'attachment; filename="documents.csv"'
     response.write('\ufeff')
     writer = csv.writer(response)
-    writer.writerow(['Название', 'Категория', 'Инициатор', 'Автор', 'Сумма', 'Статус', 'Начало', 'Окончание', 'Теги', 'Создан'])
+    writer.writerow(['Название', 'Категория', 'Подписант', 'Автор', 'Сумма', 'Статус', 'Начало', 'Окончание', 'Теги', 'Создан'])
     for doc in documents:
         writer.writerow([
             doc.title,
             doc.category.name if doc.category else '',
-            doc.initiator,
+            doc.signatory,
             doc.author,
             doc.amount,
             doc.get_status_display(),

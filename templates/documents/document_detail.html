@@ -46,7 +46,7 @@
 
   <div class="row g-3 mb-3">
     <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Сумма договора</div><div class="fw-bold" style="font-size:22px;">{% if document.amount %}{{ document.amount_formatted }}{% else %}—{% endif %}</div></div>
-    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Инициатор</div><div class="fw-medium">{{ document.initiator|default:"—" }}</div></div>
+    <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Подписант</div><div class="fw-medium">{{ document.signatory|default:"—" }}</div></div>
     <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Автор</div><div class="fw-medium">{{ document.author|default:"—" }}</div></div>
     <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Категория</div><div class="fw-medium">{{ document.category|default:"—" }}</div></div>
     <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Начало</div><div class="fw-medium">{{ document.start_date|date:"d.m.Y"|default:"—" }}</div></div>

@@ -154,7 +154,7 @@
   <div class="d-flex flex-wrap gap-2 align-items-center">
     <div class="doc-search-wrap flex-grow-1">
       <i class="bi bi-search doc-search-icon"></i>
-      <input type="search" id="docSearchInput" class="form-control" placeholder="Поиск по названию, категории, контрагенту..." autocomplete="off">
+      <input type="search" id="docSearchInput" class="form-control" placeholder="Поиск по названию, категории, подписанту..." autocomplete="off">
       <button type="button" id="docSearchClear" class="doc-search-clear d-none" aria-label="Очистить поиск">×</button>
     </div>
     <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#filtersPanel" aria-expanded="{% if has_active_filters %}true{% else %}false{% endif %}">
@@ -232,10 +232,10 @@
 <div class="card">
   {% if documents %}
   <table class="table mb-0">
-    <thead><tr><th>Документ</th><th>Категория</th><th>Инициатор</th><th>Сумма</th><th>Срок</th><th>Статус</th><th>Файл</th><th></th></tr></thead>
+    <thead><tr><th>Документ</th><th>Категория</th><th>Подписант</th><th>Сумма</th><th>Срок</th><th>Статус</th><th>Файл</th><th></th></tr></thead>
     <tbody>
     {% for doc in documents %}
-    <tr class="doc-row" data-search="{{ doc.title|lower }} {{ doc.category.name|default:''|lower }} {{ doc.initiator|default:''|lower }}">
+    <tr class="doc-row" data-search="{{ doc.title|lower }} {{ doc.category.name|default:''|lower }} {{ doc.signatory|default:''|lower }}">
       <td>
         {% if doc.pdf_file %}
         <a href="#" class="text-decoration-none fw-medium pdf-preview-trigger" style="color: var(--apple-text);"
@@ -251,7 +251,7 @@
         {% if doc.tags.all %}<div class="mt-1">{% for tag in doc.tags.all %}<span class="badge" style="background: var(--apple-bg); color: var(--apple-muted); border-radius: 100px; font-weight: 400; font-size: 11px; padding: 3px 8px;">{{ tag.name }}</span>{% endfor %}</div>{% endif %}
       </td>
       <td class="text-muted">{{ doc.category|default:"—" }}</td>
-      <td>{{ doc.initiator|default:"—" }}</td>
+      <td>{{ doc.signatory|default:"—" }}</td>
       <td class="fw-medium">{% if doc.amount %}{{ doc.amount_formatted }}{% else %}—{% endif %}</td>
       <td class="small {% if doc.is_expired %}text-danger{% elif doc.is_expiring_soon %}text-warning{% else %}text-muted{% endif %}">
         {% if doc.end_date %}{{ doc.end_date|date:"d.m.Y" }}{% else %}—{% endif %}

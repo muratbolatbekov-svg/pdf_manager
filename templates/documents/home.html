@@ -52,7 +52,28 @@
     transform: translateY(-2px);
     box-shadow: 0 8px 32px rgba(0,0,0,0.08);
   }
-  .feature-icon { font-size: 36px; margin-bottom: 12px; }
+  .feature-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 16px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+  }
+  .feature-icon-storage {
+    background: rgba(0, 113, 227, 0.1);
+    color: var(--apple-blue);
+  }
+  .feature-icon-search {
+    background: rgba(52, 199, 89, 0.12);
+    color: #34c759;
+  }
+  .feature-icon-analytics {
+    background: rgba(255, 149, 0, 0.12);
+    color: #ff9500;
+  }
   .feature-title {
     font-size: 17px;
     font-weight: 600;
@@ -113,7 +134,7 @@
   </div>
   <div>
     <h1 class="home-hero-title">PDF Data Base</h1>
-    <p class="home-hero-subtitle">Система управления документами вашей компании</p>
+    <p class="home-hero-subtitle">Система управления вашими документами</p>
     <div class="d-flex flex-wrap gap-2 home-hero-actions">
       {% if user.is_authenticated %}
       <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg px-4">Открыть дашборд</a>
@@ -132,21 +153,27 @@
   <div class="row g-3">
     <div class="col-md-4">
       <div class="card feature-card">
-        <div class="feature-icon">📄</div>
+        <div class="feature-icon feature-icon-storage" aria-hidden="true">
+          <i class="bi bi-folder2"></i>
+        </div>
         <div class="feature-title">Хранение</div>
         <p class="feature-desc">Все договоры<br>в одном месте</p>
       </div>
     </div>
     <div class="col-md-4">
       <div class="card feature-card">
-        <div class="feature-icon">🔍</div>
+        <div class="feature-icon feature-icon-search" aria-hidden="true">
+          <i class="bi bi-search"></i>
+        </div>
         <div class="feature-title">Поиск</div>
         <p class="feature-desc">Быстрый поиск<br>по любым полям</p>
       </div>
     </div>
     <div class="col-md-4">
       <div class="card feature-card">
-        <div class="feature-icon">📊</div>
+        <div class="feature-icon feature-icon-analytics" aria-hidden="true">
+          <i class="bi bi-bar-chart-line"></i>
+        </div>
         <div class="feature-title">Аналитика</div>
         <p class="feature-desc">Суммы, сроки<br>и статистика</p>
       </div>

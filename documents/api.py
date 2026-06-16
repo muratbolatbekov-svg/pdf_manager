@@ -28,7 +28,7 @@ class DocumentSerializer(serializers.ModelSerializer):
         model = Document
         fields = [
             'id', 'title', 'slug', 'description', 'category', 'category_name',
-            'pdf_file', 'amount', 'amount_formatted', 'initiator', 'author',
+            'pdf_file', 'amount', 'amount_formatted', 'signatory', 'author',
             'tags', 'status', 'status_display', 'start_date', 'end_date',
             'created_at', 'updated_at',
         ]

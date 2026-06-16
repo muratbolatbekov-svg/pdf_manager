@@ -229,7 +229,7 @@
     <li class="nav-item mt-3"><a class="nav-link" href="{% url 'document_create' %}"><i class="bi bi-plus-circle"></i>Добавить документ</a></li>
     {% endif %}
     {% if user_role == 'admin' %}
-    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'audit_log' %}active{% endif %}" href="{% url 'audit_log' %}"><i class="bi bi-journal-text"></i>Журнал аудита</a></li>
+    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'audit_log' %}active{% endif %}" href="{% url 'audit_log' %}"><i class="bi bi-journal-text"></i>Журнал изменений</a></li>
     {% endif %}
     <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'notification_settings' %}active{% endif %}" href="{% url 'notification_settings' %}"><i class="bi bi-bell"></i>Уведомления</a></li>
   </ul>
