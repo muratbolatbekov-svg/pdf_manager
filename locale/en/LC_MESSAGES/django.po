@@ -68,6 +68,9 @@ msgstr "Telegram notifications"
 msgid "А → Я"
 msgstr "A → Z"
 
+msgid "АО"
+msgstr "JSC"
+
 msgid "Авг"
 msgstr "Aug"
 
@@ -366,6 +369,9 @@ msgstr "Replace (previous version will be saved)"
 msgid "Записей пока нет"
 msgstr "No records yet"
 
+msgid "ИП"
+msgstr "SP"
+
 msgid "Изменение"
 msgstr "Updated"
 
@@ -516,6 +522,9 @@ msgstr "Could not load PDF"
 msgid "Не удалось отобразить страницу"
 msgstr "Could not render page"
 
+msgid "Не указан"
+msgstr "Not specified"
+
 msgid "Неверный логин или пароль"
 msgstr "Invalid username or password"
 
@@ -638,6 +647,12 @@ msgstr "Print"
 
 msgid "По категориям"
 msgstr "By category"
+
+msgid "По тегам"
+msgstr "By tags"
+
+msgid "По типу компании"
+msgstr "By company type"
 
 msgid "Повторите пароль"
 msgstr "Repeat password"
@@ -887,6 +902,9 @@ msgstr "Suffix"
 msgid "Счёт"
 msgstr "Invoice"
 
+msgid "ТОО"
+msgstr "LLP"
+
 msgid "Тег"
 msgstr "Tag"
 
@@ -907,6 +925,9 @@ msgstr "Current quarter"
 
 msgid "Текущий месяц"
 msgstr "Current month"
+
+msgid "Тип компании"
+msgstr "Company type"
 
 msgid "Тип связи"
 msgstr "Link type"

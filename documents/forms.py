@@ -34,8 +34,8 @@ class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
         fields = [
-            'title', 'description', 'category', 'pdf_file', 'amount', 'with_vat', 'company', 'signatory',
-            'author', 'status', 'start_date', 'end_date',
+            'title', 'description', 'category', 'pdf_file', 'amount', 'with_vat', 'company',
+            'company_type', 'signatory', 'author', 'status', 'start_date', 'end_date',
         ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Название документа')}),
@@ -43,6 +43,7 @@ class DocumentForm(forms.ModelForm):
             'category': forms.Select(attrs={'class': 'form-select'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00'}),
             'company': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Название компании')}),
+            'company_type': forms.Select(attrs={'class': 'form-select'}),
             'signatory': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('ФИО подписанта')}),
             'author': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('ФИО автора')}),
             'status': forms.Select(attrs={'class': 'form-select'}),
@@ -64,6 +65,9 @@ class DocumentForm(forms.ModelForm):
             (self.WITH_VAT_YES, _('Да')),
             (self.WITH_VAT_NO, _('Нет')),
         ]
+        self.fields['company_type'].label = _('Тип компании')
+        self.fields['company_type'].required = False
+        self.fields['company_type'].choices = [('', _('Не указан'))] + list(Document.COMPANY_TYPE_CHOICES)
         if not self.is_bound:
             with_vat = bool(self.instance.with_vat) if self.instance.pk else False
             self.initial['with_vat'] = self.WITH_VAT_YES if with_vat else self.WITH_VAT_NO

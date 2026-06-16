@@ -124,6 +124,27 @@
   </div>
 </div>
 
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card stat-card">
+      <div class="stat-label">{% trans "ТОО" %}</div>
+      <div class="stat-value" id="statTooDocs" style="color: #0071e3;">{{ analytics_json.stats.too_docs }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card">
+      <div class="stat-label">{% trans "ИП" %}</div>
+      <div class="stat-value" id="statIpDocs" style="color: #5856d6;">{{ analytics_json.stats.ip_docs }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card">
+      <div class="stat-label">{% trans "АО" %}</div>
+      <div class="stat-value" id="statAoDocs" style="color: #ff9500;">{{ analytics_json.stats.ao_docs }}</div>
+    </div>
+  </div>
+</div>
+
 {% if expiring_soon %}
 <div class="alert alert-warning mb-4">
   <i class="bi bi-exclamation-triangle me-2"></i>
@@ -159,6 +180,26 @@
         <div class="chart-wrap">
           <canvas id="categoryChart"></canvas>
           <div class="chart-empty {% if analytics_json.categories %}d-none{% endif %}">{% trans "Нет данных за выбранный период" %}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row g-3 mb-4">
+    <div class="col-lg-6">
+      <div class="card p-4 chart-card">
+        <h6 class="fw-bold mb-3" style="font-size:16px;">{% trans "По типу компании" %}</h6>
+        <div class="chart-wrap">
+          <canvas id="companyTypeChart"></canvas>
+          <div class="chart-empty {% if analytics_json.company_types %}d-none{% endif %}">{% trans "Нет данных за выбранный период" %}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card p-4 chart-card">
+        <h6 class="fw-bold mb-3" style="font-size:16px;">{% trans "По тегам" %}</h6>
+        <div class="chart-wrap">
+          <canvas id="tagChart"></canvas>
+          <div class="chart-empty {% if analytics_json.tags %}d-none{% endif %}">{% trans "Нет данных за выбранный период" %}</div>
         </div>
       </div>
     </div>

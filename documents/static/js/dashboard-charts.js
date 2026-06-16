@@ -18,6 +18,9 @@
     archived_docs: document.getElementById('statArchivedDocs'),
     with_vat_docs: document.getElementById('statWithVatDocs'),
     without_vat_docs: document.getElementById('statWithoutVatDocs'),
+    too_docs: document.getElementById('statTooDocs'),
+    ip_docs: document.getElementById('statIpDocs'),
+    ao_docs: document.getElementById('statAoDocs'),
   };
 
   const periodLabelEl = document.getElementById('dashboardPeriodLabel');
@@ -26,6 +29,8 @@
 
   let trendChart = null;
   let categoryChart = null;
+  let companyTypeChart = null;
+  let tagChart = null;
   let currentPeriod = initialData.period || 'current_month';
   let currentMonths = initialData.months || 12;
 
@@ -91,6 +96,55 @@
     });
   }
 
+  function renderCountBarChart(canvasId, items, countKey) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas || typeof Chart === 'undefined') return null;
+    const emptyEl = canvas.parentElement.querySelector('.chart-empty');
+    if (!items.length) {
+      emptyEl?.classList.remove('d-none');
+      return null;
+    }
+    emptyEl?.classList.add('d-none');
+    const labels = items.map((item) => item.label);
+    const values = items.map((item) => item[countKey]);
+    return new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: chartColors.slice(0, values.length),
+          borderRadius: 6,
+          barThickness: 18,
+        }],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label(ctx) {
+                const item = items[ctx.dataIndex];
+                const amount = item.amount != null ? `${formatAmount(item.amount)} ₸` : '';
+                return amount ? `${item[countKey]} (${amount})` : String(item[countKey]);
+              },
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: {
+              precision: 0,
+            },
+          },
+        },
+      },
+    });
+  }
+
   function renderCategoryChart(items) {
     const canvas = document.getElementById('categoryChart');
     if (!canvas || typeof Chart === 'undefined') return;
@@ -143,11 +197,23 @@
     });
   }
 
+  function renderCompanyTypeChart(items) {
+    if (companyTypeChart) companyTypeChart.destroy();
+    companyTypeChart = renderCountBarChart('companyTypeChart', items, 'doc_count');
+  }
+
+  function renderTagChart(items) {
+    if (tagChart) tagChart.destroy();
+    tagChart = renderCountBarChart('tagChart', items, 'doc_count');
+  }
+
   function applyData(data) {
     updateStats(data.stats || {});
     if (periodLabelEl && data.period_label) periodLabelEl.textContent = data.period_label;
     renderTrendChart(data.trend || []);
     renderCategoryChart(data.categories || []);
+    renderCompanyTypeChart(data.company_types || []);
+    renderTagChart(data.tags || []);
   }
 
   function setActivePeriod(period) {

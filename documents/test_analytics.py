@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from documents.analytics import build_dashboard_analytics, get_period_range, get_monthly_amounts
-from documents.models import Category, Document
+from documents.models import Category, Document, Tag
 
 
 class AnalyticsTests(TestCase):
@@ -49,3 +49,43 @@ class AnalyticsTests(TestCase):
         self.assertEqual(len(data['categories']), 1)
         self.assertEqual(data['categories'][0]['name'], 'Договоры')
         self.assertEqual(data['categories'][0]['percent'], 100.0)
+
+    def test_company_type_stats_and_breakdown(self):
+        Document.objects.create(
+            title='Too doc',
+            category=self.category,
+            company_type='too',
+            created_at=timezone.make_aware(datetime(2026, 6, 12, 12, 0)),
+        )
+        Document.objects.create(
+            title='Ip doc',
+            category=self.category,
+            company_type='ip',
+            created_at=timezone.make_aware(datetime(2026, 6, 14, 12, 0)),
+        )
+        data = build_dashboard_analytics('current_month', 12, date(2026, 6, 15))
+        self.assertEqual(data['stats']['too_docs'], 1)
+        self.assertEqual(data['stats']['ip_docs'], 1)
+        self.assertEqual(data['stats']['ao_docs'], 0)
+        keys = {item['key'] for item in data['company_types']}
+        self.assertEqual(keys, {'too', 'ip'})
+
+    def test_tag_breakdown(self):
+        supplier = Tag.objects.create(name='Поставщик')
+        contractor = Tag.objects.create(name='Исполнитель')
+        doc1 = Document.objects.create(
+            title='Supplier doc',
+            category=self.category,
+            created_at=timezone.make_aware(datetime(2026, 6, 11, 12, 0)),
+        )
+        doc2 = Document.objects.create(
+            title='Contractor doc',
+            category=self.category,
+            created_at=timezone.make_aware(datetime(2026, 6, 13, 12, 0)),
+        )
+        doc1.tags.add(supplier)
+        doc2.tags.add(contractor, supplier)
+        data = build_dashboard_analytics('current_month', 12, date(2026, 6, 15))
+        tag_names = {item['name']: item['doc_count'] for item in data['tags']}
+        self.assertEqual(tag_names.get('Поставщик'), 2)
+        self.assertEqual(tag_names.get('Исполнитель'), 1)

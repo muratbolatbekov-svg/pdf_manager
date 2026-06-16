@@ -2,13 +2,13 @@ import calendar
 from datetime import date, timedelta
 from decimal import Decimal
 
-from django.db.models import Count, Sum
+from django.db.models import Count, Q, Sum
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
-from .models import Category, Document
+from .models import Category, Document, Tag
 
 
 PERIOD_CHOICES = [
@@ -84,6 +84,9 @@ def get_period_stats(start, end):
         'archived_docs': qs.filter(status='archived').count(),
         'with_vat_docs': qs.filter(with_vat=True).count(),
         'without_vat_docs': qs.filter(with_vat=False).count(),
+        'too_docs': qs.filter(company_type='too').count(),
+        'ip_docs': qs.filter(company_type='ip').count(),
+        'ao_docs': qs.filter(company_type='ao').count(),
     }
 
 
@@ -158,12 +161,69 @@ def get_category_breakdown(start, end):
     return items, float(grand_total)
 
 
+def _company_type_label(company_type):
+    labels = dict(Document.COMPANY_TYPE_CHOICES)
+    return str(labels.get(company_type, company_type))
+
+
+def get_company_type_breakdown(start, end):
+    qs = _documents_in_period(start, end)
+    items = []
+    for company_type, _label in Document.COMPANY_TYPE_CHOICES:
+        row = qs.filter(company_type=company_type).aggregate(
+            doc_count=Count('id'),
+            total_amount=Sum('amount'),
+        )
+        doc_count = row['doc_count'] or 0
+        if not doc_count:
+            continue
+        amount = row['total_amount'] or Decimal('0')
+        name = _company_type_label(company_type)
+        items.append({
+            'key': company_type,
+            'name': name,
+            'doc_count': doc_count,
+            'amount': float(amount),
+            'amount_formatted': f'{amount:,.0f}'.replace(',', ' '),
+            'label': f'{name} — {doc_count}',
+        })
+    return items
+
+
+def get_tag_breakdown(start, end, limit=12):
+    period_filter = Q(
+        documents__created_at__date__gte=start,
+        documents__created_at__date__lte=end,
+    )
+    rows = (
+        Tag.objects.annotate(
+            doc_count=Count('documents', filter=period_filter, distinct=True),
+            total_amount=Sum('documents__amount', filter=period_filter),
+        )
+        .filter(doc_count__gt=0)
+        .order_by('-doc_count', 'name')[:limit]
+    )
+    items = []
+    for tag in rows:
+        amount = tag.total_amount or Decimal('0')
+        items.append({
+            'name': tag.name,
+            'doc_count': tag.doc_count,
+            'amount': float(amount),
+            'amount_formatted': f'{amount:,.0f}'.replace(',', ' '),
+            'label': f'{tag.name} — {tag.doc_count}',
+        })
+    return items
+
+
 def build_dashboard_analytics(period_key='current_month', months_count=12, today=None):
     today = today or timezone.localdate()
     period_key, start, end = get_period_range(period_key, today)
     stats = get_period_stats(start, end)
     trend = get_monthly_amounts(end, months_count)
     categories, category_total = get_category_breakdown(start, end)
+    company_types = get_company_type_breakdown(start, end)
+    tags = get_tag_breakdown(start, end)
     period_label = dict(PERIOD_CHOICES).get(period_key, period_key)
     return {
         'period': period_key,
@@ -175,4 +235,6 @@ def build_dashboard_analytics(period_key='current_month', months_count=12, today
         'trend': trend,
         'categories': categories,
         'category_total': category_total,
+        'company_types': company_types,
+        'tags': tags,
     }
