@@ -81,6 +81,26 @@
   }
   .alert-danger { background: #ffe5e5; color: #b00020; }
   .language-switcher-wrap { margin-bottom: 24px; }
+  .password-field {
+    position: relative;
+  }
+  .password-field .form-control {
+    padding-right: 44px;
+  }
+  .password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: #6e6e73;
+    padding: 0;
+    line-height: 1;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  .password-toggle:hover { color: #1d1d1f; }
 </style>
 </head>
 <body>
@@ -101,7 +121,12 @@
     </div>
     <div class="mb-4 text-start">
       <label class="form-label">{% trans "Пароль" %}</label>
-      <input type="password" name="password" class="form-control" placeholder="{% trans 'Введите пароль' %}" required>
+      <div class="password-field">
+        <input type="password" name="password" id="loginPassword" class="form-control" placeholder="{% trans 'Введите пароль' %}" required>
+        <button type="button" class="password-toggle" id="passwordToggle" aria-label="{% trans 'Показать пароль' %}">
+          <i class="bi bi-eye" id="passwordToggleIcon"></i>
+        </button>
+      </div>
     </div>
     <div class="language-switcher-wrap">
       {% include 'partials/language_switcher.html' %}
@@ -114,5 +139,20 @@
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  (function () {
+    var input = document.getElementById('loginPassword');
+    var toggle = document.getElementById('passwordToggle');
+    var icon = document.getElementById('passwordToggleIcon');
+    if (!input || !toggle || !icon) return;
+    toggle.addEventListener('click', function () {
+      var show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      icon.classList.toggle('bi-eye', !show);
+      icon.classList.toggle('bi-eye-slash', show);
+      toggle.setAttribute('aria-label', show ? '{% trans "Скрыть пароль" %}' : '{% trans "Показать пароль" %}');
+    });
+  })();
+</script>
 </body>
 </html>
