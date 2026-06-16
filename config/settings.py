@@ -102,12 +102,18 @@ def _database_config(url):
     return dj_database_url.config(**options)
 
 
+def _ensure_psycopg3_engine(db_config):
+    """Django 4.2 uses psycopg3 via django.db.backends.postgresql."""
+    db_config['ENGINE'] = 'django.db.backends.postgresql'
+    return db_config
+
+
 DATABASE_URL = (
     os.environ.get('DATABASE_URL', '').strip()
     or os.environ.get('DATABASE_PRIVATE_URL', '').strip()
 )
 if DATABASE_URL:
-    DATABASES = {'default': _database_config(DATABASE_URL)}
+    DATABASES = {'default': _ensure_psycopg3_engine(_database_config(DATABASE_URL))}
 elif ON_RAILWAY:
     raise ImproperlyConfigured(
         'DATABASE_URL is required on Railway. Add a PostgreSQL service and link it to this app.'
