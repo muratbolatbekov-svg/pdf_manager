@@ -86,11 +86,34 @@ TEMPLATES = [{
 }]
 WSGI_APPLICATION = 'config.wsgi.application'
 
-DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_URL = (
+    os.environ.get('DATABASE_URL', '').strip()
+    or os.environ.get('DATABASE_PRIVATE_URL', '').strip()
+)
 if DATABASE_URL:
-    DATABASES = {'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)}
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=not DEBUG,
+        ),
+    }
+elif ON_RAILWAY:
+    raise ImproperlyConfigured(
+        'DATABASE_URL is required on Railway. Add a PostgreSQL service and link it to this app.'
+    )
+elif DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        },
+    }
 else:
-    DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': BASE_DIR / 'db.sqlite3'}}
+    raise ImproperlyConfigured(
+        'DATABASE_URL is required in production. Use a PostgreSQL connection string.'
+    )
 
 B2_CREDENTIALS = load_b2_credentials()
 MEDIA_URL = '/media/'

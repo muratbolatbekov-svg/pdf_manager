@@ -35,7 +35,13 @@ python manage.py runserver
 
 ## PostgreSQL (Railway)
 
-Добавьте переменную `DATABASE_URL` — приложение автоматически переключится с SQLite.
+1. В Railway: **New → Database → PostgreSQL**
+2. Откройте ваш web-сервис → **Variables** → **Add Reference** → выберите PostgreSQL → `DATABASE_URL`
+3. Задеплойте — приложение подключится к PostgreSQL, SQLite на Railway не используется
+
+Локально SQLite используется по умолчанию. Для PostgreSQL локально задайте `DATABASE_URL` в `.env`.
+
+При деплое миграции применяются автоматически (`python manage.py migrate` в Procfile).
 
 ## Уведомления о сроках
 
