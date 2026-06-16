@@ -1,5 +1,0 @@
-[phases.setup]
-nixPkgs = ["python311", "gcc"]
-
-[start]
-cmd = "python manage.py migrate --noinput && gunicorn config.wsgi --log-file -"
