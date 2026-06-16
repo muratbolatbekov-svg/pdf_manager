@@ -112,6 +112,10 @@
   <div class="alert alert-danger py-2 mb-3"><i class="bi bi-exclamation-triangle me-2"></i>{% trans "Неверный логин или пароль" %}</div>
   {% endif %}
 
+  <div class="language-switcher-wrap">
+    {% include 'partials/language_switcher.html' %}
+  </div>
+
   <form method="post" action="{% url 'login' %}">
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ next }}">
@@ -127,9 +131,6 @@
           <i class="bi bi-eye" id="passwordToggleIcon"></i>
         </button>
       </div>
-    </div>
-    <div class="language-switcher-wrap">
-      {% include 'partials/language_switcher.html' %}
     </div>
     <button type="submit" class="btn btn-primary btn-login"><i class="bi bi-box-arrow-in-right me-2"></i>{% trans "Войти" %}</button>
   </form>
