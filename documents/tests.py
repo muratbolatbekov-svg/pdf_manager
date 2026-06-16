@@ -82,6 +82,7 @@ class DocumentViewTests(TestCase):
         content = response.content.decode()
         self.assertIn('pdf-preview-trigger', content)
         self.assertIn('pdfViewerModal', content)
+        self.assertIn('document-filters.js', content)
 
     def test_document_list(self):
         request = self.factory.get('/documents/')
@@ -110,12 +111,24 @@ class DocumentViewTests(TestCase):
         response = document_create(request)
         self.assertEqual(response.status_code, 200)
 
-    def test_search_by_title(self):
-        request = self.factory.get('/documents/', {'q': 'Тестовый'})
+    def test_document_list_search_ui(self):
+        request = self.factory.get('/documents/')
         request.user = self.user
         response = document_list(request)
         self.assertEqual(response.status_code, 200)
-        self.assertIn('Тестовый договор', response.content.decode())
+        content = response.content.decode()
+        self.assertIn('docSearchInput', content)
+        self.assertIn('doc-row', content)
+        self.assertIn('Тестовый договор', content)
+
+    def test_document_filters_by_status(self):
+        request = self.factory.get('/documents/', {'status': 'active'})
+        request.user = self.user
+        response = document_list(request)
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertIn('filter-tag', content)
+        self.assertIn('Активный', content)
 
     def test_admin_can_delete(self):
         self.client.login(username='admin', password='pass12345')

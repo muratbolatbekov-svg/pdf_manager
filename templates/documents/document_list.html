@@ -60,6 +60,69 @@
   .pdf-preview-trigger:hover {
     color: var(--apple-blue) !important;
   }
+  .doc-search-wrap {
+    position: relative;
+    min-width: 240px;
+  }
+  .doc-search-wrap .doc-search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--apple-muted);
+    pointer-events: none;
+  }
+  .doc-search-wrap .form-control {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+  .doc-search-clear {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: var(--apple-muted);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    line-height: 1;
+    font-size: 18px;
+    padding: 0;
+  }
+  .doc-search-clear:hover {
+    background: rgba(0,0,0,0.06);
+    color: var(--apple-text);
+  }
+  .filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,113,227,0.08);
+    color: var(--apple-blue);
+    border-radius: 100px;
+    padding: 4px 10px 4px 12px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .filter-tag-remove {
+    border: none;
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    line-height: 1;
+    font-size: 16px;
+    opacity: 0.7;
+  }
+  .filter-tag-remove:hover {
+    opacity: 1;
+  }
+  #filtersPanel {
+    border-top: 1px solid var(--apple-border);
+    margin-top: 16px;
+    padding-top: 16px;
+  }
   @media (max-width: 768px) {
     .pdf-viewer-dialog {
       width: 96vw;
@@ -78,8 +141,8 @@
   </div>
   <div class="d-flex gap-2">
     {% if user_role == 'admin' %}
-    <a href="{% url 'document_export' %}?format=csv{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}&sort={{ sort }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-filetype-csv me-1"></i>CSV</a>
-    <a href="{% url 'document_export' %}?format=xlsx{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}&sort={{ sort }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-file-earmark-excel me-1"></i>Excel</a>
+    <a href="{% url 'document_export' %}?format=csv{% if filters_querystring %}&{{ filters_querystring }}{% endif %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-filetype-csv me-1"></i>CSV</a>
+    <a href="{% url 'document_export' %}?format=xlsx{% if filters_querystring %}&{{ filters_querystring }}{% endif %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-file-earmark-excel me-1"></i>Excel</a>
     {% endif %}
     {% if user_role != 'viewer' %}
     <a href="{% url 'document_create' %}" class="btn btn-primary"><i class="bi bi-plus me-1"></i>Добавить</a>
@@ -88,36 +151,82 @@
 </div>
 
 <div class="card p-3 mb-3">
-  <form method="get" class="row g-2 align-items-end">
-    <div class="col-md-4"><input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Поиск по названию, тексту PDF, тегам..."></div>
-    <div class="col-md-2">
-      <select name="category" class="form-select">
-        <option value="">Все категории</option>
-        {% for cat in categories %}
-          <option value="{{ cat.pk }}" {% if selected_category == cat.pk %}selected{% endif %}>{{ cat.name }}</option>
-        {% endfor %}
-      </select>
+  <div class="d-flex flex-wrap gap-2 align-items-center">
+    <div class="doc-search-wrap flex-grow-1">
+      <i class="bi bi-search doc-search-icon"></i>
+      <input type="search" id="docSearchInput" class="form-control" placeholder="Поиск по названию, категории, контрагенту..." autocomplete="off">
+      <button type="button" id="docSearchClear" class="doc-search-clear d-none" aria-label="Очистить поиск">×</button>
     </div>
-    <div class="col-md-2">
-      <select name="status" class="form-select">
-        <option value="">Все статусы</option>
-        <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Активный</option>
-        <option value="archived" {% if selected_status == 'archived' %}selected{% endif %}>В архиве</option>
-        <option value="draft" {% if selected_status == 'draft' %}selected{% endif %}>Черновик</option>
-      </select>
-    </div>
-    <div class="col-md-2">
-      <select name="sort" class="form-select">
-        <option value="date_desc" {% if sort == 'date_desc' %}selected{% endif %}>Сначала новые</option>
-        <option value="date_asc" {% if sort == 'date_asc' %}selected{% endif %}>Сначала старые</option>
-        <option value="amount_desc" {% if sort == 'amount_desc' %}selected{% endif %}>Сумма ↓</option>
-        <option value="amount_asc" {% if sort == 'amount_asc' %}selected{% endif %}>Сумма ↑</option>
-        <option value="title_asc" {% if sort == 'title_asc' %}selected{% endif %}>А → Я</option>
-        <option value="title_desc" {% if sort == 'title_desc' %}selected{% endif %}>Я → А</option>
-      </select>
-    </div>
-    <div class="col-md-2"><button type="submit" class="btn btn-outline-secondary w-100"><i class="bi bi-search me-1"></i>Найти</button></div>
-  </form>
+    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#filtersPanel" aria-expanded="{% if has_active_filters %}true{% else %}false{% endif %}">
+      <i class="bi bi-funnel me-1"></i>Фильтры
+    </button>
+    <select name="sort" form="filtersForm" class="form-select" style="width: auto; min-width: 160px;">
+      <option value="date_desc" {% if filters.sort == 'date_desc' %}selected{% endif %}>Сначала новые</option>
+      <option value="date_asc" {% if filters.sort == 'date_asc' %}selected{% endif %}>Сначала старые</option>
+      <option value="amount_desc" {% if filters.sort == 'amount_desc' %}selected{% endif %}>Сумма ↓</option>
+      <option value="amount_asc" {% if filters.sort == 'amount_asc' %}selected{% endif %}>Сумма ↑</option>
+      <option value="title_asc" {% if filters.sort == 'title_asc' %}selected{% endif %}>А → Я</option>
+      <option value="title_desc" {% if filters.sort == 'title_desc' %}selected{% endif %}>Я → А</option>
+    </select>
+  </div>
+
+  {% if has_active_filters %}
+  <div id="activeFilterTags" class="d-flex flex-wrap align-items-center gap-2 mt-3">
+    <span class="text-muted small">Фильтры:</span>
+    {% for tag in active_filters %}
+    <span class="filter-tag">
+      {{ tag.label }}
+      <button type="button" class="filter-tag-remove" data-filter-param="{{ tag.param }}" aria-label="Убрать фильтр">×</button>
+    </span>
+    {% endfor %}
+    <button type="button" id="resetAllFiltersBtn" class="btn btn-link btn-sm text-decoration-none p-0">Сбросить всё</button>
+  </div>
+  {% endif %}
+
+  <div class="collapse {% if has_active_filters %}show{% endif %}" id="filtersPanel">
+    <form method="get" id="filtersForm" class="mt-0">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label small text-muted mb-1">Категория</label>
+          <select name="category" class="form-select">
+            <option value="">Выбрать</option>
+            {% for cat in categories %}
+            <option value="{{ cat.pk }}" {% if filters.category == cat.pk %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small text-muted mb-1">Статус</label>
+          <select name="status" class="form-select">
+            <option value="">Выбрать</option>
+            <option value="active" {% if filters.status == 'active' %}selected{% endif %}>Активный</option>
+            <option value="draft" {% if filters.status == 'draft' %}selected{% endif %}>Черновик</option>
+            <option value="archived" {% if filters.status == 'archived' %}selected{% endif %}>В архиве</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small text-muted mb-1">Дата с</label>
+          <input type="date" name="date_from" class="form-control" value="{% if filters.date_from %}{{ filters.date_from|date:'Y-m-d' }}{% endif %}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small text-muted mb-1">Дата по</label>
+          <input type="date" name="date_to" class="form-control" value="{% if filters.date_to %}{{ filters.date_to|date:'Y-m-d' }}{% endif %}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small text-muted mb-1">Сумма от</label>
+          <input type="number" name="amount_min" class="form-control" min="0" step="0.01" placeholder="0" value="{% if filters.amount_min is not None %}{{ filters.amount_min }}{% endif %}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small text-muted mb-1">Сумма до</label>
+          <input type="number" name="amount_max" class="form-control" min="0" step="0.01" placeholder="0" value="{% if filters.amount_max is not None %}{{ filters.amount_max }}{% endif %}">
+        </div>
+        <div class="col-md-6 d-flex gap-2 justify-content-md-end">
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Применить</button>
+          <button type="button" id="filtersResetBtn" class="btn btn-outline-secondary">Сбросить</button>
+        </div>
+      </div>
+    </form>
+  </div>
 </div>
 
 <div class="card">
@@ -126,7 +235,7 @@
     <thead><tr><th>Документ</th><th>Категория</th><th>Инициатор</th><th>Сумма</th><th>Срок</th><th>Статус</th><th>Файл</th><th></th></tr></thead>
     <tbody>
     {% for doc in documents %}
-    <tr>
+    <tr class="doc-row" data-search="{{ doc.title|lower }} {{ doc.category.name|default:''|lower }} {{ doc.initiator|default:''|lower }}">
       <td>
         {% if doc.pdf_file %}
         <a href="#" class="text-decoration-none fw-medium pdf-preview-trigger" style="color: var(--apple-text);"
@@ -161,16 +270,19 @@
       </td>
     </tr>
     {% endfor %}
+    <tr id="docSearchNoMatch" class="d-none">
+      <td colspan="8" class="text-center text-muted py-4">Ничего не найдено по вашему запросу</td>
+    </tr>
     </tbody>
   </table>
   {% if page_obj.has_other_pages %}
   <div class="d-flex justify-content-center py-3 gap-2">
     {% if page_obj.has_previous %}
-    <a class="btn btn-sm btn-outline-secondary" href="?page={{ page_obj.previous_page_number }}&q={{ query }}&category={{ selected_category|default:'' }}&status={{ selected_status }}&sort={{ sort }}">←</a>
+    <a class="btn btn-sm btn-outline-secondary" href="?{% if filters_querystring %}{{ filters_querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">←</a>
     {% endif %}
     <span class="align-self-center text-muted small">Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
     {% if page_obj.has_next %}
-    <a class="btn btn-sm btn-outline-secondary" href="?page={{ page_obj.next_page_number }}&q={{ query }}&category={{ selected_category|default:'' }}&status={{ selected_status }}&sort={{ sort }}">→</a>
+    <a class="btn btn-sm btn-outline-secondary" href="?{% if filters_querystring %}{{ filters_querystring }}&{% endif %}page={{ page_obj.next_page_number }}">→</a>
     {% endif %}
   </div>
   {% endif %}
@@ -188,4 +300,10 @@
 {% block extra_js %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="{% static 'js/pdf-viewer.js' %}"></script>
+<script src="{% static 'js/document-filters.js' %}"></script>
+<script>
+  document.querySelector('select[form="filtersForm"]')?.addEventListener('change', function () {
+    document.getElementById('filtersForm').submit();
+  });
+</script>
 {% endblock %}

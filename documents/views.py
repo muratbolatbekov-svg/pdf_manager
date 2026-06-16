@@ -1,13 +1,15 @@
 import csv
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
+from urllib.parse import urlencode
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, Sum
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 
 from openpyxl import Workbook
 
@@ -25,36 +27,120 @@ SORT_OPTIONS = {
     'title_desc': '-title',
 }
 
+STATUS_LABELS = {
+    'active': 'Активный',
+    'draft': 'Черновик',
+    'archived': 'В архиве',
+}
 
-def _documents_queryset(request):
-    documents = Document.objects.select_related('category').prefetch_related('tags')
-    query = request.GET.get('q', '').strip()
+
+def _parse_decimal(value):
+    if not value:
+        return None
+    try:
+        return Decimal(value.replace(',', '.').strip())
+    except (InvalidOperation, AttributeError):
+        return None
+
+
+def _parse_document_filters(request):
     category_id_str = request.GET.get('category', '').strip()
-    status = request.GET.get('status', '').strip()
-    sort = request.GET.get('sort', 'date_desc')
-
     selected_category = None
     if category_id_str:
         try:
             selected_category = int(category_id_str)
-            documents = documents.filter(category_id=selected_category)
         except ValueError:
-            pass
+            selected_category = None
 
-    if status:
-        documents = documents.filter(status=status)
+    status = request.GET.get('status', '').strip()
+    if status not in STATUS_LABELS:
+        status = ''
 
-    if query:
-        documents = documents.filter(
-            Q(title__icontains=query)
-            | Q(initiator__icontains=query)
-            | Q(author__icontains=query)
-            | Q(pdf_text__icontains=query)
-            | Q(tags__name__icontains=query)
-        ).distinct()
+    sort = request.GET.get('sort', 'date_desc')
+    if sort not in SORT_OPTIONS:
+        sort = 'date_desc'
 
-    order = SORT_OPTIONS.get(sort, '-created_at')
-    return documents.order_by(order), query, selected_category, status, sort
+    date_from = parse_date(request.GET.get('date_from', '').strip())
+    date_to = parse_date(request.GET.get('date_to', '').strip())
+    amount_min = _parse_decimal(request.GET.get('amount_min', ''))
+    amount_max = _parse_decimal(request.GET.get('amount_max', ''))
+
+    return {
+        'category': selected_category,
+        'status': status,
+        'sort': sort,
+        'date_from': date_from,
+        'date_to': date_to,
+        'amount_min': amount_min,
+        'amount_max': amount_max,
+    }
+
+
+def _filters_querystring(filters, exclude=None, page=None):
+    exclude = exclude or set()
+    params = {}
+    if filters['category'] and 'category' not in exclude:
+        params['category'] = filters['category']
+    if filters['status'] and 'status' not in exclude:
+        params['status'] = filters['status']
+    if filters['date_from'] and 'date_from' not in exclude:
+        params['date_from'] = filters['date_from'].isoformat()
+    if filters['date_to'] and 'date_to' not in exclude:
+        params['date_to'] = filters['date_to'].isoformat()
+    if filters['amount_min'] is not None and 'amount_min' not in exclude:
+        params['amount_min'] = str(filters['amount_min'])
+    if filters['amount_max'] is not None and 'amount_max' not in exclude:
+        params['amount_max'] = str(filters['amount_max'])
+    if filters['sort'] != 'date_desc' and 'sort' not in exclude:
+        params['sort'] = filters['sort']
+    if page:
+        params['page'] = page
+    return urlencode(params)
+
+
+def _active_filter_tags(filters, categories):
+    tags = []
+    if filters['category']:
+        category = categories.filter(pk=filters['category']).first()
+        if category:
+            tags.append({'param': 'category', 'label': category.name})
+    if filters['status']:
+        tags.append({'param': 'status', 'label': STATUS_LABELS[filters['status']]})
+    if filters['date_from']:
+        tags.append({'param': 'date_from', 'label': f'от {filters["date_from"].strftime("%d.%m.%Y")}'})
+    if filters['date_to']:
+        tags.append({'param': 'date_to', 'label': f'до {filters["date_to"].strftime("%d.%m.%Y")}'})
+    if filters['amount_min'] is not None:
+        tags.append({'param': 'amount_min', 'label': f'сумма от {filters["amount_min"]:,.0f} ₸'.replace(',', ' ')})
+    if filters['amount_max'] is not None:
+        tags.append({'param': 'amount_max', 'label': f'сумма до {filters["amount_max"]:,.0f} ₸'.replace(',', ' ')})
+    return tags
+
+
+def _documents_queryset(request):
+    filters = _parse_document_filters(request)
+    documents = Document.objects.select_related('category').prefetch_related('tags')
+
+    if filters['category']:
+        documents = documents.filter(category_id=filters['category'])
+
+    if filters['status']:
+        documents = documents.filter(status=filters['status'])
+
+    if filters['date_from']:
+        documents = documents.filter(end_date__gte=filters['date_from'])
+
+    if filters['date_to']:
+        documents = documents.filter(end_date__lte=filters['date_to'])
+
+    if filters['amount_min'] is not None:
+        documents = documents.filter(amount__gte=filters['amount_min'])
+
+    if filters['amount_max'] is not None:
+        documents = documents.filter(amount__lte=filters['amount_max'])
+
+    order = SORT_OPTIONS[filters['sort']]
+    return documents.order_by(order), filters
 
 
 def _document_stats():
@@ -103,17 +189,20 @@ def dashboard(request):
 
 @login_required
 def document_list(request):
-    documents, query, selected_category, selected_status, sort = _documents_queryset(request)
+    documents, filters = _documents_queryset(request)
+    categories = Category.objects.all()
     paginator = Paginator(documents, 25)
     page_obj = paginator.get_page(request.GET.get('page'))
+    active_filters = _active_filter_tags(filters, categories)
     context = {
         'page_obj': page_obj,
         'documents': page_obj.object_list,
-        'categories': Category.objects.all(),
-        'query': query,
-        'selected_category': selected_category,
-        'selected_status': selected_status,
-        'sort': sort,
+        'categories': categories,
+        'filters': filters,
+        'active_filters': active_filters,
+        'has_active_filters': bool(active_filters),
+        'filters_querystring': _filters_querystring(filters),
+        'status_labels': STATUS_LABELS,
         'user_role': get_user_role(request.user),
     }
     return render(request, 'documents/document_list.html', context)
@@ -192,7 +281,7 @@ def document_delete(request, slug):
 @login_required
 @role_required(UserProfile.ROLE_ADMIN)
 def document_export(request):
-    documents, query, selected_category, selected_status, sort = _documents_queryset(request)
+    documents, filters = _documents_queryset(request)
     export_format = request.GET.get('format', 'csv')
 
     if export_format == 'xlsx':
