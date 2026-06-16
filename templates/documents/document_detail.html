@@ -1,5 +1,56 @@
 {% extends 'base.html' %}
+{% load static documents_extras %}
 {% block title %}{{ document.title }} — PDF Data Base{% endblock %}
+{% block extra_head %}
+<style>
+  .doc-tabs .nav-link {
+    border: none;
+    color: var(--apple-muted);
+    font-weight: 500;
+    padding: 12px 16px;
+    border-radius: 12px 12px 0 0;
+  }
+  .doc-tabs .nav-link.active {
+    color: var(--apple-text);
+    background: #fff;
+    border-bottom: 2px solid var(--apple-blue);
+  }
+  .comment-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--apple-border);
+  }
+  .comment-item:last-child { border-bottom: none; }
+  .comment-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .comment-meta { font-size: 13px; margin-bottom: 4px; }
+  .comment-author { font-weight: 600; color: var(--apple-text); }
+  .comment-date { color: var(--apple-muted); }
+  .comment-text { font-size: 15px; white-space: pre-wrap; }
+  .version-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--apple-border);
+  }
+  .version-row:last-child { border-bottom: none; }
+  .version-current { font-weight: 600; }
+</style>
+{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
   <a href="{% url 'document_list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Назад</a>
@@ -25,6 +76,9 @@
     <div>
       <h4 class="fw-bold mb-1">{{ document.title }}</h4>
       <span class="badge badge-status-{{ document.status }}">{{ document.get_status_display }}</span>
+      {% if document.tags.all %}
+      <div class="mt-2">{% for tag in document.tags.all %}<span class="badge" style="background: var(--apple-bg); color: var(--apple-text); border-radius: 100px; font-weight: 400; padding:4px 10px;">{{ tag.name }}</span>{% endfor %}</div>
+      {% endif %}
     </div>
   </div>
 
@@ -54,28 +108,78 @@
     <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Добавлен</div><div class="fw-medium">{{ document.created_at|date:"d.m.Y H:i" }}</div></div>
     <div class="col-md-4"><div class="text-muted small" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Обновлён</div><div class="fw-medium">{{ document.updated_at|date:"d.m.Y H:i" }}</div></div>
   </div>
-  {% if document.description %}<div class="mb-3"><div class="text-muted small mb-1" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Описание</div><p style="color: var(--apple-muted);">{{ document.description }}</p></div>{% endif %}
-  {% if document.tags.all %}<div class="mb-3"><div class="text-muted small mb-1" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Теги</div>{% for tag in document.tags.all %}<span class="badge" style="background: var(--apple-bg); color: var(--apple-text); border-radius: 100px; font-weight: 400; padding:4px 10px;">{{ tag.name }}</span>{% endfor %}</div>{% endif %}
+  {% if document.description %}<div class="mb-0"><div class="text-muted small mb-1" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Описание</div><p style="color: var(--apple-muted); margin-bottom:0;">{{ document.description }}</p></div>{% endif %}
 </div>
 
-{% if document.versions.all %}
-<div class="card p-4 mb-3">
-  <h6 class="fw-bold mb-3">История версий PDF</h6>
-  {% for version in document.versions.all %}
-  <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}" style="border-color: var(--apple-border) !important;">
-    <span>Версия {{ version.version_number }} — {{ version.uploaded_at|date:"d.m.Y H:i" }}</span>
-    <a href="{{ version.pdf_file.url }}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download"></i></a>
+<ul class="nav doc-tabs mb-0" role="tablist">
+  <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabComments" type="button"><i class="bi bi-chat-dots me-1"></i>Комментарии (<span id="commentsCount">{{ comments|length }}</span>)</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabVersions" type="button"><i class="bi bi-clock-history me-1"></i>Версии</button></li>
+</ul>
+
+<div class="tab-content">
+  <div class="tab-pane fade show active" id="tabComments">
+    <div class="card p-4 border-top-0" style="border-top-left-radius:0; border-top-right-radius:0;"
+         id="commentsSection"
+         data-create-url="{% url 'document_comment_create' document.slug %}"
+         data-delete-url-template="{% url 'document_comment_delete' document.slug 0 %}">
+      <div id="commentsList">
+        {% for comment in comments %}
+        <div class="comment-item" data-comment-id="{{ comment.id }}">
+          <div class="comment-avatar" style="background:{{ comment.avatar_color }}">{{ comment.initials }}</div>
+          <div class="comment-body flex-grow-1">
+            <div class="comment-meta">
+              <span class="comment-author">{{ comment.author_name }}</span>
+              <span class="comment-date"> · {{ comment.created_at }}</span>
+            </div>
+            <div class="comment-text">{{ comment.text }}</div>
+          </div>
+          {% if comment.can_delete %}
+          <button type="button" class="btn btn-sm btn-link text-danger comment-delete" data-comment-id="{{ comment.id }}" title="Удалить"><i class="bi bi-trash"></i></button>
+          {% endif %}
+        </div>
+        {% empty %}
+        <p class="text-muted text-center py-3 mb-0" id="commentsEmpty">Комментариев пока нет</p>
+        {% endfor %}
+      </div>
+      <form id="commentForm" class="d-flex gap-2 mt-3 pt-3 border-top" style="border-color: var(--apple-border) !important;">
+        {% csrf_token %}
+        <input type="text" id="commentInput" class="form-control" placeholder="Написать комментарий..." maxlength="2000" autocomplete="off">
+        <button type="submit" class="btn btn-primary flex-shrink-0">Отправить</button>
+      </form>
+    </div>
   </div>
-  {% endfor %}
+
+  <div class="tab-pane fade" id="tabVersions">
+    <div class="card p-4 border-top-0" style="border-top-left-radius:0; border-top-right-radius:0;">
+      {% if current_version or document.versions.all %}
+      {% if current_version %}
+      <div class="version-row version-current">
+        <span>v{{ current_version.number }} · {{ current_version.uploaded_at }} · {{ current_version.uploaded_by }} · {{ current_version.file_size }} <span class="badge bg-primary ms-1">текущая</span></span>
+        <a href="{{ current_version.url }}" download class="btn btn-sm btn-outline-secondary"><i class="bi bi-download me-1"></i>Скачать</a>
+      </div>
+      {% endif %}
+      {% for version in document.versions.all %}
+      <div class="version-row">
+        <span>v{{ version.version_number }} · {{ version.uploaded_at|date:"d.m.Y" }} · {{ version.uploaded_by|user_display_name|default:"—" }} · {{ version.file_size|format_bytes }}</span>
+        <a href="{{ version.pdf_file.url }}" download class="btn btn-sm btn-outline-secondary"><i class="bi bi-download me-1"></i>Скачать</a>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p class="text-muted text-center py-4 mb-0">Версий пока нет</p>
+      {% endif %}
+    </div>
+  </div>
 </div>
-{% endif %}
 
 {% if audit_logs %}
-<div class="card p-4">
+<div class="card p-4 mt-3">
   <h6 class="fw-bold mb-3">История изменений</h6>
   {% for log in audit_logs %}
   <div class="text-muted small py-1">{{ log.timestamp|date:"d.m.Y H:i" }} — {{ log.get_action_display }} ({{ log.user.username|default:"система" }})</div>
   {% endfor %}
 </div>
 {% endif %}
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/document-comments.js' %}"></script>
 {% endblock %}

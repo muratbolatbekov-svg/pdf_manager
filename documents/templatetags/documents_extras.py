@@ -19,6 +19,22 @@ def last_login_label(value):
 
 
 @register.filter
+def doc_tag_summary(tags):
+    tag_list = list(tags.all() if hasattr(tags, 'all') else tags)
+    if not tag_list:
+        return {'visible': [], 'extra': 0}
+    visible = tag_list[:2]
+    extra = max(0, len(tag_list) - 2)
+    return {'visible': visible, 'extra': extra}
+
+
+@register.filter
+def format_bytes(size):
+    from documents.utils import format_file_size
+    return format_file_size(size)
+
+
+@register.filter
 def user_display_name(user):
     name = user.get_full_name().strip()
     return name if name else user.username

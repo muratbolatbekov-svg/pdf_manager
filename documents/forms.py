@@ -19,7 +19,7 @@ class DocumentForm(forms.ModelForm):
     tags_input = forms.CharField(
         required=False,
         label='Теги',
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'тег1, тег2, тег3'}),
+        widget=forms.HiddenInput(),
     )
 
     class Meta:
@@ -104,10 +104,12 @@ class DocumentForm(forms.ModelForm):
         old.pdf_file.open()
         content = old.pdf_file.read()
         old.pdf_file.close()
+        archived_size = self._file_size(old.pdf_file) or len(content)
         version = DocumentVersion(
             document=old,
             version_number=version_number,
             uploaded_by=self.user,
+            file_size=archived_size,
         )
         version.pdf_file.save(old.pdf_file.name, ContentFile(content), save=False)
         version.save()

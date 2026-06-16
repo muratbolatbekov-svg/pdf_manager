@@ -1,6 +1,12 @@
 from django.contrib import admin
 
-from .models import AuditLog, Category, Document, DocumentVersion, Tag, UserNotificationSettings, UserProfile
+from .models import AuditLog, Category, Document, DocumentComment, DocumentVersion, Tag, UserNotificationSettings, UserProfile
+
+
+@admin.register(DocumentComment)
+class DocumentCommentAdmin(admin.ModelAdmin):
+    list_display = ['document', 'user', 'created_at']
+    search_fields = ['text', 'document__title', 'user__username']
 
 
 @admin.register(Category)
@@ -26,7 +32,7 @@ class DocumentAdmin(admin.ModelAdmin):
 
 @admin.register(DocumentVersion)
 class DocumentVersionAdmin(admin.ModelAdmin):
-    list_display = ['document', 'version_number', 'uploaded_at', 'uploaded_by']
+    list_display = ['document', 'version_number', 'file_size', 'uploaded_at', 'uploaded_by']
     list_filter = ['uploaded_at']
 
 

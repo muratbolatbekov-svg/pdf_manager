@@ -71,8 +71,15 @@
   filterTagRemoveButtons.forEach(function (button) {
     button.addEventListener('click', function () {
       const param = button.dataset.filterParam;
+      const value = button.dataset.filterValue;
       const params = new URLSearchParams(window.location.search);
-      params.delete(param);
+      if (value) {
+        const remaining = params.getAll(param).filter(function (v) { return v !== value; });
+        params.delete(param);
+        remaining.forEach(function (v) { params.append(param, v); });
+      } else {
+        params.delete(param);
+      }
       params.delete('page');
       const query = params.toString();
       window.location.href = query ? '?' + query : window.location.pathname;

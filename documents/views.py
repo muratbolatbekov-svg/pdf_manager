@@ -21,9 +21,10 @@ from openpyxl import Workbook
 
 from .analytics import PERIOD_CHOICES, build_dashboard_analytics
 from .forms import CategoryForm, DocumentForm, NotificationSettingsForm, UserInviteForm, UserRoleForm
-from .models import AuditLog, Category, Document, UserNotificationSettings, UserProfile
+from .models import AuditLog, Category, Document, DocumentComment, DocumentVersion, Tag, UserNotificationSettings, UserProfile
 from .notifications import expiring_documents_queryset, send_user_invite
 from .permissions import get_user_role, role_required
+from .utils import comment_to_dict, format_file_size
 
 
 SORT_OPTIONS = {
@@ -73,6 +74,13 @@ def _parse_document_filters(request):
     amount_min = _parse_decimal(request.GET.get('amount_min', ''))
     amount_max = _parse_decimal(request.GET.get('amount_max', ''))
 
+    tag_ids = []
+    for raw in request.GET.getlist('tag'):
+        try:
+            tag_ids.append(int(raw.strip()))
+        except (TypeError, ValueError):
+            continue
+
     return {
         'category': selected_category,
         'status': status,
@@ -81,6 +89,7 @@ def _parse_document_filters(request):
         'date_to': date_to,
         'amount_min': amount_min,
         'amount_max': amount_max,
+        'tags': tag_ids,
     }
 
 
@@ -99,29 +108,43 @@ def _filters_querystring(filters, exclude=None, page=None):
         params['amount_min'] = str(filters['amount_min'])
     if filters['amount_max'] is not None and 'amount_max' not in exclude:
         params['amount_max'] = str(filters['amount_max'])
+    if filters.get('tags') and 'tag' not in exclude:
+        for tag_id in filters['tags']:
+            params.setdefault('tag', [])
+            if isinstance(params['tag'], list):
+                params['tag'].append(str(tag_id))
+            else:
+                params['tag'] = [params['tag'], str(tag_id)]
     if filters['sort'] != 'date_desc' and 'sort' not in exclude:
         params['sort'] = filters['sort']
     if page:
         params['page'] = page
+    if 'tag' in params and isinstance(params['tag'], list):
+        return urlencode(params, doseq=True)
     return urlencode(params)
 
 
-def _active_filter_tags(filters, categories):
+def _active_filter_tags(filters, categories, all_tags=None):
     tags = []
     if filters['category']:
         category = categories.filter(pk=filters['category']).first()
         if category:
-            tags.append({'param': 'category', 'label': category.name})
+            tags.append({'param': 'category', 'value': None, 'label': category.name})
     if filters['status']:
-        tags.append({'param': 'status', 'label': STATUS_LABELS[filters['status']]})
+        tags.append({'param': 'status', 'value': None, 'label': STATUS_LABELS[filters['status']]})
     if filters['date_from']:
-        tags.append({'param': 'date_from', 'label': f'от {filters["date_from"].strftime("%d.%m.%Y")}'})
+        tags.append({'param': 'date_from', 'value': None, 'label': f'от {filters["date_from"].strftime("%d.%m.%Y")}'})
     if filters['date_to']:
-        tags.append({'param': 'date_to', 'label': f'до {filters["date_to"].strftime("%d.%m.%Y")}'})
+        tags.append({'param': 'date_to', 'value': None, 'label': f'до {filters["date_to"].strftime("%d.%m.%Y")}'})
     if filters['amount_min'] is not None:
-        tags.append({'param': 'amount_min', 'label': f'сумма от {filters["amount_min"]:,.0f} ₸'.replace(',', ' ')})
+        tags.append({'param': 'amount_min', 'value': None, 'label': f'сумма от {filters["amount_min"]:,.0f} ₸'.replace(',', ' ')})
     if filters['amount_max'] is not None:
-        tags.append({'param': 'amount_max', 'label': f'сумма до {filters["amount_max"]:,.0f} ₸'.replace(',', ' ')})
+        tags.append({'param': 'amount_max', 'value': None, 'label': f'сумма до {filters["amount_max"]:,.0f} ₸'.replace(',', ' ')})
+    if filters.get('tags') and all_tags is not None:
+        tag_map = {t.pk: t.name for t in all_tags}
+        for tag_id in filters['tags']:
+            if tag_id in tag_map:
+                tags.append({'param': 'tag', 'value': tag_id, 'label': tag_map[tag_id]})
     return tags
 
 
@@ -146,6 +169,9 @@ def _documents_queryset(request):
 
     if filters['amount_max'] is not None:
         documents = documents.filter(amount__lte=filters['amount_max'])
+
+    if filters.get('tags'):
+        documents = documents.filter(tags__in=filters['tags']).distinct()
 
     order = SORT_OPTIONS[filters['sort']]
     return documents.order_by(order), filters
@@ -243,13 +269,15 @@ def dashboard_analytics(request):
 def document_list(request):
     documents, filters = _documents_queryset(request)
     categories = Category.objects.all()
+    all_tags = Tag.objects.all()
     paginator = Paginator(documents, 25)
     page_obj = paginator.get_page(request.GET.get('page'))
-    active_filters = _active_filter_tags(filters, categories)
+    active_filters = _active_filter_tags(filters, categories, all_tags)
     context = {
         'page_obj': page_obj,
         'documents': page_obj.object_list,
         'categories': categories,
+        'all_tags': all_tags,
         'filters': filters,
         'active_filters': active_filters,
         'has_active_filters': bool(active_filters),
@@ -258,6 +286,16 @@ def document_list(request):
         'user_role': get_user_role(request.user),
     }
     return render(request, 'documents/document_list.html', context)
+
+
+@login_required
+def tag_autocomplete(request):
+    query = request.GET.get('q', '').strip()
+    tags = Tag.objects.all()
+    if query:
+        tags = tags.filter(name__icontains=query)
+    tags = tags.order_by('name')[:15]
+    return JsonResponse({'tags': [tag.name for tag in tags]})
 
 
 @login_required
@@ -278,14 +316,38 @@ def document_pdf_preview(request, slug):
 @login_required
 def document_detail(request, slug):
     document = get_object_or_404(
-        Document.objects.select_related('category').prefetch_related('tags', 'versions'),
+        Document.objects.select_related('category').prefetch_related(
+            'tags', 'versions__uploaded_by', 'comments__user',
+        ),
         slug=slug,
     )
     audit_logs = AuditLog.objects.filter(model_name='Document', object_id=document.pk)[:10]
+    user_role = get_user_role(request.user)
+    comments = [
+        comment_to_dict(c, request.user, user_role)
+        for c in document.comments.select_related('user')
+    ]
+    current_version = None
+    if document.pdf_file:
+        uploader = document.author or '—'
+        latest_version = document.versions.first()
+        if latest_version and latest_version.uploaded_by:
+            uploader = latest_version.uploaded_by.get_full_name() or latest_version.uploaded_by.username
+        current_version = {
+            'number': document.current_version_number(),
+            'uploaded_at': timezone.localtime(document.updated_at).strftime('%d.%m.%Y'),
+            'uploaded_by': uploader,
+            'file_size': format_file_size(document.current_pdf_size()),
+            'url': document.pdf_file.url,
+            'is_current': True,
+        }
     return render(request, 'documents/document_detail.html', {
         'document': document,
         'audit_logs': audit_logs,
-        'user_role': get_user_role(request.user),
+        'comments': comments,
+        'comments_json': comments,
+        'current_version': current_version,
+        'user_role': user_role,
     })
 
 
@@ -315,7 +377,11 @@ def document_edit(request, slug):
             return redirect('document_detail', slug=document.slug)
     else:
         form = DocumentForm(instance=document, user=request.user)
-    return render(request, 'documents/document_form.html', {'form': form, 'title': 'Редактировать'})
+    return render(request, 'documents/document_form.html', {
+        'form': form,
+        'title': 'Редактировать',
+        'has_pdf_file': bool(document.pdf_file),
+    })
 
 
 @login_required
@@ -589,6 +655,34 @@ def invite_set_password(request, uidb64, token):
             return redirect('login')
 
     return render(request, 'documents/invite_set_password.html', {'email': user.email})
+
+
+@login_required
+@require_POST
+def document_comment_create(request, slug):
+    document = get_object_or_404(Document, slug=slug)
+    text = request.POST.get('text', '').strip()
+    if not text:
+        return JsonResponse({'error': 'Введите текст комментария.'}, status=400)
+    if len(text) > 2000:
+        return JsonResponse({'error': 'Комментарий слишком длинный.'}, status=400)
+    comment = DocumentComment.objects.create(document=document, user=request.user, text=text)
+    return JsonResponse({
+        'comment': comment_to_dict(comment, request.user),
+        'count': document.comments.count(),
+    })
+
+
+@login_required
+@require_POST
+def document_comment_delete(request, slug, comment_id):
+    document = get_object_or_404(Document, slug=slug)
+    comment = get_object_or_404(DocumentComment, pk=comment_id, document=document)
+    user_role = get_user_role(request.user)
+    if user_role != UserProfile.ROLE_ADMIN and comment.user_id != request.user.id:
+        return JsonResponse({'error': 'Недостаточно прав.'}, status=403)
+    comment.delete()
+    return JsonResponse({'count': document.comments.count()})
 
 
 def permission_denied(request, exception=None):

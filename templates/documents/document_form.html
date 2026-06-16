@@ -1,12 +1,64 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}{{ title }} — PDF Data Base{% endblock %}
+{% block extra_head %}
+<style>
+  .tag-input-wrapper {
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 12px;
+    padding: 8px 12px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    background: #fff;
+  }
+  .tag-input-wrapper:focus-within {
+    border-color: var(--apple-blue);
+    box-shadow: 0 0 0 4px rgba(0,113,227,0.15);
+  }
+  .tag-chips { display: contents; }
+  .tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0,113,227,0.08);
+    color: var(--apple-blue);
+    border-radius: 100px;
+    padding: 4px 8px 4px 12px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .tag-chip-remove {
+    border: none;
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    line-height: 1;
+    font-size: 16px;
+    opacity: 0.7;
+    cursor: pointer;
+  }
+  .tag-chip-remove:hover { opacity: 1; }
+  .tag-text-input {
+    border: none;
+    outline: none;
+    flex: 1;
+    min-width: 120px;
+    font-size: 15px;
+    padding: 4px 0;
+    background: transparent;
+  }
+</style>
+{% endblock %}
 {% block content %}
 <div class="d-flex align-items-center mb-4">
   <a href="{% url 'document_list' %}" class="btn btn-outline-secondary btn-sm me-3"><i class="bi bi-arrow-left"></i></a>
   <h4 class="fw-bold mb-0">{{ title }}</h4>
 </div>
 <div class="card p-4" style="max-width:700px">
-  <form method="post" enctype="multipart/form-data">{% csrf_token %}
+  <form method="post" enctype="multipart/form-data" id="documentForm" data-has-pdf="{% if has_pdf_file %}true{% else %}false{% endif %}">{% csrf_token %}
     {% include 'documents/_form_errors.html' %}
     <div class="row g-3">
       <div class="col-12"><label class="form-label fw-medium">Название *</label>{{ form.title }}</div>
@@ -23,7 +75,16 @@
       <div class="col-md-6"><label class="form-label fw-medium">Статус</label>{{ form.status }}</div>
       <div class="col-12"><label class="form-label fw-medium">Автор</label>{{ form.author }}</div>
       <div class="col-12"><label class="form-label fw-medium">Описание</label>{{ form.description }}</div>
-      <div class="col-12"><label class="form-label fw-medium">Теги <span class="text-muted small">(через запятую)</span></label>{{ form.tags_input }}</div>
+      <div class="col-12">
+        <label class="form-label fw-medium">Теги</label>
+        <div class="tag-input-wrapper" data-autocomplete-url="{% url 'tag_autocomplete' %}">
+          <div id="tagChips" class="tag-chips"></div>
+          <input type="text" id="tagTextInput" class="tag-text-input" list="tagSuggestions" placeholder="Введите тег и нажмите Enter" autocomplete="off">
+          <datalist id="tagSuggestions"></datalist>
+          {{ form.tags_input }}
+        </div>
+        <div class="form-text text-muted" style="font-size:12px;">Enter или запятая добавляет тег</div>
+      </div>
       <div class="col-12 pt-2">
         <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-lg me-2"></i>Сохранить</button>
         <a href="{% url 'document_list' %}" class="btn btn-outline-secondary ms-2">Отмена</a>
@@ -31,4 +92,30 @@
     </div>
   </form>
 </div>
+
+{% if has_pdf_file %}
+<div class="modal fade" id="replacePdfModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:16px;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">Замена PDF файла</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-0">Этот документ уже содержит файл.<br>Что сделать с новым файлом?</p>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-outline-secondary" id="replacePdfCancel">Отмена</button>
+        <button type="button" class="btn btn-primary" id="replacePdfConfirm">Заменить (старая версия сохранится)</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/tag-input.js' %}"></script>
+{% if has_pdf_file %}
+<script src="{% static 'js/pdf-replace-dialog.js' %}"></script>
+{% endif %}
 {% endblock %}

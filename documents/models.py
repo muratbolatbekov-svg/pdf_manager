@@ -85,11 +85,23 @@ class Document(models.Model):
             return False
         return self.end_date < timezone.localdate()
 
+    def current_version_number(self):
+        return self.versions.count() + 1
+
+    def current_pdf_size(self):
+        if not self.pdf_file:
+            return None
+        try:
+            return self.pdf_file.size
+        except (OSError, TypeError, ValueError):
+            return None
+
 
 class DocumentVersion(models.Model):
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='versions', verbose_name='Документ')
     pdf_file = models.FileField(upload_to='pdfs/versions/', verbose_name='PDF файл')
     version_number = models.PositiveIntegerField(verbose_name='Версия')
+    file_size = models.PositiveIntegerField(null=True, blank=True, verbose_name='Размер файла')
     uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name='Загружено')
     uploaded_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Пользователь'
@@ -102,6 +114,27 @@ class DocumentVersion(models.Model):
 
     def __str__(self):
         return f'{self.document.title} v{self.version_number}'
+
+    def file_size_display(self):
+        from .utils import format_file_size
+        return format_file_size(self.file_size)
+
+
+class DocumentComment(models.Model):
+    document = models.ForeignKey(
+        Document, on_delete=models.CASCADE, related_name='comments', verbose_name='Документ'
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    text = models.TextField(max_length=2000, verbose_name='Текст')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
+
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f'Комментарий к {self.document.title}'
 
 
 class AuditLog(models.Model):
