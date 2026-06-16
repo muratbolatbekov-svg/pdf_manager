@@ -1,5 +1,8 @@
 [phases.setup]
-nixPkgs = ["python311", "postgresql", "gcc"]
+nixPkgs = ["python311", "gcc", "postgresql"]
+
+[phases.install]
+cmds = ["pip install -r requirements.txt"]
 
 [start]
-cmd = "gunicorn config.wsgi --bind 0.0.0.0:$PORT --log-file -"
+cmd = "python manage.py migrate --noinput && gunicorn config.wsgi --log-file -"
